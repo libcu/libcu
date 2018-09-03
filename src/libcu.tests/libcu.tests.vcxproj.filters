@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AssemblyInfo.cpp">
+      <Filter>Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="allTests.cpp" />
+    <ClCompile Include="ext\ext_allTests.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="sys\sys_allTests.cpp">
+      <Filter>sys</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Properties</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="libcu.tests.cu" />
+    <CudaCompile Include="sys\sys_libcu.tests.cu">
+      <Filter>sys</Filter>
+    </CudaCompile>
+    <CudaCompile Include="ext\ext_libcu.tests.cu">
+      <Filter>ext</Filter>
+    </CudaCompile>
+    <CudaCompile Include="program.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Properties">
+      <UniqueIdentifier>{0dfe3beb-5391-4684-93d2-77f059909555}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys">
+      <UniqueIdentifier>{ece2e6cc-7e7e-4c74-bd48-e44210ab3acb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ext">
+      <UniqueIdentifier>{93428ed7-c5ab-4716-9760-47cf68fc6460}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="app.ico">
+      <Filter>Properties</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc">
+      <Filter>Properties</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="crtdefsTest.cu" />
+    <None Include="ctypeTest.cu" />
+    <None Include="direntTest.cu" />
+    <None Include="errnoTest.cu" />
+    <None Include="fcntlTest.cu" />
+    <None Include="fsystemTest.cu" />
+    <None Include="grpTest.cu" />
+    <None Include="pwdTest.cu" />
+    <None Include="regexTest.cu" />
+    <None Include="sentinelTest.cu" />
+    <None Include="setjmpTest.cu" />
+    <None Include="stddefTest.cu" />
+    <None Include="stdioTest.cu" />
+    <None Include="stdlibTest.cu" />
+    <None Include="stringTest.cu" />
+    <None Include="timeTest.cu" />
+    <None Include="unistdTest.cu" />
+    <None Include="sys\sys_timeTest.cu">
+      <Filter>sys</Filter>
+    </None>
+    <None Include="sys\sys_statTest.cu">
+      <Filter>sys</Filter>
+    </None>
+    <None Include="ext\ext_memfileTest.cu">
+      <Filter>ext</Filter>
+    </None>
+    <None Include="ext\ext_hashTest.cu">
+      <Filter>ext</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,64 @@
+# project
+_build/
+*.orig
+
+# Windows
+Testing/
+Program Files/
+x64/
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+TestResults/
+.metadata/
+.vs/
+*.o
+*.suo
+*.sdf
+*.pdb
+*.user
+*.opensdf
+_ReSharper.*/
+*resharper.user
+ipch/
+
+# OS X
+.DS_Store
+*.swp
+*.lock
+profile
+*~.nib
+DerivedData/
+xcuserdata
+!xcshareddata
+!xcschemes
+*.moved-aside
+
+# Eclipse
+*.pydevproject
+#.project
+.metadata
+bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/
+.loadpath
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+#.cproject
+
+# PDT-specific
+.buildpath

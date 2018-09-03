@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CudaCompile Include="libcu.tinytcl.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="regex_compat.h" />
+    <ClInclude Include="tcl.h" />
+    <ClInclude Include="tclGpu.h" />
+    <ClInclude Include="tclHash.h" />
+    <ClInclude Include="tclInt.h" />
+    <ClInclude Include="tclLoad.h" />
+    <ClInclude Include="tclEx.h" />
+    <ClInclude Include="tclExInt.h" />
+    <ClInclude Include="tclMod.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dos.cu" />
+    <None Include="regex_compat.cu" />
+    <None Include="tclAlloc.cu" />
+    <None Include="tclAssem.cu" />
+    <None Include="tclBasic.cu" />
+    <None Include="tclCmdAH.cu" />
+    <None Include="tclCmdIL.cu" />
+    <None Include="tclCmdMZ.cu" />
+    <None Include="tclExpr.cu" />
+    <None Include="tclGet.cu" />
+    <None Include="tclGlob.cu" />
+    <None Include="tclGpuAZ.cu" />
+    <None Include="tclGpuEnv.cu" />
+    <None Include="tclGpuStr.cu" />
+    <None Include="tclGpuUtil.cu" />
+    <None Include="tclHash.cu" />
+    <None Include="tclHistory.cu" />
+    <None Include="tclLoad.cu" />
+    <None Include="tclLoad-noop.cu" />
+    <None Include="tclObj.cu" />
+    <None Include="tclParse.cu" />
+    <None Include="tclProc.cu" />
+    <None Include="tclUtil.cu" />
+    <None Include="tclVar.cu" />
+    <None Include="tclExDbg.cu" />
+    <None Include="tclNoExtensions.cu" />
+    <None Include="tclExGen.cu" />
+    <None Include="tclMod.cu" />
+    <None Include="library\init.tcl" />
+    <None Include="library\mkindex.tcl" />
+    <None Include="library\parray.tcl" />
+    <None Include="library\tclIndex" />
+    <None Include="tcl_sys\autoinit.tcl" />
+    <None Include="tcl_sys\devel.tcl" />
+    <None Include="tcl_sys\system.tcl" />
+    <None Include="libcu.tinytcl.native.nuspec" />
+    <None Include="libcu.tinytcl.native.targets" />
+    <None Include="_content\tclcontext.cu">
+      <Filter>_content</Filter>
+    </None>
+    <None Include="_content\tclcontext.cu.h">
+      <Filter>_content</Filter>
+    </None>
+    <None Include="_content\sample.tinytcl.cu">
+      <Filter>_content</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="_content">
+      <UniqueIdentifier>{de8ce0d1-92f6-4f9b-bb39-4a48b0aafde1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

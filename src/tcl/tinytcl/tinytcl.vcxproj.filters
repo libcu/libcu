@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="tests\all">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\append.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\case.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\cd.test_">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\concat.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\defs">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\env.test_">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\error.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\eval.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\exec.test_">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\expr.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\file.test.win">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\for.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\format.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\glob.test_">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\history.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\if.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\incr.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\info.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\join.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lindex.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\linsert.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\list.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\llength.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lrange.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lreplace.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lsearch.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lsort.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\misc.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\open.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\parse.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\proc.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\regexp.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\rename.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\scan.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\set.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\source.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\split.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\string.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\trace.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\unknown.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\uplevel.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\upvar.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\while.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="libcu-tinytcl.native.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="tests">
+      <UniqueIdentifier>{4db761ad-9db1-4c30-8707-84c910d08f2c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="tinySh.cu" />
+  </ItemGroup>
+</Project>

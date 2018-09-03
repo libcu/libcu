@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\include\bits\libcu_fpmax.h">
+      <Filter>include\bits</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\crtdefscu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ctypecu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cuda_runtimecu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\errnocu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sentinel.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\stringcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\stdlibcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\stdiocu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sentinel-stdiomsg.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sentinel-stdlibmsg.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\regexcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\direntcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sys\statcu.h">
+      <Filter>include\sys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\unistdcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\_dirent.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\timecu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\setjmpcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ext\hash.h">
+      <Filter>include\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ext\memfile.h">
+      <Filter>include\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sentinel-unistdmsg.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fcntlcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pwdcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\grpcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sys\timecu.h">
+      <Filter>include\sys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sentinel-timemsg.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sentinel-fcntlmsg.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sentinel-direntmsg.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="fsystem.h" />
+    <ClInclude Include="..\include\stddefcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\_unistd.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ext\pipeline.h">
+      <Filter>include\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\stdargcu.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="libcu.cu" />
+    <CudaCompile Include="program.cu" />
+    <CudaCompile Include="libcu.stdlib.cu" />
+    <CudaCompile Include="stringcu.cu" />
+    <CudaCompile Include="ext\pipeline.cu">
+      <Filter>ext</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="_content">
+      <UniqueIdentifier>{36a9b491-aa04-47a7-80e6-b4500b4b4454}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys">
+      <UniqueIdentifier>{4f137845-9d32-4ce7-b3a2-38806776a209}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{6b88e2f9-9a89-4cd7-ad56-2d313e018545}</UniqueIdentifier>
+      <Extensions>*.h</Extensions>
+    </Filter>
+    <Filter Include="include\bits">
+      <UniqueIdentifier>{e7438e7e-21c1-414f-82e8-26ff1e32b228}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\sys">
+      <UniqueIdentifier>{3b8669b4-7b70-4086-928c-adaec2f08228}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ext">
+      <UniqueIdentifier>{4ed86195-7e36-40a0-bf2c-d0610c0c10aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\ext">
+      <UniqueIdentifier>{5bf5eda0-9971-4bbc-83ad-483b240b540c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cuda_runtime.cpp" />
+    <ClCompile Include="sentinel.cpp" />
+    <ClCompile Include="sentinel-host.cpp" />
+    <ClCompile Include="sentinel-msg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Libcu.Native.nuspec" />
+    <None Include="Libcu.Native.targets" />
+    <None Include="_content\sample.libcu.cu">
+      <Filter>_content</Filter>
+    </None>
+    <None Include="ctypecu.cu" />
+    <None Include="sentinel-gpu.cu" />
+    <None Include="direntcu.cu" />
+    <None Include="errnocu.cu" />
+    <None Include="regexcu.cu" />
+    <None Include="setjmpcu.cu" />
+    <None Include="stdlibcu.cu" />
+    <None Include="unistdcu.cu" />
+    <None Include="sys\statcu.cu">
+      <Filter>sys</Filter>
+    </None>
+    <None Include="ext\hash.cu">
+      <Filter>ext</Filter>
+    </None>
+    <None Include="ext\memfile.cu">
+      <Filter>ext</Filter>
+    </None>
+    <None Include="fsystem.cu" />
+    <None Include="fcntlcu.cu" />
+    <None Include="grpcu.cu" />
+    <None Include="timecu.cu" />
+    <None Include="sys\timecu.cu">
+      <Filter>sys</Filter>
+    </None>
+    <None Include="pwdcu.cu" />
+    <None Include="crtdefscu.cu" />
+    <None Include="stdiocu.cu" />
+  </ItemGroup>
+</Project>

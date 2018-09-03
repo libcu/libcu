@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="jim.h" />
+    <ClInclude Include="jim-win32compat.h" />
+    <ClInclude Include="jim-config.h" />
+    <ClInclude Include="jim-subcmd.h" />
+    <ClInclude Include="jim-signal.h" />
+    <ClInclude Include="jimex.h" />
+    <ClInclude Include="utf8.h" />
+    <ClInclude Include="jimautoconf.h" />
+    <ClInclude Include="jim-eventloop.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libcu.jimtcl.native.targets" />
+    <None Include="libcu.jimtcl.native.nuspec" />
+    <None Include="jim-aio.cu" />
+    <None Include="jim-array.cu" />
+    <None Include="jim-clock.cu" />
+    <None Include="jim-eventloop.cu" />
+    <None Include="jim-exec.cu" />
+    <None Include="jim-file.cu" />
+    <None Include="jim-format.cu" />
+    <None Include="jim-gpu.cu" />
+    <None Include="jim-history.cu" />
+    <None Include="jim-interactive.cu" />
+    <None Include="jim-load.cu" />
+    <None Include="jim-namespace.cu" />
+    <None Include="jim-pack.cu" />
+    <None Include="jim-package.cu" />
+    <None Include="jim-posix.cu" />
+    <None Include="jim-readdir.cu" />
+    <None Include="jim-readline.cu" />
+    <None Include="jim-regexp.cu" />
+    <None Include="jim-sdl.cu" />
+    <None Include="jim-signal.cu" />
+    <None Include="jim-sqlite3.cu" />
+    <None Include="jim-subcmd.cu" />
+    <None Include="jim-syslog.cu" />
+    <None Include="jim-tclprefix.cu" />
+    <None Include="jim-win32compat.cu" />
+    <None Include="jimex.cu" />
+    <None Include="init.cu" />
+    <None Include="utf8.cu" />
+    <None Include="_content\sample.libcu.jimtcl.cu">
+      <Filter>_content</Filter>
+    </None>
+    <None Include="_content\tclcontext.cu">
+      <Filter>_content</Filter>
+    </None>
+    <None Include="_content\tclcontext.cu.h">
+      <Filter>_content</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="_content">
+      <UniqueIdentifier>{78e945d0-edef-4ecd-94e0-4b43a3cef4c6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="libcu.jimtcl.cu" />
+    <CudaCompile Include="jim.cu" />
+  </ItemGroup>
+</Project>

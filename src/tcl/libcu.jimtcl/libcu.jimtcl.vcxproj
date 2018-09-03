@@ -1,0 +1,290 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="UserMacros">
+    <CUARCH Condition="'$(CUARCH)'==''">35</CUARCH>
+    <ShortPlatform Condition="'$(Platform)'=='Win32'">x86</ShortPlatform>
+    <ShortPlatform Condition="'$(Platform)'=='x64'">x64</ShortPlatform>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="jim.h" />
+    <ClInclude Include="jimautoconf.h" />
+    <ClInclude Include="jim-config.h" />
+    <ClInclude Include="jim-eventloop.h" />
+    <ClInclude Include="jim-signal.h" />
+    <ClInclude Include="jim-subcmd.h" />
+    <ClInclude Include="jim-win32compat.h" />
+    <ClInclude Include="jimex.h" />
+    <ClInclude Include="utf8.h" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(CUARCH)'!='cpu'">
+    <CudaCompile Include="libcu.jimtcl.cu" />
+    <CudaCompile Include="jim.cu" />
+    <None Include="jim-aio.cu" />
+    <None Include="jim-array.cu" />
+    <None Include="jim-clock.cu" />
+    <None Include="jim-eventloop.cu" />
+    <None Include="jim-exec.cu" />
+    <None Include="jim-file.cu" />
+    <None Include="jim-format.cu" />
+    <None Include="jim-gpu.cu" />
+    <None Include="jim-history.cu" />
+    <None Include="jim-interactive.cu" />
+    <None Include="jim-load.cu" />
+    <None Include="jim-namespace.cu" />
+    <None Include="jim-pack.cu" />
+    <None Include="jim-package.cu" />
+    <None Include="jim-posix.cu" />
+    <None Include="jim-readdir.cu" />
+    <None Include="jim-readline.cu" />
+    <None Include="jim-regexp.cu" />
+    <None Include="jim-sdl.cu" />
+    <None Include="jim-signal.cu" />
+    <None Include="jim-sqlite3.cu" />
+    <None Include="jim-subcmd.cu" />
+    <None Include="jim-syslog.cu" />
+    <None Include="jim-tclprefix.cu" />
+    <None Include="jim-win32compat.cu" />
+    <None Include="jimex.cu" />
+    <None Include="init.cu" />
+    <None Include="utf8.cu" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(CUARCH)'=='cpu'">
+    <None Include="libcu.jimtcl.cu" />
+    <ClCompile Include="jim.cu" />
+    <ClCompile Include="jim-aio.cu" />
+    <ClCompile Include="jim-array.cu" />
+    <ClCompile Include="jim-clock.cu" />
+    <ClCompile Include="jim-eventloop.cu" />
+    <ClCompile Include="jim-exec.cu" />
+    <ClCompile Include="jim-file.cu" />
+    <ClCompile Include="jim-format.cu" />
+    <ClCompile Include="jim-gpu.cu" />
+    <ClCompile Include="jim-history.cu" />
+    <ClCompile Include="jim-interactive.cu" />
+    <ClCompile Include="jim-load.cu" />
+    <ClCompile Include="jim-namespace.cu" />
+    <ClCompile Include="jim-pack.cu" />
+    <ClCompile Include="jim-package.cu" />
+    <ClCompile Include="jim-posix.cu">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jim-readdir.cu" />
+    <ClCompile Include="jim-readline.cu">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jim-regexp.cu" />
+    <ClCompile Include="jim-sdl.cu">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jim-signal.cu">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jim-sqlite3.cu">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jim-subcmd.cu" />
+    <ClCompile Include="jim-syslog.cu">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jim-tclprefix.cu" />
+    <ClCompile Include="jim-win32compat.cu" />
+    <ClCompile Include="jimex.cu" />
+    <ClCompile Include="init.cu" />
+    <ClCompile Include="utf8.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libcu.jimtcl.native.nuspec" />
+    <None Include="libcu.jimtcl.native.targets" />
+    <None Include="_content\sample.libcu.jimtcl.cu" />
+    <None Include="_content\tclcontext.cu" />
+    <None Include="_content\tclcontext.cu.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{602F49D0-3A63-459E-AD6D-81CF59C44A3A}</ProjectGuid>
+    <RootNamespace>libcu</RootNamespace>
+    <ProjectName>libcu.jimtcl</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.2.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;jim_ext_aio;jim_ext_namespace;jim_ext_package;JIM_MAINTAINER;JIM_REFERENCES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libcu.$(CUARCH).lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(CUARCH)'!='cpu'">"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)jim.cu.obj" "$(IntDir)libcu.jimtcl.cu.obj" -o "$(OutDir)libcu.jimtcl.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <AdditionalOptions>-Xcudafe "--diag_suppress=branch_past_initialization" %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_LIB;jim_ext_aio;jim_ext_namespace;jim_ext_package;JIM_MAINTAINER;JIM_REFERENCES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libcu.$(CUARCH).lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(CUARCH)'!='cpu'">"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)jim.cu.obj" "$(IntDir)libcu.jimtcl.cu.obj" -o "$(OutDir)libcu.jimtcl.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <AdditionalOptions>-Xcudafe "--diag_suppress=branch_past_initialization" %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;jim_ext_aio;jim_ext_namespace;jim_ext_package;JIM_MAINTAINER;JIM_REFERENCES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libcu.$(CUARCH).lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(CUARCH)'!='cpu'">"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)jim.cu.obj" "$(IntDir)libcu.jimtcl.cu.obj" -o "$(OutDir)libcu.jimtcl.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <AdditionalOptions>-Xcudafe "--diag_suppress=branch_past_initialization" %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_LIB;jim_ext_aio;jim_ext_namespace;jim_ext_package;JIM_MAINTAINER;JIM_REFERENCES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libcu.$(CUARCH).lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(CUARCH)'!='cpu'">"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)jim.cu.obj" "$(IntDir)libcu.jimtcl.cu.obj" -o "$(OutDir)libcu.jimtcl.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <AdditionalOptions>-Xcudafe "--diag_suppress=branch_past_initialization" %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.2.targets" />
+  </ImportGroup>
+</Project>

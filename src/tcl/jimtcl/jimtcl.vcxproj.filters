@@ -1,0 +1,240 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="tests\alias.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\apply.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\applyns.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\array.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\binary.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\break.tcl">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\concat.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\dict.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\dict2.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\dummy.tcl">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\error.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\errors.tcl">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\event.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\exec.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\exec2.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\exists.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\exitpackage.tcl">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\expand.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\expr-base.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\expr-new.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\expr-old.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\expr.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\exprsugar.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\filecopy.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\filedir.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\filejoin.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\for.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\format.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\glob.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\glob2.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\infoframe.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\jim.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\linsert.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\list.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\loop.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lrange.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lreplace.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lsearch.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lsort.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\lsortcmd.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\Makefile">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\misc.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\namespace.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\parse.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\perf.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\pid.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\prefix.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\proc-new.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\proc.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\procref.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\regcount.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\regexp.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\regexp2.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\regmin.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\rename.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\return-break.tcl">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\return.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\scan.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\signal.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\stacktrace.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\string.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\stringmatch.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\subst.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\tailcall.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\testing.tcl">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\testio.in">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\timer.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\tree.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\try.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\uplevel.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\upvar.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\utf8.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\utftcl.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\util.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="tests\while.test">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="libcu-jimtcl.native.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="tests">
+      <UniqueIdentifier>{3ade5c5e-ae23-43bd-b7e3-fb5665fa9a49}</UniqueIdentifier>
+      <Extensions>tests\*.*</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="jimsh.cu" />
+  </ItemGroup>
+</Project>

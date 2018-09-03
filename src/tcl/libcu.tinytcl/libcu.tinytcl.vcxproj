@@ -1,0 +1,286 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="UserMacros">
+    <CUARCH Condition="'$(CUARCH)'==''">35</CUARCH>
+    <ShortPlatform Condition="'$(Platform)'=='Win32'">x86</ShortPlatform>
+    <ShortPlatform Condition="'$(Platform)'=='x64'">x64</ShortPlatform>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="regex_compat.h" />
+    <ClInclude Include="tcl.h" />
+    <ClInclude Include="tclGpu.h" />
+    <ClInclude Include="tclHash.h" />
+    <ClInclude Include="tclInt.h" />
+    <ClInclude Include="tclLoad.h" />
+    <ClInclude Include="tclEx.h" />
+    <ClInclude Include="tclExInt.h" />
+    <ClInclude Include="tclMod.h" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(CUARCH)'!='cpu'">
+    <CudaCompile Include="libcu.tinytcl.cu" />
+    <None Include="dos.cu" />
+    <None Include="regex_compat.cu" />
+    <None Include="tclAlloc.cu" />
+    <None Include="tclAssem.cu" />
+    <None Include="tclBasic.cu" />
+    <None Include="tclCmdAH.cu" />
+    <None Include="tclCmdIL.cu" />
+    <None Include="tclCmdMZ.cu" />
+    <None Include="tclExpr.cu" />
+    <None Include="tclGet.cu" />
+    <None Include="tclGlob.cu" />
+    <None Include="tclGpuAZ.cu" />
+    <None Include="tclGpuEnv.cu" />
+    <None Include="tclGpuStr.cu" />
+    <None Include="tclGpuUtil.cu" />
+    <None Include="tclHash.cu" />
+    <None Include="tclHistory.cu" />
+    <None Include="tclLoad.cu" />
+    <None Include="tclLoad-noop.cu" />
+    <None Include="tclObj.cu" />
+    <None Include="tclParse.cu" />
+    <None Include="tclProc.cu" />
+    <None Include="tclUtil.cu" />
+    <None Include="tclVar.cu" />
+    <None Include="tclExDbg.cu" />
+    <None Include="tclNoExtensions.cu" />
+    <None Include="tclExGen.cu" />
+    <None Include="tclMod.cu" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(CUARCH)'=='cpu'">
+    <None Include="libcu.tinytcl.cu" />
+    <ClCompile Include="dos.cu" />
+    <ClCompile Include="regex_compat.cu" />
+    <ClCompile Include="tclAlloc.cu" />
+    <ClCompile Include="tclAssem.cu" />
+    <ClCompile Include="tclBasic.cu" />
+    <ClCompile Include="tclCmdAH.cu" />
+    <ClCompile Include="tclCmdIL.cu" />
+    <ClCompile Include="tclCmdMZ.cu" />
+    <ClCompile Include="tclExpr.cu" />
+    <ClCompile Include="tclGet.cu" />
+    <ClCompile Include="tclGlob.cu" />
+    <ClCompile Include="tclGpuAZ.cu" />
+    <ClCompile Include="tclGpuEnv.cu" />
+    <ClCompile Include="tclGpuStr.cu" />
+    <ClCompile Include="tclGpuUtil.cu" />
+    <ClCompile Include="tclHash.cu" />
+    <ClCompile Include="tclHistory.cu" />
+    <ClCompile Include="tclLoad.cu" />
+    <ClCompile Include="tclLoad-noop.cu" />
+    <ClCompile Include="tclObj.cu" />
+    <ClCompile Include="tclParse.cu" />
+    <ClCompile Include="tclProc.cu" />
+    <ClCompile Include="tclUtil.cu" />
+    <ClCompile Include="tclVar.cu" />
+    <ClCompile Include="tclExDbg.cu" />
+    <ClCompile Include="tclExtensions.cu" />
+    <ClCompile Include="tclExGen.cu" />
+    <ClCompile Include="tclMod.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="library\init.tcl" />
+    <None Include="library\mkindex.tcl" />
+    <None Include="library\parray.tcl" />
+    <None Include="library\tclIndex" />
+    <None Include="tcl_sys\autoinit.tcl" />
+    <None Include="tcl_sys\devel.tcl" />
+    <None Include="tcl_sys\system.tcl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libcu.tinytcl.native.nuspec" />
+    <None Include="libcu.tinytcl.native.targets" />
+    <None Include="_content\sample.tinytcl.cu" />
+    <None Include="_content\tclcontext.cu" />
+    <None Include="_content\tclcontext.cu.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9E735B14-3DDD-4703-A408-1FD099B4CA92}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libcu</RootNamespace>
+    <ProjectName>libcu.tinytcl</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.2.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TEST;TCL_MEM_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libcu.$(CUARCH).lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(CUARCH)'!='cpu'">"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)libcu.tinytcl.cu.obj" -o "$(OutDir)libcu.tinytcl.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <AdditionalOptions>-Xcudafe "--diag_suppress=branch_past_initialization" %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_LIB;_TEST;TCL_MEM_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libcu.$(CUARCH).lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(CUARCH)'!='cpu'">"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)libcu.tinytcl.cu.obj" -o "$(OutDir)libcu.tinytcl.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <AdditionalOptions>-Xcudafe "--diag_suppress=branch_past_initialization" %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libcu.$(CUARCH).lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(CUARCH)'!='cpu'">"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)libcu.tinytcl.cu.obj" -o "$(OutDir)libcu.tinytcl.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <AdditionalOptions>-Xcudafe "--diag_suppress=branch_past_initialization" %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libcu.$(CUARCH).lib;cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(CUARCH)'!='cpu'">"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)libcu.tinytcl.cu.obj" -o "$(OutDir)libcu.tinytcl.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <AdditionalOptions>-Xcudafe "--diag_suppress=branch_past_initialization" %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.2.targets" />
+  </ImportGroup>
+</Project>

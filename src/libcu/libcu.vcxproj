@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="UserMacros">
+    <CUARCH Condition="'$(CUARCH)'==''">35</CUARCH>
+    <ShortPlatform Condition="'$(Platform)'=='Win32'">x86</ShortPlatform>
+    <ShortPlatform Condition="'$(Platform)'=='x64'">x64</ShortPlatform>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\bits\libcu_fpmax.h" />
+    <ClInclude Include="..\include\crtdefscu.h" />
+    <ClInclude Include="..\include\ctypecu.h" />
+    <ClInclude Include="..\include\cuda_runtimecu.h" />
+    <ClInclude Include="..\include\ext\hash.h" />
+    <ClInclude Include="..\include\ext\memfile.h" />
+    <ClInclude Include="..\include\ext\pipeline.h" />
+    <ClInclude Include="..\include\fcntlcu.h" />
+    <ClInclude Include="..\include\grpcu.h" />
+    <ClInclude Include="..\include\pwdcu.h" />
+    <ClInclude Include="..\include\sentinel-direntmsg.h" />
+    <ClInclude Include="..\include\sentinel-fcntlmsg.h" />
+    <ClInclude Include="..\include\sentinel-timemsg.h" />
+    <ClInclude Include="..\include\setjmpcu.h" />
+    <ClInclude Include="..\include\sys\timecu.h" />
+    <ClInclude Include="..\include\timecu.h" />
+    <ClInclude Include="..\include\_dirent.h" />
+    <ClInclude Include="..\include\direntcu.h" />
+    <ClInclude Include="..\include\errnocu.h" />
+    <ClInclude Include="..\include\regexcu.h" />
+    <ClInclude Include="..\include\sentinel-unistdmsg.h" />
+    <ClInclude Include="..\include\sentinel-stdiomsg.h" />
+    <ClInclude Include="..\include\sentinel-stdlibmsg.h" />
+    <ClInclude Include="..\include\sentinel.h" />
+    <ClInclude Include="..\include\stdargcu.h" />
+    <ClInclude Include="..\include\stddefcu.h" />
+    <ClInclude Include="..\include\stdiocu.h" />
+    <ClInclude Include="..\include\stdlibcu.h" />
+    <ClInclude Include="..\include\stringcu.h" />
+    <ClInclude Include="..\include\sys\statcu.h" />
+    <ClInclude Include="..\include\_unistd.h" />
+    <ClInclude Include="..\include\unistdcu.h" />
+    <ClInclude Include="fsystem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sentinel-msg.cpp" />
+    <ClCompile Include="sentinel.cpp" />
+    <ClCompile Include="sentinel-host.cpp" />
+    <ClCompile Include="cuda_runtime.cpp" />
+    <None Include="sys\timecu.cu" />
+    <None Include="pwdcu.cu" />
+    <None Include="ext\hash.cu" />
+    <CudaCompile Include="ext\pipeline.cu" />
+    <None Include="ext\memfile.cu" />
+    <None Include="fsystem.cu" />
+    <None Include="fcntlcu.cu" />
+    <None Include="grpcu.cu" />
+    <None Include="crtdefscu.cu" />
+    <CudaCompile Include="program.cu" />
+    <CudaCompile Include="libcu.cu" />
+    <CudaCompile Include="libcu.stdlib.cu" />
+    <None Include="ctypecu.cu" />
+    <None Include="sentinel-gpu.cu" />
+    <None Include="sys\statcu.cu" />
+    <None Include="direntcu.cu" />
+    <None Include="errnocu.cu" />
+    <None Include="regexcu.cu" />
+    <None Include="setjmpcu.cu" />
+    <None Include="stdiocu.cu">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="stdlibcu.cu" />
+    <CudaCompile Include="stringcu.cu" />
+    <None Include="timecu.cu" />
+    <None Include="unistdcu.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libcu.native.nuspec" />
+    <None Include="libcu.native.targets" />
+    <None Include="_content\sample.libcu.cu" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{ABDDD338-DC1C-475E-9903-0FC99E18726E}</ProjectGuid>
+    <RootNamespace>libcu</RootNamespace>
+    <ProjectName>libcu</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.2.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>$(ProjectName).$(CUARCH)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-host.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <Keep>true</Keep>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-host.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <Keep>true</Keep>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-host.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+      <Keep>true</Keep>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(CudaToolkitIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-host.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <Include>$(SolutionDir)include;%(Include)</Include>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_$(CUARCH),sm_$(CUARCH)</CodeGeneration>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.2.targets" />
+  </ImportGroup>
+</Project>

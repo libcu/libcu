@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>libcu.native</id>
+    <version>0.5.0</version>
+    <title>libcu</title>
+    <authors>Contoso</authors>
+    <owners>Contoso</owners>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The CU standard library or libcu is the standard library for the C programming language implemented in CUDA, as specified in the ANSI C standard.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>native cuda gpu runtime</tags>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="_build\**\libcu.*.lib" exclude="_build\**\libcu.tinytcl.*.lib;_build\**\libcu.jimtcl.*.lib;" target="build\native\lib" />
+    <file src="src\libcu\*.targets" target="build\native" />
+    <file src="src\include\**\*.h" target="build\native\include" />
+    <file src="src\libcu\_content\*" target="content" />
+    <file src="src\libcu\**\*.cpp" exclude="src\libcu\_*\**\*;src\libcu\Debug\*;src\libcu\Release\*;src\libcu\x64\**\*" target="src" />
+    <file src="src\libcu\**\*.cu" exclude="src\libcu\_*\**\*" target="src" />
+    <file src="src\libcu\**\*.h" exclude="src\libcu\_*\**\*" target="src" />
+  </files>
+</package>
