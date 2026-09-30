@@ -98,15 +98,27 @@
     <ClInclude Include="..\include\stdargcu.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="locale\xlocale_private.h">
+      <Filter>locale</Filter>
+    </ClInclude>
+    <ClInclude Include="locale\mblocal.h">
+      <Filter>locale</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sentinel-hostmsg.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ext\mutex.h">
+      <Filter>include\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ext\station.h">
+      <Filter>include\ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="libcu.cu" />
     <CudaCompile Include="program.cu" />
     <CudaCompile Include="libcu.stdlib.cu" />
     <CudaCompile Include="stringcu.cu" />
-    <CudaCompile Include="ext\pipeline.cu">
-      <Filter>ext</Filter>
-    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="_content">
@@ -131,11 +143,13 @@
     <Filter Include="include\ext">
       <UniqueIdentifier>{5bf5eda0-9971-4bbc-83ad-483b240b540c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="locale">
+      <UniqueIdentifier>{5e290b23-6178-49db-beaf-ccdae729abcc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cuda_runtime.cpp" />
     <ClCompile Include="sentinel.cpp" />
-    <ClCompile Include="sentinel-host.cpp" />
     <ClCompile Include="sentinel-msg.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -158,9 +172,6 @@
     <None Include="ext\hash.cu">
       <Filter>ext</Filter>
     </None>
-    <None Include="ext\memfile.cu">
-      <Filter>ext</Filter>
-    </None>
     <None Include="fsystem.cu" />
     <None Include="fcntlcu.cu" />
     <None Include="grpcu.cu" />
@@ -171,5 +182,35 @@
     <None Include="pwdcu.cu" />
     <None Include="crtdefscu.cu" />
     <None Include="stdiocu.cu" />
+    <None Include="locale\ascii.cu">
+      <Filter>locale</Filter>
+    </None>
+    <None Include="locale\none.cu">
+      <Filter>locale</Filter>
+    </None>
+    <None Include="locale\utf8.cu">
+      <Filter>locale</Filter>
+    </None>
+    <None Include="locale\xlocale.cu">
+      <Filter>locale</Filter>
+    </None>
+    <None Include="ext\memfile.cu">
+      <Filter>ext</Filter>
+    </None>
+    <None Include="..\include\sentinel-client.cpp">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\include\ext\pipeline.cpp">
+      <Filter>include\ext</Filter>
+    </None>
+    <None Include="..\include\ext\station-gpu.cu">
+      <Filter>include\ext</Filter>
+    </None>
+    <None Include="..\include\ext\station.cpp">
+      <Filter>include\ext</Filter>
+    </None>
+    <None Include="ext\mutex.cu">
+      <Filter>ext</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -24,7 +24,7 @@
 
 // Function prototypes for local procedures in this file:
 static __device__ void SetupAppendBuffer(Interp *iPtr, int newSpace);
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -47,8 +47,7 @@ static __device__ void SetupAppendBuffer(Interp *iPtr, int newSpace);
 *
 *----------------------------------------------------------------------
 */
-__device__ int TclFindElement(Tcl_Interp *interp, register char *list, char **elementPtr, char **nextPtr, int *sizePtr, int *bracePtr)
-{
+__device__ int TclFindElement(Tcl_Interp *interp, register char *list, char **elementPtr, char **nextPtr, int *sizePtr, int *bracePtr) {
 	register char *p;
 	int size;
 
@@ -63,7 +62,8 @@ __device__ int TclFindElement(Tcl_Interp *interp, register char *list, char **el
 	if (*list == '{') {
 		openBraces = 1;
 		list++;
-	} else if (*list == '"') {
+	}
+	else if (*list == '"') {
 		inQuotes = true;
 		list++;
 	}
@@ -90,11 +90,12 @@ __device__ int TclFindElement(Tcl_Interp *interp, register char *list, char **el
 					goto done;
 				}
 				char *p2;
-				for (p2 = p; *p2 != 0 && !isspace(*p2) && p2 < p+20; p2++) { } // null body
+				for (p2 = p; *p2 != 0 && !isspace(*p2) && p2 < p + 20; p2++) {} // null body
 				Tcl_ResetResult(interp);
-				sprintf(interp->result, "list element in braces followed by \"%.*s\" instead of space", (int)(p2-p), p);
+				sprintf(interp->result, "list element in braces followed by \"%.*s\" instead of space", (int)(p2 - p), p);
 				return TCL_ERROR;
-			} else if (openBraces != 0) {
+			}
+			else if (openBraces != 0) {
 				openBraces--;
 			}
 			break;
@@ -125,19 +126,20 @@ __device__ int TclFindElement(Tcl_Interp *interp, register char *list, char **el
 				if ((_isascii(*p) && isspace(*p)) || *p == 0) {
 					goto done;
 				}
-				for (p2 = p; *p2 != 0 && !isspace(*p2) && p2 < p+20; p2++) { } // null body
+				for (p2 = p; *p2 != 0 && !isspace(*p2) && p2 < p + 20; p2++) {} // null body
 				Tcl_ResetResult(interp);
-				sprintf(interp->result, "list element in quotes followed by \"%.*s\" %s", (int)(p2-p), p, "instead of space");
+				sprintf(interp->result, "list element in quotes followed by \"%.*s\" %s", (int)(p2 - p), p, "instead of space");
 				return TCL_ERROR;
 			}
 			break;
 		case 0:
 			// End of list:  terminate element.
 			if (openBraces != 0) {
-				Tcl_SetResult(interp, "unmatched open brace in list", TCL_STATIC);
+				Tcl_SetResult(interp, (char *)"unmatched open brace in list", TCL_STATIC);
 				return TCL_ERROR;
-			} else if (inQuotes) {
-				Tcl_SetResult(interp, "unmatched open quote in list", TCL_STATIC);
+			}
+			else if (inQuotes) {
+				Tcl_SetResult(interp, (char *)"unmatched open quote in list", TCL_STATIC);
 				return TCL_ERROR;
 			}
 			size = (int)(p - list);
@@ -156,7 +158,7 @@ done:
 	}
 	return TCL_OK;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -172,8 +174,7 @@ done:
 *
 *----------------------------------------------------------------------
 */
-__device__ void TclCopyAndCollapse(int count, register char *src, register char *dst)
-{
+__device__ void TclCopyAndCollapse(int count, register char *src, register char *dst) {
 	for (register char c = *src; count > 0; src++, c = *src, count--) {
 		if (c == '\\') {
 			int numRead;
@@ -181,16 +182,17 @@ __device__ void TclCopyAndCollapse(int count, register char *src, register char 
 			if (*dst != 0) {
 				dst++;
 			}
-			src += numRead-1;
-			count -= numRead-1;
-		} else {
+			src += numRead - 1;
+			count -= numRead - 1;
+		}
+		else {
 			*dst = c;
 			dst++;
 		}
 	}
 	*dst = 0;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -212,8 +214,7 @@ __device__ void TclCopyAndCollapse(int count, register char *src, register char 
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_SplitList(Tcl_Interp *interp, char *list, int *argcPtr, const char **argsPtr[])
-{
+__device__ int Tcl_SplitList(Tcl_Interp *interp, char *list, int *argcPtr, const char **argsPtr[]) {
 	// Figure out how much space to allocate.  There must be enough space for both the array of pointers and also for a copy of
 	// the list.  To estimate the number of pointers needed, count the number of space characters in the list.
 	register char *p;
@@ -224,8 +225,8 @@ __device__ int Tcl_SplitList(Tcl_Interp *interp, char *list, int *argcPtr, const
 		}
 	}
 	size++; // Leave space for final NULL pointer.
-	const char **args = (const char **)_allocFast((unsigned)((size*sizeof(char *)) + (p - list) + 1));
-	for (i = 0, p = ((char *)args) + size*sizeof(char *); *list != 0; i++) {
+	const char **args = (const char **)_allocFast((unsigned)((size * sizeof(char *)) + (p - list) + 1));
+	for (i = 0, p = ((char *)args) + size * sizeof(char *); *list != 0; i++) {
 		char *element;
 		int elSize, brace;
 		int result = TclFindElement(interp, list, &element, &list, &elSize, &brace);
@@ -238,7 +239,7 @@ __device__ int Tcl_SplitList(Tcl_Interp *interp, char *list, int *argcPtr, const
 		}
 		if (i >= size) {
 			_freeFast((char *)args);
-			Tcl_SetResult(interp, "internal error in Tcl_SplitList", TCL_STATIC);
+			Tcl_SetResult(interp, (char *)"internal error in Tcl_SplitList", TCL_STATIC);
 			return TCL_ERROR;
 		}
 		args[i] = p;
@@ -247,9 +248,10 @@ __device__ int Tcl_SplitList(Tcl_Interp *interp, char *list, int *argcPtr, const
 			p += elSize;
 			*p = 0;
 			p++;
-		} else {
+		}
+		else {
 			TclCopyAndCollapse(elSize, element, p);
-			p += elSize+1;
+			p += elSize + 1;
 		}
 	}
 	args[i] = NULL;
@@ -257,7 +259,7 @@ __device__ int Tcl_SplitList(Tcl_Interp *interp, char *list, int *argcPtr, const
 	*argcPtr = i;
 	return TCL_OK;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -274,15 +276,14 @@ __device__ int Tcl_SplitList(Tcl_Interp *interp, char *list, int *argcPtr, const
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_ScanElement(const char *string, int *flagPtr)
-{
+__device__ int Tcl_ScanElement(const char *string, int *flagPtr) {
 	/*
 	* This procedure and Tcl_ConvertElement together do two things:
 	*
 	* 1. They produce a proper list, one that will yield back the
 	* argument strings when evaluated or when disassembled with
 	* Tcl_SplitList.  This is the most important thing.
-	* 
+	*
 	* 2. They try to produce legible output, which means minimizing the
 	* use of backslashes (using braces instead).  However, there are
 	* some situations where backslashes must be used (e.g. an element
@@ -326,7 +327,7 @@ __device__ int Tcl_ScanElement(const char *string, int *flagPtr)
 		case '}':
 			nestingLevel--;
 			if (nestingLevel < 0) {
-				flags |= TCL_DONT_USE_BRACES|BRACES_UNMATCHED;
+				flags |= TCL_DONT_USE_BRACES | BRACES_UNMATCHED;
 			}
 			break;
 		case '[':
@@ -343,10 +344,11 @@ __device__ int Tcl_ScanElement(const char *string, int *flagPtr)
 		case '\\':
 			if (p[1] == 0 || p[1] == '\n') {
 				flags = TCL_DONT_USE_BRACES;
-			} else {
+			}
+			else {
 				int size;
 				Tcl_Backslash(p, &size);
-				p += size-1;
+				p += size - 1;
 				flags |= USE_BRACES;
 			}
 			break;
@@ -357,9 +359,9 @@ __device__ int Tcl_ScanElement(const char *string, int *flagPtr)
 	}
 	*flagPtr = flags;
 	// Allow enough space to backslash every character plus leave two spaces for braces.
-	return 2*(int)(p-string) + 2;
+	return 2 * (int)(p - string) + 2;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -376,8 +378,7 @@ __device__ int Tcl_ScanElement(const char *string, int *flagPtr)
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_ConvertElement(register const char *src, char *dst, int flags)
-{
+__device__ int Tcl_ConvertElement(register const char *src, char *dst, int flags) {
 	register char *p = dst;
 	// See the comment block at the beginning of the Tcl_ScanElement code for details of how this works.
 	if (src == NULL) {
@@ -391,13 +392,15 @@ __device__ int Tcl_ConvertElement(register const char *src, char *dst, int flags
 		}
 		*p = '}';
 		p++;
-	} else if (*src == 0) {
+	}
+	else if (*src == 0) {
 		// If string is empty but can't use braces, then use special backslash sequence that maps to empty string.
 		p[0] = '\\';
 		p[1] = '0';
 		p += 2;
-	} else {
-		for (; *src != 0 ; src++) {
+	}
+	else {
+		for (; *src != 0; src++) {
 			switch (*src) {
 			case ']':
 			case '[':
@@ -452,9 +455,9 @@ __device__ int Tcl_ConvertElement(register const char *src, char *dst, int flags
 		}
 	}
 	*p = '\0';
-	return (int)(p-dst);
+	return (int)(p - dst);
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -471,15 +474,15 @@ __device__ int Tcl_ConvertElement(register const char *src, char *dst, int flags
 *
 *----------------------------------------------------------------------
 */
-__device__ char *Tcl_Merge(int argc, const char *args[])
-{
+__device__ char *Tcl_Merge(int argc, const char *args[]) {
 #define LOCAL_SIZE 20
 	// Pass 1: estimate space, gather flags.
 	int localFlags[LOCAL_SIZE], *flagPtr;
 	if (argc <= LOCAL_SIZE) {
 		flagPtr = localFlags;
-	} else {
-		flagPtr = (int *)_allocFast((unsigned)argc*sizeof(int));
+	}
+	else {
+		flagPtr = (int *)_allocFast((unsigned)argc * sizeof(int));
 	}
 	int numChars = 1;
 	int i;
@@ -497,7 +500,8 @@ __device__ char *Tcl_Merge(int argc, const char *args[])
 	}
 	if (dst == result) {
 		*dst = 0;
-	} else {
+	}
+	else {
 		dst[-1] = 0;
 	}
 	if (flagPtr != localFlags) {
@@ -505,7 +509,7 @@ __device__ char *Tcl_Merge(int argc, const char *args[])
 	}
 	return result;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -520,8 +524,7 @@ __device__ char *Tcl_Merge(int argc, const char *args[])
 *
 *----------------------------------------------------------------------
 */
-__device__ char *Tcl_Concat(int argc, const char *args[])
-{
+__device__ char *Tcl_Concat(int argc, const char *args[]) {
 	int totalSize, i;
 	for (totalSize = 1, i = 0; i < argc; i++) {
 		totalSize += strlen(args[i]) + 1;
@@ -539,7 +542,7 @@ __device__ char *Tcl_Concat(int argc, const char *args[])
 			element++;
 		}
 		int length;
-		for (length = strlen(element); length > 0 && isspace(element[length-1]); length--) { } // Null loop body.
+		for (length = strlen(element); length > 0 && isspace(element[length - 1]); length--) {} // Null loop body.
 		if (length == 0) {
 			continue;
 		}
@@ -550,12 +553,13 @@ __device__ char *Tcl_Concat(int argc, const char *args[])
 	}
 	if (p != result) {
 		p[-1] = 0;
-	} else {
+	}
+	else {
 		*p = 0;
 	}
 	return result;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -571,14 +575,14 @@ __device__ char *Tcl_Concat(int argc, const char *args[])
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_StringMatch(register char *string, register char *pattern)
-{
+__device__ int Tcl_StringMatch(register char *string, register char *pattern) {
 	while (true) {
 		// See if we're at the end of both the pattern and the string. If so, we succeeded.  If we're at the end of the pattern but not at the end of the string, we failed.
 		if (*pattern == 0) {
 			if (*string == 0) {
 				return 1;
-			} else {
+			}
+			else {
 				return 0;
 			}
 		}
@@ -647,12 +651,12 @@ __device__ int Tcl_StringMatch(register char *string, register char *pattern)
 		if (*pattern != *string) {
 			return 0;
 		}
-thisCharOK:
+	thisCharOK:
 		pattern += 1;
 		string += 1;
 	}
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -667,8 +671,7 @@ thisCharOK:
 *
 *----------------------------------------------------------------------
 */
-__device__ void Tcl_SetResult(Tcl_Interp *interp, char *string, Tcl_FreeProc *freeProc)
-{
+__device__ void Tcl_SetResult(Tcl_Interp *interp, char *string, Tcl_FreeProc *freeProc) {
 	register Interp *iPtr = (Interp *)interp;
 	Tcl_FreeProc *oldFreeProc = iPtr->freeProc;
 	char *oldResult = iPtr->result;
@@ -677,29 +680,33 @@ __device__ void Tcl_SetResult(Tcl_Interp *interp, char *string, Tcl_FreeProc *fr
 		iPtr->resultSpace[0] = 0;
 		iPtr->result = iPtr->resultSpace;
 		iPtr->freeProc = nullptr;
-	} else if (freeProc == TCL_VOLATILE) {
+	}
+	else if (freeProc == TCL_VOLATILE) {
 		int length = strlen(string);
 		if (length > TCL_RESULT_SIZE) {
-			iPtr->result = (char *)_allocFast((unsigned)length+1);
+			iPtr->result = (char *)_allocFast((unsigned)length + 1);
 			iPtr->freeProc = (Tcl_FreeProc *)free;
-		} else {
+		}
+		else {
 			iPtr->result = iPtr->resultSpace;
 			iPtr->freeProc = nullptr;
 		}
 		strcpy(iPtr->result, string);
-	} else {
+	}
+	else {
 		iPtr->result = string;
 	}
 	// If the old result was dynamically-allocated, free it up.  Do it here, rather than at the beginning, in case the new result value was part of the old result value.
 	if (oldFreeProc != 0) {
 		if (oldFreeProc == (Tcl_FreeProc *)free) {
 			_freeFast(oldResult);
-		} else {
+		}
+		else {
 			(*oldFreeProc)(oldResult);
 		}
 	}
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -715,8 +722,7 @@ __device__ void Tcl_SetResult(Tcl_Interp *interp, char *string, Tcl_FreeProc *fr
 *
 *----------------------------------------------------------------------
 */
-__device__ void Tcl_AppendResult(Tcl_Interp *interp, ...)
-{
+__device__ void Tcl_AppendResult(Tcl_Interp *interp, ...) {
 	va_list va; va_start(va, interp);
 	register Interp *iPtr = (Interp *)interp;
 	char *string;
@@ -748,7 +754,7 @@ __device__ void Tcl_AppendResult(Tcl_Interp *interp, ...)
 	}
 	va_end(va);
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -764,14 +770,13 @@ __device__ void Tcl_AppendResult(Tcl_Interp *interp, ...)
 *
 *----------------------------------------------------------------------
 */
-__device__ void Tcl_AppendElement(Tcl_Interp *interp, const char *string, bool noSep)
-{
+__device__ void Tcl_AppendElement(Tcl_Interp *interp, const char *string, bool noSep) {
 	register Interp *iPtr = (Interp *)interp;
 	int flags;
 	// See how much space is needed, and grow the append buffer if needed to accommodate the list element.
 	int size = Tcl_ScanElement(string, &flags) + 1;
 	if (iPtr->result != iPtr->appendResult || (size + iPtr->appendUsed) >= iPtr->appendAvl) {
-		SetupAppendBuffer(iPtr, size+iPtr->appendUsed);
+		SetupAppendBuffer(iPtr, size + iPtr->appendUsed);
 	}
 	// Convert the string into a list element and copy it to the buffer that's forming.
 	char *dst = iPtr->appendResult + iPtr->appendUsed;
@@ -782,7 +787,7 @@ __device__ void Tcl_AppendElement(Tcl_Interp *interp, const char *string, bool n
 	}
 	iPtr->appendUsed += Tcl_ConvertElement(string, dst, flags);
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -798,8 +803,7 @@ __device__ void Tcl_AppendElement(Tcl_Interp *interp, const char *string, bool n
 *
 *----------------------------------------------------------------------
 */
-static __device__ void SetupAppendBuffer(register Interp *iPtr, int newSpace)
-{
+static __device__ void SetupAppendBuffer(register Interp *iPtr, int newSpace) {
 	// Make the append buffer larger, if that's necessary, then copy the current result into the append buffer and make the
 	// append buffer the official Tcl result.
 	if (iPtr->result != iPtr->appendResult) {
@@ -816,7 +820,8 @@ static __device__ void SetupAppendBuffer(register Interp *iPtr, int newSpace)
 	if (totalSpace >= iPtr->appendAvl) {
 		if (totalSpace < 100) {
 			totalSpace = 200;
-		} else {
+		}
+		else {
 			totalSpace *= 2;
 		}
 		char *new_ = (char *)_allocFast((unsigned)totalSpace);
@@ -826,13 +831,14 @@ static __device__ void SetupAppendBuffer(register Interp *iPtr, int newSpace)
 		}
 		iPtr->appendResult = new_;
 		iPtr->appendAvl = totalSpace;
-	} else if (iPtr->result != iPtr->appendResult) {
+	}
+	else if (iPtr->result != iPtr->appendResult) {
 		strcpy(iPtr->appendResult, iPtr->result);
 	}
 	Tcl_FreeResult(iPtr);
 	iPtr->result = iPtr->appendResult;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -848,15 +854,14 @@ static __device__ void SetupAppendBuffer(register Interp *iPtr, int newSpace)
 *
 *----------------------------------------------------------------------
 */
-__device__ void Tcl_ResetResult(Tcl_Interp *interp)
-{
+__device__ void Tcl_ResetResult(Tcl_Interp *interp) {
 	register Interp *iPtr = (Interp *)interp;
 	Tcl_FreeResult(iPtr);
 	iPtr->result = iPtr->resultSpace;
 	iPtr->resultSpace[0] = 0;
 	iPtr->flags &= ~(ERR_ALREADY_LOGGED | ERR_IN_PROGRESS | ERROR_CODE_SET);
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -873,8 +878,7 @@ __device__ void Tcl_ResetResult(Tcl_Interp *interp)
 *
 *----------------------------------------------------------------------
 */
-__device__ void Tcl_SetErrorCode(Tcl_Interp *interp, ...)
-{
+__device__ void Tcl_SetErrorCode(Tcl_Interp *interp, ...) {
 	va_list va; va_start(va, interp);
 	register Interp *iPtr = (Interp *)interp;
 	// Scan through the arguments one at a time, appending them to $errorCode as list elements.
@@ -884,13 +888,13 @@ __device__ void Tcl_SetErrorCode(Tcl_Interp *interp, ...)
 		if (string == NULL) {
 			break;
 		}
-		Tcl_SetVar2(interp, "errorCode", (char *)NULL, string, flags);
+		Tcl_SetVar2(interp, (char *)"errorCode", (char *)NULL, string, flags);
 		flags |= TCL_APPEND_VALUE;
 	}
 	iPtr->flags |= ERROR_CODE_SET;
 	va_end(va);
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -908,8 +912,7 @@ __device__ void Tcl_SetErrorCode(Tcl_Interp *interp, ...)
 *
 *----------------------------------------------------------------------
 */
-__device__ int TclGetListIndex(Tcl_Interp *interp, char *string, int *indexPtr)
-{
+__device__ int TclGetListIndex(Tcl_Interp *interp, char *string, int *indexPtr) {
 	if (isdigit(*string) || *string == '-') {
 		if (Tcl_GetInt(interp, string, indexPtr) != TCL_OK) {
 			return TCL_ERROR;
@@ -917,15 +920,17 @@ __device__ int TclGetListIndex(Tcl_Interp *interp, char *string, int *indexPtr)
 		if (*indexPtr < 0) {
 			*indexPtr = 0;
 		}
-	} else if (!strncmp(string, "end", strlen(string))) {
-		*indexPtr = 1<<30;
-	} else {
+	}
+	else if (!strncmp(string, "end", strlen(string))) {
+		*indexPtr = 1 << 30;
+	}
+	else {
 		Tcl_AppendResult(interp, "bad index \"", string, "\": must be integer or \"end\"", (char *)NULL);
 		return TCL_ERROR;
 	}
 	return TCL_OK;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -943,8 +948,7 @@ __device__ int TclGetListIndex(Tcl_Interp *interp, char *string, int *indexPtr)
 *
 *----------------------------------------------------------------------
 */
-__device__ regex_t *TclCompileRegexp(Tcl_Interp *interp, char *string, int nocase)
-{
+__device__ regex_t *TclCompileRegexp(Tcl_Interp *interp, char *string, int nocase) {
 	register Interp *iPtr = (Interp *)interp;
 	int length = strlen(string);
 	regex_t *result;
@@ -955,11 +959,11 @@ __device__ regex_t *TclCompileRegexp(Tcl_Interp *interp, char *string, int nocas
 			if (i != 0) {
 				char *cachedString = iPtr->regexps[i].pattern;
 				result = iPtr->regexps[i].regexp;
-				for (int j = i-1; j >= 0; j--) {
-					iPtr->regexps[j+1].pattern = iPtr->regexps[j].pattern;
-					iPtr->regexps[j+1].length = iPtr->regexps[j].length;
-					iPtr->regexps[j+1].nocase = iPtr->regexps[j].nocase;
-					iPtr->regexps[j+1].regexp = iPtr->regexps[j].regexp;
+				for (int j = i - 1; j >= 0; j--) {
+					iPtr->regexps[j + 1].pattern = iPtr->regexps[j].pattern;
+					iPtr->regexps[j + 1].length = iPtr->regexps[j].length;
+					iPtr->regexps[j + 1].nocase = iPtr->regexps[j].nocase;
+					iPtr->regexps[j + 1].regexp = iPtr->regexps[j].regexp;
 				}
 				iPtr->regexps[0].pattern = cachedString;
 				iPtr->regexps[0].length = length;
@@ -974,7 +978,7 @@ __device__ regex_t *TclCompileRegexp(Tcl_Interp *interp, char *string, int nocas
 	result = (regex_t *)_allocFast(sizeof(*result));
 
 	// Allocate the original string before compiling, since regcomp expects it to exist for the life of the pattern
-	char *pattern = (char *)_allocFast((unsigned)(length+1));
+	char *pattern = (char *)_allocFast((unsigned)(length + 1));
 	strcpy(pattern, string);
 
 #ifndef REG_ICASE
@@ -989,17 +993,17 @@ __device__ regex_t *TclCompileRegexp(Tcl_Interp *interp, char *string, int nocas
 		_freeFast(pattern);
 		return NULL;
 	}
-	if (iPtr->regexps[iPtr->num_regexps-1].pattern != NULL) {
-		_freeFast(iPtr->regexps[iPtr->num_regexps-1].pattern);
-		regfree(iPtr->regexps[iPtr->num_regexps-1].regexp);
-		_freeFast((char *)iPtr->regexps[iPtr->num_regexps-1].regexp);
-		iPtr->regexps[iPtr->num_regexps-1].pattern = 0;
+	if (iPtr->regexps[iPtr->num_regexps - 1].pattern != NULL) {
+		_freeFast(iPtr->regexps[iPtr->num_regexps - 1].pattern);
+		regfree(iPtr->regexps[iPtr->num_regexps - 1].regexp);
+		_freeFast((char *)iPtr->regexps[iPtr->num_regexps - 1].regexp);
+		iPtr->regexps[iPtr->num_regexps - 1].pattern = 0;
 	}
 	for (i = iPtr->num_regexps - 2; i >= 0; i--) {
-		iPtr->regexps[i+1].pattern = iPtr->regexps[i].pattern;
-		iPtr->regexps[i+1].length = iPtr->regexps[i].length;
-		iPtr->regexps[i+1].nocase = iPtr->regexps[i].nocase;
-		iPtr->regexps[i+1].regexp = iPtr->regexps[i].regexp;
+		iPtr->regexps[i + 1].pattern = iPtr->regexps[i].pattern;
+		iPtr->regexps[i + 1].length = iPtr->regexps[i].length;
+		iPtr->regexps[i + 1].nocase = iPtr->regexps[i].nocase;
+		iPtr->regexps[i + 1].regexp = iPtr->regexps[i].regexp;
 	}
 	iPtr->regexps[0].pattern = pattern;
 	iPtr->regexps[0].nocase = nocase;

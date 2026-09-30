@@ -149,8 +149,7 @@ static __device__ void JimRandomBytes(Jim_Interp *interp, void *dest, unsigned i
 #define JimWideValue(objPtr) (objPtr)->internalRep.wideValue
 #define JimObjTypeName(O) ((O)->typePtr ? (O)->typePtr->name : "none")
 
-static __device__ int utf8_tounicode_case(const char *s, int *uc, int upper)
-{
+static __device__ int utf8_tounicode_case(const char *s, int *uc, int upper) {
 	int l = utf8_tounicode(s, uc);
 	if (upper) {
 		*uc = utf8_upper(*uc);
@@ -169,8 +168,7 @@ static __device__ int utf8_tounicode_case(const char *s, int *uc, int upper)
 // If (flags & JIM_CHARSET_SCAN), the considers ^ and ] special at the start of the charset, per scan, rather than glob/string match.
 // If the unicode char 'c' matches that set, returns a pointer to the ']' character, or the null character if the ']' is missing.
 // Returns NULL on no match.
-static __device__ const char *JimCharsetMatch(const char *pattern, int c, int flags)
-{
+static __device__ const char *JimCharsetMatch(const char *pattern, int c, int flags) {
 	int not_ = 0;
 	int pchar;
 	int match = 0;
@@ -191,7 +189,7 @@ static __device__ const char *JimCharsetMatch(const char *pattern, int c, int fl
 	while (*pattern && *pattern != ']') {
 		// Exact match
 		if (pattern[0] == '\\') {
-first:
+		first:
 			pattern += utf8_tounicode_case(pattern, &pchar, nocase);
 		}
 		else {
@@ -222,8 +220,7 @@ first:
 // Glob-style pattern matching.
 
 // Note: string *must* be valid UTF-8 sequences
-static __device__ int JimGlobMatch(const char *pattern, const char *string, int nocase)
-{
+static __device__ int JimGlobMatch(const char *pattern, const char *string, int nocase) {
 	int c;
 	int pchar;
 	while (*pattern) {
@@ -276,8 +273,7 @@ static __device__ int JimGlobMatch(const char *pattern, const char *string, int 
 // string comparison. Works on binary data.
 // Returns -1, 0 or 1
 // Note that the lengths are byte lengths, not char lengths.
-static __device__ int JimStringCompare(const char *s1, int l1, const char *s2, int l2)
-{
+static __device__ int JimStringCompare(const char *s1, int l1, const char *s2, int l2) {
 	if (l1 < l2) return (memcmp(s1, s2, l1) <= 0 ? -1 : 1);
 	else if (l2 < l1) return (memcmp(s1, s2, l2) >= 0 ? 1 : -1);
 	else return JimSign(memcmp(s1, s2, l1));
@@ -286,8 +282,7 @@ static __device__ int JimStringCompare(const char *s1, int l1, const char *s2, i
 // Compare null terminated strings, up to a maximum of 'maxchars' characters, (or end of string if 'maxchars' is -1).
 // Returns -1, 0, 1 for s1 < s2, s1 == s2, s1 > s2 respectively.
 // Note: does not support embedded nulls.
-static __device__ int JimStringCompareLen(const char *s1, const char *s2, int maxchars, int nocase)
-{
+static __device__ int JimStringCompareLen(const char *s1, const char *s2, int maxchars, int nocase) {
 	while (*s1 && *s2 && maxchars) {
 		int c1, c2;
 		s1 += utf8_tounicode_case(s1, &c1, nocase);
@@ -308,8 +303,7 @@ static __device__ int JimStringCompareLen(const char *s1, const char *s2, int ma
 
 // Search 's1' inside 's2', starting to search from char 'index' of 's2'. The index of the first occurrence of s1 in s2 is returned.
 // If s1 is not found inside s2, -1 is returned.
-static __device__ int JimStringFirst(const char *s1, int l1, const char *s2, int l2, int idx)
-{
+static __device__ int JimStringFirst(const char *s1, int l1, const char *s2, int l2, int idx) {
 	if (!l1 || !l2 || l1 > l2)
 		return -1;
 	if (idx < 0)
@@ -325,8 +319,7 @@ static __device__ int JimStringFirst(const char *s1, int l1, const char *s2, int
 }
 
 // Note: Lengths and return value are in bytes, not chars.
-static __device__ int JimStringLast(const char *s1, int l1, const char *s2, int l2)
-{
+static __device__ int JimStringLast(const char *s1, int l1, const char *s2, int l2) {
 	if (!l1 || !l2 || l1 > l2)
 		return -1;
 	// Now search for the needle
@@ -338,8 +331,7 @@ static __device__ int JimStringLast(const char *s1, int l1, const char *s2, int 
 
 #ifdef JIM_UTF8
 // Note: Lengths and return value are in chars.
-static __device__ int JimStringLastUtf8(const char *s1, int l1, const char *s2, int l2)
-{
+static __device__ int JimStringLastUtf8(const char *s1, int l1, const char *s2, int l2) {
 	int n = JimStringLast(s1, utf8_index(s1, l1), s2, utf8_index(s2, l2));
 	if (n > 0)
 		n = utf8_strlen(s2, n);
@@ -349,8 +341,7 @@ static __device__ int JimStringLastUtf8(const char *s1, int l1, const char *s2, 
 
 // After an strtol()/strtod()-like conversion, check whether something was converted and that the only thing left is white space.
 // Returns JIM_OK or JIM_ERROR.
-static __device__ int JimCheckConversion(const char *str, const char *endptr)
-{
+static __device__ int JimCheckConversion(const char *str, const char *endptr) {
 	if (str[0] == '\0' || str == endptr)
 		return JIM_ERROR;
 	if (endptr[0] != '\0') {
@@ -365,8 +356,7 @@ static __device__ int JimCheckConversion(const char *str, const char *endptr)
 
 // Parses the front of a number to determine it's sign and base
 // Returns the index to start parsing according to the given base
-static __device__ int JimNumberBase(const char *str, int *base, int *sign)
-{
+static __device__ int JimNumberBase(const char *str, int *base, int *sign) {
 	int i = 0;
 	*base = 10;
 	while (isspace(str[i]))
@@ -392,8 +382,7 @@ static __device__ int JimNumberBase(const char *str, int *base, int *sign)
 }
 
 // Converts a number as per strtol(..., 0) except leading zeros do *not* imply octal. Instead, decimal is assumed unless the number begins with 0x, 0o or 0b
-static __device__ long jim_strtol(const char *str, char **endptr)
-{
+static __device__ long jim_strtol(const char *str, char **endptr) {
 	int sign;
 	int base;
 	int i = JimNumberBase(str, &base, &sign);
@@ -407,10 +396,9 @@ static __device__ long jim_strtol(const char *str, char **endptr)
 }
 
 // Converts a number as per strtoull(..., 0) except leading zeros do *not* imply octal. Instead, decimal is assumed unless the number begins with 0x, 0o or 0b
-static __device__ jim_wide jim_strtoull(const char *str, char **endptr)
-{
-	if (!strcmp(str, "true")) { *endptr = (char *)(str+4); return 1; }
-	if (!strcmp(str, "false")) { *endptr = (char *)(str+5); return 0; }
+static __device__ jim_wide jim_strtoull(const char *str, char **endptr) {
+	if (!strcmp(str, "true")) { *endptr = (char *)(str + 4); return 1; }
+	if (!strcmp(str, "false")) { *endptr = (char *)(str + 5); return 0; }
 #ifdef HAVE_LONG_LONG
 	int sign;
 	int base;
@@ -427,15 +415,13 @@ static __device__ jim_wide jim_strtoull(const char *str, char **endptr)
 #endif
 }
 
-__device__ int Jim_StringToWide(const char *str, jim_wide *widePtr, int base)
-{
+__device__ int Jim_StringToWide(const char *str, jim_wide *widePtr, int base) {
 	char *endptr;
 	*widePtr = (base ? strtoull(str, &endptr, base) : jim_strtoull(str, &endptr));
 	return JimCheckConversion(str, endptr);
 }
 
-__device__ int Jim_StringToDouble(const char *str, double *doublePtr)
-{
+__device__ int Jim_StringToDouble(const char *str, double *doublePtr) {
 	char *endptr;
 	// Callers can check for underflow via ERANGE
 	errno = 0;
@@ -443,8 +429,7 @@ __device__ int Jim_StringToDouble(const char *str, double *doublePtr)
 	return JimCheckConversion(str, endptr);
 }
 
-static __device__ jim_wide JimPowWide(jim_wide b, jim_wide e)
-{
+static __device__ jim_wide JimPowWide(jim_wide b, jim_wide e) {
 	jim_wide i, res = 1;
 	if ((b == 0 && e != 0) || e < 0)
 		return 0;
@@ -461,8 +446,7 @@ static __device__ jim_wide JimPowWide(jim_wide b, jim_wide e)
 #pragma region Special functions
 
 #ifdef JIM_DEBUG_PANIC
-static __device__ void JimPanicDump(int condition, const char *fmt, ...)
-{
+static __device__ void JimPanicDump(int condition, const char *fmt, ...) {
 	if (!condition)
 		return;
 	va_list va; va_start(va, fmt);
@@ -494,28 +478,23 @@ static __device__ void JimPanicDump(int condition, const char *fmt, ...)
 // -----------------------------------------------------------------------------
 #pragma region Memory allocation
 
-__device__ void *Jim_Alloc(int size)
-{
+__device__ void *Jim_Alloc(int size) {
 	return (size ? malloc(size) : nullptr);
 }
 
-__device__ void Jim_Free(void *ptr)
-{
+__device__ void Jim_Free(void *ptr) {
 	free(ptr);
 }
 
-__device__ void *Jim_Realloc(void *ptr, int size)
-{
+__device__ void *Jim_Realloc(void *ptr, int size) {
 	return realloc(ptr, size);
 }
 
-__device__ char *Jim_StrDup(const char *s)
-{
+__device__ char *Jim_StrDup(const char *s) {
 	return strdup(s);
 }
 
-__device__ char *Jim_StrDupLen(const char *s, int l)
-{
+__device__ char *Jim_StrDupLen(const char *s, int l) {
 	char *copy = (char *)Jim_Alloc(l + 1);
 	memcpy(copy, s, l + 1);
 	copy[l] = 0; // Just to be sure, original could be substring
@@ -530,8 +509,7 @@ __device__ char *Jim_StrDupLen(const char *s, int l)
 #pragma region Time related functions
 
 // Returns current time in microseconds
-static __device__ jim_wide JimClock()
-{
+static __device__ jim_wide JimClock() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	return (jim_wide)(tv.tv_sec * 1000000 + tv.tv_usec);
@@ -552,8 +530,7 @@ static __device__ Jim_HashEntry *JimInsertHashEntry(Jim_HashTable *ht, const voi
 // -------------------------- hash functions --------------------------------
 
 // Thomas Wang's 32 bit Mix Function
-__device__ unsigned int Jim_IntHashFunction(unsigned int key)
-{
+__device__ unsigned int Jim_IntHashFunction(unsigned int key) {
 	key += ~(key << 15);
 	key ^= (key >> 10);
 	key += (key << 3);
@@ -564,8 +541,7 @@ __device__ unsigned int Jim_IntHashFunction(unsigned int key)
 }
 
 // Generic hash function (we are using to multiply by 9 and add the byte as Tcl)
-__device__ unsigned int Jim_GenHashFunction(const unsigned char *buf, int len)
-{
+__device__ unsigned int Jim_GenHashFunction(const unsigned char *buf, int len) {
 	unsigned int h = 0;
 	while (len--)
 		h += (h << 3) + *buf++;
@@ -575,8 +551,7 @@ __device__ unsigned int Jim_GenHashFunction(const unsigned char *buf, int len)
 // ----------------------------- API implementation -------------------------
 
 // reset a hashtable already initialized
-static __device__ void JimResetHashTable(Jim_HashTable *ht)
-{
+static __device__ void JimResetHashTable(Jim_HashTable *ht) {
 	ht->table = NULL;
 	ht->size = 0;
 	ht->sizemask = 0;
@@ -590,8 +565,7 @@ static __device__ void JimResetHashTable(Jim_HashTable *ht)
 #endif
 }
 
-static __device__ void JimInitHashTableIterator(Jim_HashTable *ht, Jim_HashTableIterator *iter)
-{
+static __device__ void JimInitHashTableIterator(Jim_HashTable *ht, Jim_HashTableIterator *iter) {
 	iter->ht = ht;
 	iter->index = -1;
 	iter->entry = NULL;
@@ -599,8 +573,7 @@ static __device__ void JimInitHashTableIterator(Jim_HashTable *ht, Jim_HashTable
 }
 
 // Initialize the hash table
-__device__ int Jim_InitHashTable(Jim_HashTable *ht, const Jim_HashTableType *type, void *privDataPtr)
-{
+__device__ int Jim_InitHashTable(Jim_HashTable *ht, const Jim_HashTableType *type, void *privDataPtr) {
 	JimResetHashTable(ht);
 	ht->type = type;
 	ht->privdata = privDataPtr;
@@ -608,8 +581,7 @@ __device__ int Jim_InitHashTable(Jim_HashTable *ht, const Jim_HashTableType *typ
 }
 
 // Resize the table to the minimal size that contains all the elements, but with the invariant of a USER/BUCKETS ration near to <= 1
-__device__ void Jim_ResizeHashTable(Jim_HashTable *ht)
-{
+__device__ void Jim_ResizeHashTable(Jim_HashTable *ht) {
 	int minimal = ht->used;
 	if (minimal < JIM_HT_INITIAL_SIZE)
 		minimal = JIM_HT_INITIAL_SIZE;
@@ -617,8 +589,7 @@ __device__ void Jim_ResizeHashTable(Jim_HashTable *ht)
 }
 
 // Expand or create the hashtable
-__device__ void Jim_ExpandHashTable(Jim_HashTable *ht, unsigned int size)
-{
+__device__ void Jim_ExpandHashTable(Jim_HashTable *ht, unsigned int size) {
 	Jim_HashTable n; // the new hashtable
 	unsigned int realsize = JimHashTableNextPower(size), i;
 
@@ -662,8 +633,7 @@ __device__ void Jim_ExpandHashTable(Jim_HashTable *ht, unsigned int size)
 }
 
 // Add an element to the target hash table
-__device__ int Jim_AddHashEntry(Jim_HashTable *ht, const void *key, void *val)
-{
+__device__ int Jim_AddHashEntry(Jim_HashTable *ht, const void *key, void *val) {
 	Jim_HashEntry *entry;
 	// Get the index of the new element, or -1 if the element already exists.
 	entry = JimInsertHashEntry(ht, key, 0);
@@ -676,8 +646,7 @@ __device__ int Jim_AddHashEntry(Jim_HashTable *ht, const void *key, void *val)
 }
 
 // Add an element, discarding the old if the key already exists
-__device__ int Jim_ReplaceHashEntry(Jim_HashTable *ht, const void *key, void *val)
-{
+__device__ int Jim_ReplaceHashEntry(Jim_HashTable *ht, const void *key, void *val) {
 	int existed;
 	Jim_HashEntry *entry;
 	// Get the index of the new element, or -1 if the element already exists.
@@ -707,8 +676,7 @@ __device__ int Jim_ReplaceHashEntry(Jim_HashTable *ht, const void *key, void *va
 }
 
 // Search and remove an element
-__device__ int Jim_DeleteHashEntry(Jim_HashTable *ht, const void *key)
-{
+__device__ int Jim_DeleteHashEntry(Jim_HashTable *ht, const void *key) {
 	unsigned int h;
 	Jim_HashEntry *he, *prevHe;
 	if (ht->used == 0)
@@ -736,8 +704,7 @@ __device__ int Jim_DeleteHashEntry(Jim_HashTable *ht, const void *key)
 }
 
 // Destroy an entire hash table and leave it ready for reuse
-__device__ int Jim_FreeHashTable(Jim_HashTable *ht)
-{
+__device__ int Jim_FreeHashTable(Jim_HashTable *ht) {
 	unsigned int i;
 	// Free all the elements
 	for (i = 0; ht->used > 0; i++) {
@@ -760,8 +727,7 @@ __device__ int Jim_FreeHashTable(Jim_HashTable *ht)
 	return JIM_OK; // never fails
 }
 
-__device__ Jim_HashEntry *Jim_FindHashEntry(Jim_HashTable *ht, const void *key)
-{
+__device__ Jim_HashEntry *Jim_FindHashEntry(Jim_HashTable *ht, const void *key) {
 	Jim_HashEntry *he;
 	unsigned int h;
 	if (ht->used == 0)
@@ -776,15 +742,13 @@ __device__ Jim_HashEntry *Jim_FindHashEntry(Jim_HashTable *ht, const void *key)
 	return NULL;
 }
 
-__device__ Jim_HashTableIterator *Jim_GetHashTableIterator(Jim_HashTable *ht)
-{
+__device__ Jim_HashTableIterator *Jim_GetHashTableIterator(Jim_HashTable *ht) {
 	Jim_HashTableIterator *iter = (Jim_HashTableIterator *)Jim_Alloc(sizeof(*iter));
 	JimInitHashTableIterator(ht, iter);
 	return iter;
 }
 
-__device__ Jim_HashEntry *Jim_NextHashEntry(Jim_HashTableIterator *iter)
-{
+__device__ Jim_HashEntry *Jim_NextHashEntry(Jim_HashTableIterator *iter) {
 	while (1) {
 		if (iter->entry == NULL) {
 			iter->index++;
@@ -806,8 +770,7 @@ __device__ Jim_HashEntry *Jim_NextHashEntry(Jim_HashTableIterator *iter)
 // ------------------------- private functions ------------------------------
 
 // Expand the hash table if needed
-static __device__ void JimExpandHashTableIfNeeded(Jim_HashTable *ht)
-{
+static __device__ void JimExpandHashTableIfNeeded(Jim_HashTable *ht) {
 	// If the hash table is empty expand it to the intial size, if the table is "full" dobule its size.
 	if (ht->size == 0)
 		Jim_ExpandHashTable(ht, JIM_HT_INITIAL_SIZE);
@@ -816,8 +779,7 @@ static __device__ void JimExpandHashTableIfNeeded(Jim_HashTable *ht)
 }
 
 // Our hash table capability is a power of two
-static __device__ unsigned int JimHashTableNextPower(unsigned int size)
-{
+static __device__ unsigned int JimHashTableNextPower(unsigned int size) {
 	unsigned int i = JIM_HT_INITIAL_SIZE;
 	if (size >= 2147483648U)
 		return 2147483648U;
@@ -830,8 +792,7 @@ static __device__ unsigned int JimHashTableNextPower(unsigned int size)
 
 // Returns the index of a free slot that can be populated with a hash entry for the given 'key'.
 // If the key already exists, -1 is returned.
-static __device__ Jim_HashEntry *JimInsertHashEntry(Jim_HashTable *ht, const void *key, int replace)
-{
+static __device__ Jim_HashEntry *JimInsertHashEntry(Jim_HashTable *ht, const void *key, int replace) {
 	// Expand the hashtable if needed
 	JimExpandHashTableIfNeeded(ht);
 	// Compute the key hash value
@@ -854,23 +815,19 @@ static __device__ Jim_HashEntry *JimInsertHashEntry(Jim_HashTable *ht, const voi
 
 // ----------------------- StringCopy Hash Table Type ------------------------
 
-static __device__ unsigned int JimStringCopyHTHashFunction(const void *key)
-{
+static __device__ unsigned int JimStringCopyHTHashFunction(const void *key) {
 	return Jim_GenHashFunction((const unsigned char *)key, (int)strlen((const char *)key));
 }
 
-static __device__ void *JimStringCopyHTDup(void *privdata, const void *key)
-{
+static __device__ void *JimStringCopyHTDup(void *privdata, const void *key) {
 	return Jim_StrDup((const char *)key);
 }
 
-static __device__ int JimStringCopyHTKeyCompare(void *privdata, const void *key1, const void *key2)
-{
+static __device__ int JimStringCopyHTKeyCompare(void *privdata, const void *key1, const void *key2) {
 	return !strcmp((const char *)key1, (const char *)key2);
 }
 
-static __device__ void JimStringCopyHTKeyDestructor(void *privdata, void *key)
-{
+static __device__ void JimStringCopyHTKeyDestructor(void *privdata, void *key) {
 	Jim_Free(key);
 }
 
@@ -883,14 +840,12 @@ static __device__ const Jim_HashTableType JimPackageHashTableType = {
 	NULL                             // val destructor
 };
 
-typedef struct AssocDataValue
-{
+typedef struct AssocDataValue {
 	Jim_InterpDeleteProc *delProc;
 	void *data;
 } AssocDataValue;
 
-static __device__ void JimAssocDataHashTableValueDestructor(void *privdata, void *data)
-{
+static __device__ void JimAssocDataHashTableValueDestructor(void *privdata, void *data) {
 	AssocDataValue *assocPtr = (AssocDataValue *)data;
 	if (assocPtr->delProc != NULL)
 		assocPtr->delProc((Jim_Interp *)privdata, assocPtr->data);
@@ -913,25 +868,21 @@ __constant__ static const Jim_HashTableType JimAssocDataHashTableType = {
 // -----------------------------------------------------------------------------
 #pragma region Stack
 
-__device__ void Jim_InitStack(Jim_Stack *stack)
-{
+__device__ void Jim_InitStack(Jim_Stack *stack) {
 	stack->len = 0;
 	stack->maxlen = 0;
 	stack->vector = NULL;
 }
 
-__device__ void Jim_FreeStack(Jim_Stack *stack)
-{
+__device__ void Jim_FreeStack(Jim_Stack *stack) {
 	Jim_Free(stack->vector);
 }
 
-__device__ int Jim_StackLen(Jim_Stack *stack)
-{
+__device__ int Jim_StackLen(Jim_Stack *stack) {
 	return stack->len;
 }
 
-__device__ void Jim_StackPush(Jim_Stack *stack, void *element)
-{
+__device__ void Jim_StackPush(Jim_Stack *stack, void *element) {
 	int neededLen = stack->len + 1;
 	if (neededLen > stack->maxlen) {
 		stack->maxlen = (neededLen < 20 ? 20 : neededLen * 2);
@@ -941,23 +892,20 @@ __device__ void Jim_StackPush(Jim_Stack *stack, void *element)
 	stack->len++;
 }
 
-__device__ void *Jim_StackPop(Jim_Stack *stack)
-{
+__device__ void *Jim_StackPop(Jim_Stack *stack) {
 	if (stack->len == 0)
 		return NULL;
 	stack->len--;
 	return stack->vector[stack->len];
 }
 
-__device__ void *Jim_StackPeek(Jim_Stack *stack)
-{
+__device__ void *Jim_StackPeek(Jim_Stack *stack) {
 	if (stack->len == 0)
 		return NULL;
 	return stack->vector[stack->len - 1];
 }
 
-__device__ void Jim_FreeStackElements(Jim_Stack *stack, void (*freeFunc)(void*ptr))
-{
+__device__ void Jim_FreeStackElements(Jim_Stack *stack, void(*freeFunc)(void*ptr)) {
 	for (int i = 0; i < stack->len; i++)
 		freeFunc(stack->vector[i]);
 }
@@ -1003,15 +951,13 @@ __device__ void Jim_FreeStackElements(Jim_Stack *stack, void (*freeFunc)(void*pt
 #define JIM_PS_DICTSUGAR 2      // Tokenising abc(def) into 4 separate tokens
 
 // Results of missing quotes, braces, etc. from parsing.
-struct JimParseMissing
-{
+struct JimParseMissing {
 	int ch;             // At end of parse, ' ' if complete or '{', '[', '"', '\\' , '{' if incomplete
 	int line;           // Line number starting the missing token
 };
 
 // Parser context structure. The same context is used both to parse Tcl scripts and lists.
-struct JimParserCtx
-{
+struct JimParserCtx {
 	const char *p;              // Pointer to the point of the program we are parsing
 	int len;                    // Remaining length
 	int linenr;                 // Current line number
@@ -1039,8 +985,7 @@ static __device__ int JimParseSubQuote(struct JimParserCtx *pc);
 static __device__ Jim_Obj *JimParserGetTokenObj(Jim_Interp *interp, struct JimParserCtx *pc);
 
 // Initialize a parser context. 'prg' is a pointer to the program text, linenr is the line number of the first line contained in the program.
-static __device__ void JimParserInit(struct JimParserCtx *pc, const char *prg, int len, int linenr)
-{
+static __device__ void JimParserInit(struct JimParserCtx *pc, const char *prg, int len, int linenr) {
 	pc->p = prg;
 	pc->len = len;
 	pc->tstart = NULL;
@@ -1055,8 +1000,7 @@ static __device__ void JimParserInit(struct JimParserCtx *pc, const char *prg, i
 	pc->missing.line = linenr;
 }
 
-static __device__ int JimParseScript(struct JimParserCtx *pc)
-{
+static __device__ int JimParseScript(struct JimParserCtx *pc) {
 	while (1) { // the while is used to reiterate with continue if needed
 		if (!pc->len) {
 			pc->tstart = pc->p;
@@ -1112,8 +1056,7 @@ static __device__ int JimParseScript(struct JimParserCtx *pc)
 	}
 }
 
-static __device__ int JimParseSep(struct JimParserCtx *pc)
-{
+static __device__ int JimParseSep(struct JimParserCtx *pc) {
 	pc->tstart = pc->p;
 	pc->tline = pc->linenr;
 	while (isspace(*pc->p) || (*pc->p == '\\' && *(pc->p + 1) == '\n')) {
@@ -1132,8 +1075,7 @@ static __device__ int JimParseSep(struct JimParserCtx *pc)
 	return JIM_OK;
 }
 
-static __device__ int JimParseEol(struct JimParserCtx *pc)
-{
+static __device__ int JimParseEol(struct JimParserCtx *pc) {
 	pc->tstart = pc->p;
 	pc->tline = pc->linenr;
 	while (isspace(*pc->p) || *pc->p == ';') {
@@ -1169,8 +1111,7 @@ static __device__ int JimParseEol(struct JimParserCtx *pc)
 
 // Parses a braced expression starting at pc->p.
 // Positions the parser at the end of the braced expression, sets pc->tend and possibly pc->missing.
-static __device__ void JimParseSubBrace(struct JimParserCtx *pc)
-{
+static __device__ void JimParseSubBrace(struct JimParserCtx *pc) {
 	int level = 1;
 	// Skip the brace
 	pc->p++;
@@ -1210,8 +1151,7 @@ static __device__ void JimParseSubBrace(struct JimParserCtx *pc)
 // Parses a quoted expression starting at pc->p.
 // Positions the parser at the end of the quoted expression, sets pc->tend and possibly pc->missing.
 // Returns the type of the token of the string, either JIM_TT_ESC (if it contains values which need to be [subst]ed) or JIM_TT_STR.
-static __device__ int JimParseSubQuote(struct JimParserCtx *pc)
-{
+static __device__ int JimParseSubQuote(struct JimParserCtx *pc) {
 	int tt = JIM_TT_STR;
 	int line = pc->tline;
 	// Skip the quote
@@ -1254,8 +1194,7 @@ static __device__ int JimParseSubQuote(struct JimParserCtx *pc)
 
 // Parses a [command] expression starting at pc->p.
 // Positions the parser at the end of the command expression, sets pc->tend and possibly pc->missing.
-static __device__ void JimParseSubCmd(struct JimParserCtx *pc)
-{
+static __device__ void JimParseSubCmd(struct JimParserCtx *pc) {
 	int level = 1;
 	int startofword = 1;
 	int line = pc->tline;
@@ -1305,8 +1244,7 @@ static __device__ void JimParseSubCmd(struct JimParserCtx *pc)
 	pc->tend = pc->p - 1;
 }
 
-static __device__ int JimParseBrace(struct JimParserCtx *pc)
-{
+static __device__ int JimParseBrace(struct JimParserCtx *pc) {
 	pc->tstart = pc->p + 1;
 	pc->tline = pc->linenr;
 	pc->tt = JIM_TT_STR;
@@ -1314,8 +1252,7 @@ static __device__ int JimParseBrace(struct JimParserCtx *pc)
 	return JIM_OK;
 }
 
-static __device__ int JimParseCmd(struct JimParserCtx *pc)
-{
+static __device__ int JimParseCmd(struct JimParserCtx *pc) {
 	pc->tstart = pc->p + 1;
 	pc->tline = pc->linenr;
 	pc->tt = JIM_TT_CMD;
@@ -1323,16 +1260,14 @@ static __device__ int JimParseCmd(struct JimParserCtx *pc)
 	return JIM_OK;
 }
 
-static __device__ int JimParseQuote(struct JimParserCtx *pc)
-{
+static __device__ int JimParseQuote(struct JimParserCtx *pc) {
 	pc->tstart = pc->p + 1;
 	pc->tline = pc->linenr;
 	pc->tt = JimParseSubQuote(pc);
 	return JIM_OK;
 }
 
-static __device__ int JimParseVar(struct JimParserCtx *pc)
-{
+static __device__ int JimParseVar(struct JimParserCtx *pc) {
 	// skip the $
 	pc->p++;
 	pc->len--;
@@ -1428,8 +1363,7 @@ static __device__ int JimParseVar(struct JimParserCtx *pc)
 	return JIM_OK;
 }
 
-static __device__ int JimParseStr(struct JimParserCtx *pc)
-{
+static __device__ int JimParseStr(struct JimParserCtx *pc) {
 	if (pc->tt == JIM_TT_SEP || pc->tt == JIM_TT_EOL || pc->tt == JIM_TT_NONE || pc->tt == JIM_TT_STR) {
 		// Starting a new word
 		if (*pc->p == '{')
@@ -1522,8 +1456,7 @@ static __device__ int JimParseStr(struct JimParserCtx *pc)
 	//return JIM_OK; // unreached
 }
 
-static __device__ int JimParseComment(struct JimParserCtx *pc)
-{
+static __device__ int JimParseComment(struct JimParserCtx *pc) {
 	while (*pc->p) {
 		if (*pc->p == '\\') {
 			pc->p++;
@@ -1548,16 +1481,14 @@ static __device__ int JimParseComment(struct JimParserCtx *pc)
 }
 
 // xdigitval and odigitval are helper functions for JimEscape()
-static __device__ int xdigitval(int c)
-{
+static __device__ int xdigitval(int c) {
 	if (c >= '0' && c <= '9') return c - '0';
 	if (c >= 'a' && c <= 'f') return c - 'a' + 10;
 	if (c >= 'A' && c <= 'F') return c - 'A' + 10;
 	return -1;
 }
 
-static __device__ int odigitval(int c)
-{
+static __device__ int odigitval(int c) {
 	if (c >= '0' && c <= '7') return c - '0';
 	return -1;
 }
@@ -1565,8 +1496,7 @@ static __device__ int odigitval(int c)
 // Perform Tcl escape substitution of 's', storing the result string into 'dest'. The escaped string is guaranteed to
 // be the same length or shorted than the source string. Slen is the length of the string at 's', if it's -1 the string length will be calculated by the function.
 // The function returns the length of the resulting string.
-static __device__ int JimEscape(char *dest, const char *s, int slen)
-{
+static __device__ int JimEscape(char *dest, const char *s, int slen) {
 	char *p = dest;
 	int i, len;
 	if (slen == -1)
@@ -1608,51 +1538,51 @@ static __device__ int JimEscape(char *dest, const char *s, int slen)
 				// \U Expect 1-8 hex chars and convert to utf-8.
 				// \u{NNN} supports 1-6 hex chars and convert to utf-8.
 				// An invalid sequence means simply the escaped char.
-				{
-					unsigned val = 0;
-					int k;
-					int maxchars = 2;
-					i++;
-					if (s[i] == 'U')
-						maxchars = 8;
-					else if (s[i] == 'u') {
-						if (s[i + 1] == '{') {
-							maxchars = 6;
-							i++;
-						}
-						else
-							maxchars = 4;
+			{
+				unsigned val = 0;
+				int k;
+				int maxchars = 2;
+				i++;
+				if (s[i] == 'U')
+					maxchars = 8;
+				else if (s[i] == 'u') {
+					if (s[i + 1] == '{') {
+						maxchars = 6;
+						i++;
 					}
-					for (k = 0; k < maxchars; k++) {
-						int c = xdigitval(s[i + k + 1]);
-						if (c == -1)
-							break;
-						val = (val << 4) | c;
-					}
-					// The \u{nnn} syntax supports up to 21 bit codepoints.
-					if (s[i] == '{') {
-						if (k == 0 || val > 0x1fffff || s[i + k + 1] != '}') {
-							// Back up
-							i--;
-							k = 0;
-						}
-						// Skip the closing brace
-						else
-							k++;
-					}
-					if (k) {
-						// Got a valid sequence, so convert
-						if (s[i] == 'x')
-							*p++ = val;
-						else
-							p += utf8_fromunicode(p, val);
-						i += k;
-						break;
-					}
-					// Not a valid codepoint, just an escaped char
-					*p++ = s[i];
+					else
+						maxchars = 4;
 				}
-				break;
+				for (k = 0; k < maxchars; k++) {
+					int c = xdigitval(s[i + k + 1]);
+					if (c == -1)
+						break;
+					val = (val << 4) | c;
+				}
+				// The \u{nnn} syntax supports up to 21 bit codepoints.
+				if (s[i] == '{') {
+					if (k == 0 || val > 0x1fffff || s[i + k + 1] != '}') {
+						// Back up
+						i--;
+						k = 0;
+					}
+					// Skip the closing brace
+					else
+						k++;
+				}
+				if (k) {
+					// Got a valid sequence, so convert
+					if (s[i] == 'x')
+						*p++ = val;
+					else
+						p += utf8_fromunicode(p, val);
+					i += k;
+					break;
+				}
+				// Not a valid codepoint, just an escaped char
+				*p++ = s[i];
+			}
+			break;
 			case 'v':
 				*p++ = 0xb;
 				i++;
@@ -1675,28 +1605,28 @@ static __device__ int JimEscape(char *dest, const char *s, int slen)
 			case '6':
 			case '7':
 				// octal escape
-				{
-					int val = 0;
-					int c = odigitval(s[i + 1]);
-					val = c;
-					c = odigitval(s[i + 2]);
-					if (c == -1) {
-						*p++ = val;
-						i++;
-						break;
-					}
-					val = (val * 8) + c;
-					c = odigitval(s[i + 3]);
-					if (c == -1) {
-						*p++ = val;
-						i += 2;
-						break;
-					}
-					val = (val * 8) + c;
+			{
+				int val = 0;
+				int c = odigitval(s[i + 1]);
+				val = c;
+				c = odigitval(s[i + 2]);
+				if (c == -1) {
 					*p++ = val;
-					i += 3;
+					i++;
+					break;
 				}
-				break;
+				val = (val * 8) + c;
+				c = odigitval(s[i + 3]);
+				if (c == -1) {
+					*p++ = val;
+					i += 2;
+					break;
+				}
+				val = (val * 8) + c;
+				*p++ = val;
+				i += 3;
+			}
+			break;
 			default:
 				*p++ = s[i + 1];
 				i++;
@@ -1721,8 +1651,7 @@ static __device__ int JimEscape(char *dest, const char *s, int slen)
 // While the string:
 // *$a
 // will return as first token "*", of type JIM_TT_ESC
-static __device__ Jim_Obj *JimParserGetTokenObj(Jim_Interp *interp, struct JimParserCtx *pc)
-{
+static __device__ Jim_Obj *JimParserGetTokenObj(Jim_Interp *interp, struct JimParserCtx *pc) {
 	char *token;
 	int len;
 	const char *start = pc->tstart;
@@ -1755,8 +1684,7 @@ static __device__ Jim_Obj *JimParserGetTokenObj(Jim_Interp *interp, struct JimPa
 // '"' on scripts incomplete missing a '"' char.
 // '\\' on scripts with a trailing backslash.
 // If the script is complete, 1 is returned, otherwise 0.
-__device__ int Jim_ScriptIsComplete(const char *s, int len, char *stateCharPtr)
-{
+__device__ int Jim_ScriptIsComplete(const char *s, int len, char *stateCharPtr) {
 	struct JimParserCtx parser;
 	JimParserInit(&parser, s, len, 1);
 	while (!parser.eof)
@@ -1777,8 +1705,7 @@ static __device__ int JimParseListSep(struct JimParserCtx *pc);
 static __device__ int JimParseListStr(struct JimParserCtx *pc);
 static __device__ int JimParseListQuote(struct JimParserCtx *pc);
 
-static __device__ int JimParseList(struct JimParserCtx *pc)
-{
+static __device__ int JimParseList(struct JimParserCtx *pc) {
 	if (isspace(*pc->p))
 		return JimParseListSep(pc);
 	switch (*pc->p) {
@@ -1798,8 +1725,7 @@ static __device__ int JimParseList(struct JimParserCtx *pc)
 	return JIM_OK;
 }
 
-static __device__ int JimParseListSep(struct JimParserCtx *pc)
-{
+static __device__ int JimParseListSep(struct JimParserCtx *pc) {
 	pc->tstart = pc->p;
 	pc->tline = pc->linenr;
 	while (isspace(*pc->p)) {
@@ -1813,8 +1739,7 @@ static __device__ int JimParseListSep(struct JimParserCtx *pc)
 	return JIM_OK;
 }
 
-static __device__ int JimParseListQuote(struct JimParserCtx *pc)
-{
+static __device__ int JimParseListQuote(struct JimParserCtx *pc) {
 	pc->p++;
 	pc->len--;
 	pc->tstart = pc->p;
@@ -1847,8 +1772,7 @@ static __device__ int JimParseListQuote(struct JimParserCtx *pc)
 	return JIM_OK;
 }
 
-static __device__ int JimParseListStr(struct JimParserCtx *pc)
-{
+static __device__ int JimParseListStr(struct JimParserCtx *pc) {
 	pc->tstart = pc->p;
 	pc->tline = pc->linenr;
 	pc->tt = JIM_TT_STR;
@@ -1881,8 +1805,7 @@ static __device__ int JimParseListStr(struct JimParserCtx *pc)
 #pragma region Jim_Obj related functions
 
 // Return a new initialized object.
-__device__ Jim_Obj *Jim_NewObj(Jim_Interp *interp)
-{
+__device__ Jim_Obj *Jim_NewObj(Jim_Interp *interp) {
 	Jim_Obj *objPtr;
 	// Check if there are objects in the free list
 	if (interp->freeList != NULL) {
@@ -1908,8 +1831,7 @@ __device__ Jim_Obj *Jim_NewObj(Jim_Interp *interp)
 }
 
 // Free an object. Actually objects are never freed, but just moved to the free objects list, where they will be reused by Jim_NewObj().
-__device__ void Jim_FreeObj(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ void Jim_FreeObj(Jim_Interp *interp, Jim_Obj *objPtr) {
 	// Check if the object was already freed, panic.
 	JimPanic(objPtr->refCount != 0, "!!!Object %p freed with bad refcount %d, type=%s", objPtr, objPtr->refCount, objPtr->typePtr ? objPtr->typePtr->name : "<none>");
 	// Free the internal representation
@@ -1939,8 +1861,7 @@ __device__ void Jim_FreeObj(Jim_Interp *interp, Jim_Obj *objPtr)
 }
 
 // Invalidate the string representation of an object.
-__device__ void Jim_InvalidateStringRep(Jim_Obj *objPtr)
-{
+__device__ void Jim_InvalidateStringRep(Jim_Obj *objPtr) {
 	if (objPtr->bytes != NULL)
 		if (objPtr->bytes != JimEmptyStringRep)
 			Jim_Free(objPtr->bytes);
@@ -1948,8 +1869,7 @@ __device__ void Jim_InvalidateStringRep(Jim_Obj *objPtr)
 }
 
 // Duplicate an object. The returned object has refcount = 0.
-__device__ Jim_Obj *Jim_DuplicateObj(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ Jim_Obj *Jim_DuplicateObj(Jim_Interp *interp, Jim_Obj *objPtr) {
 	Jim_Obj *dupPtr = Jim_NewObj(interp);
 	if (objPtr->bytes == NULL)
 		dupPtr->bytes = NULL; // Object does not have a valid string representation.
@@ -1978,8 +1898,7 @@ __device__ Jim_Obj *Jim_DuplicateObj(Jim_Interp *interp, Jim_Obj *objPtr)
 }
 
 // Return the string representation for objPtr. If the object's string representation is invalid, calls the updateStringProc method to create a new one from the internal representation of the object.
-__device__ const char *Jim_GetString(Jim_Obj *objPtr, int *lenPtr)
-{
+__device__ const char *Jim_GetString(Jim_Obj *objPtr, int *lenPtr) {
 	if (objPtr->bytes == NULL) {
 		// Invalid string repr. Generate it.
 		JimPanic(objPtr->typePtr->updateStringProc == NULL, "UpdateStringProc called against '%s' type.", objPtr->typePtr->name);
@@ -1991,8 +1910,7 @@ __device__ const char *Jim_GetString(Jim_Obj *objPtr, int *lenPtr)
 }
 
 // Just returns the length of the object's string rep
-__device__ int Jim_Length(Jim_Obj *objPtr)
-{
+__device__ int Jim_Length(Jim_Obj *objPtr) {
 	if (objPtr->bytes == NULL) {
 		// Invalid string repr. Generate it.
 		JimPanic(objPtr->typePtr->updateStringProc == NULL, "UpdateStringProc called against '%s' type.", objPtr->typePtr->name);
@@ -2002,8 +1920,7 @@ __device__ int Jim_Length(Jim_Obj *objPtr)
 }
 
 // Just returns object's string rep
-__device__ const char *Jim_String(Jim_Obj *objPtr)
-{
+__device__ const char *Jim_String(Jim_Obj *objPtr) {
 	if (!objPtr) return nullptr;
 	if (objPtr->bytes == NULL) {
 		// Invalid string repr. Generate it.
@@ -2014,8 +1931,7 @@ __device__ const char *Jim_String(Jim_Obj *objPtr)
 	return objPtr->bytes;
 }
 
-static __device__ void JimSetStringBytes(Jim_Obj *objPtr, const char *str)
-{
+static __device__ void JimSetStringBytes(Jim_Obj *objPtr, const char *str) {
 	objPtr->bytes = Jim_StrDup(str);
 	objPtr->length = (int)strlen(str);
 }
@@ -2031,8 +1947,7 @@ __constant__ static const Jim_ObjType _dictSubstObjType = {
 	JIM_TYPE_NONE,
 };
 
-static __device__ void FreeInterpolatedInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ void FreeInterpolatedInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	Jim_DecrRefCount(interp, objPtr->internalRep.dictSubstValue.indexObjPtr);
 }
 
@@ -2062,8 +1977,7 @@ __constant__ static const Jim_ObjType _stringObjType = {
 	JIM_TYPE_REFERENCES,
 };
 
-static __device__ void DupStringInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+static __device__ void DupStringInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	JIM_NOTUSED(interp);
 	// This is a bit subtle: the only caller of this function should be Jim_DuplicateObj(), that will copy the string representaion. After the copy, the duplicated
 	// object will not have more room in the buffer than srcPtr->length bytes. So we just set it to length.
@@ -2071,8 +1985,7 @@ static __device__ void DupStringInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr,
 	dupPtr->internalRep.strValue.charLength = srcPtr->internalRep.strValue.charLength;
 }
 
-static __device__ int SetStringFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ int SetStringFromAny(Jim_Interp *interp, Jim_Obj *objPtr) {
 	if (objPtr->typePtr != &_stringObjType) {
 		// Get a fresh string representation.
 		if (objPtr->bytes == NULL) {
@@ -2093,8 +2006,7 @@ static __device__ int SetStringFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
 
 // Returns the length of the object string in chars, not bytes.
 // These may be different for a utf-8 string.
-__device__ int Jim_Utf8Length(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ int Jim_Utf8Length(Jim_Interp *interp, Jim_Obj *objPtr) {
 #ifdef JIM_UTF8
 	SetStringFromAny(interp, objPtr);
 	if (objPtr->internalRep.strValue.charLength < 0)
@@ -2106,8 +2018,7 @@ __device__ int Jim_Utf8Length(Jim_Interp *interp, Jim_Obj *objPtr)
 }
 
 // len is in bytes -- see also Jim_NewStringObjUtf8()
-__device__ Jim_Obj *Jim_NewStringObj(Jim_Interp *interp, const char *s, int len)
-{
+__device__ Jim_Obj *Jim_NewStringObj(Jim_Interp *interp, const char *s, int len) {
 	Jim_Obj *objPtr = Jim_NewObj(interp);
 	// Need to find out how many bytes the string requires
 	if (len == -1)
@@ -2116,8 +2027,7 @@ __device__ Jim_Obj *Jim_NewStringObj(Jim_Interp *interp, const char *s, int len)
 	if (len == 0)
 		objPtr->bytes = JimEmptyStringRep;
 	else {
-		objPtr->bytes = (char *)Jim_Alloc(len + 1);
-		memcpy(objPtr->bytes, s, len);
+		objPtr->bytes = (char *)Jim_Alloc(len + 1);		memcpy(objPtr->bytes, s, len);
 		objPtr->bytes[len] = '\0';
 	}
 	objPtr->length = len;
@@ -2127,8 +2037,7 @@ __device__ Jim_Obj *Jim_NewStringObj(Jim_Interp *interp, const char *s, int len)
 }
 
 // charlen is in characters -- see also Jim_NewStringObj()
-__device__ Jim_Obj *Jim_NewStringObjUtf8(Jim_Interp *interp, const char *s, int charlen)
-{
+__device__ Jim_Obj *Jim_NewStringObjUtf8(Jim_Interp *interp, const char *s, int charlen) {
 #ifdef JIM_UTF8
 	// Need to find out how many bytes the string requires
 	int bytelen = utf8_index(s, charlen);
@@ -2144,8 +2053,7 @@ __device__ Jim_Obj *Jim_NewStringObjUtf8(Jim_Interp *interp, const char *s, int 
 }
 
 // This version does not try to duplicate the 's' pointer, but use it directly.
-__device__ Jim_Obj *Jim_NewStringObjNoAlloc(Jim_Interp *interp, char *s, int len)
-{
+__device__ Jim_Obj *Jim_NewStringObjNoAlloc(Jim_Interp *interp, char *s, int len) {
 	Jim_Obj *objPtr = Jim_NewObj(interp);
 	objPtr->bytes = s;
 	objPtr->length = (len == -1 ? (int)strlen(s) : len);
@@ -2154,8 +2062,7 @@ __device__ Jim_Obj *Jim_NewStringObjNoAlloc(Jim_Interp *interp, char *s, int len
 }
 
 // Low-level string append. Use it only against unshared objects of type "string".
-static __device__ void StringAppendString(Jim_Obj *objPtr, const char *str, int len)
-{
+static __device__ void StringAppendString(Jim_Obj *objPtr, const char *str, int len) {
 	if (len == -1)
 		len = (int)strlen(str);
 	int needlen = objPtr->length + len;
@@ -2179,22 +2086,19 @@ static __device__ void StringAppendString(Jim_Obj *objPtr, const char *str, int 
 }
 
 // Higher level API to append strings to objects. Object must not be unshared for each of these.
-__device__ void Jim_AppendString(Jim_Interp *interp, Jim_Obj *objPtr, const char *str, int len)
-{
+__device__ void Jim_AppendString(Jim_Interp *interp, Jim_Obj *objPtr, const char *str, int len) {
 	JimPanic(Jim_IsShared(objPtr), "Jim_AppendString called with shared object");
 	SetStringFromAny(interp, objPtr);
 	StringAppendString(objPtr, str, len);
 }
 
-__device__ void Jim_AppendObj(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *appendObjPtr)
-{
+__device__ void Jim_AppendObj(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *appendObjPtr) {
 	int len;
 	const char *str = Jim_GetString(appendObjPtr, &len);
 	Jim_AppendString(interp, objPtr, str, len);
 }
 
-__device__ void Jim_AppendStrings(Jim_Interp *interp, Jim_Obj *objPtr, ...)
-{
+__device__ void Jim_AppendStrings(Jim_Interp *interp, Jim_Obj *objPtr, ...) {
 	va_list va; va_start(va, objPtr);
 	JimPanic(Jim_IsShared(objPtr), "Jim_AppendString_ called with shared object");
 	SetStringFromAny(interp, objPtr);
@@ -2207,8 +2111,7 @@ __device__ void Jim_AppendStrings(Jim_Interp *interp, Jim_Obj *objPtr, ...)
 	va_end(va);
 }
 
-__device__ int Jim_StringEqObj(Jim_Obj *aObjPtr, Jim_Obj *bObjPtr)
-{
+__device__ int Jim_StringEqObj(Jim_Obj *aObjPtr, Jim_Obj *bObjPtr) {
 	if (aObjPtr == bObjPtr)
 		return 1;
 	else {
@@ -2220,14 +2123,12 @@ __device__ int Jim_StringEqObj(Jim_Obj *aObjPtr, Jim_Obj *bObjPtr)
 }
 
 // Note. Does not support embedded nulls in either the pattern or the object.
-__device__ int Jim_StringMatchObj(Jim_Interp *interp, Jim_Obj *patternObjPtr, Jim_Obj *objPtr, int nocase)
-{
+__device__ int Jim_StringMatchObj(Jim_Interp *interp, Jim_Obj *patternObjPtr, Jim_Obj *objPtr, int nocase) {
 	return JimGlobMatch(Jim_String(patternObjPtr), Jim_String(objPtr), nocase);
 }
 
 // Note: does not support embedded nulls for the nocase option.
-__device__ int Jim_StringCompareObj(Jim_Interp *interp, Jim_Obj *firstObjPtr, Jim_Obj *secondObjPtr, int nocase)
-{
+__device__ int Jim_StringCompareObj(Jim_Interp *interp, Jim_Obj *firstObjPtr, Jim_Obj *secondObjPtr, int nocase) {
 	int l1, l2;
 	const char *s1 = Jim_GetString(firstObjPtr, &l1);
 	const char *s2 = Jim_GetString(secondObjPtr, &l2);
@@ -2238,8 +2139,7 @@ __device__ int Jim_StringCompareObj(Jim_Interp *interp, Jim_Obj *firstObjPtr, Ji
 
 // Like Jim_StringCompareObj() except compares to a maximum of the length of firstObjPtr.
 // Note: does not support embedded nulls
-__device__ int Jim_StringCompareLenObj(Jim_Interp *interp, Jim_Obj *firstObjPtr, Jim_Obj *secondObjPtr, int nocase)
-{
+__device__ int Jim_StringCompareLenObj(Jim_Interp *interp, Jim_Obj *firstObjPtr, Jim_Obj *secondObjPtr, int nocase) {
 	const char *s1 = Jim_String(firstObjPtr);
 	const char *s2 = Jim_String(secondObjPtr);
 	return JimStringCompareLen(s1, s2, Jim_Utf8Length(interp, firstObjPtr), nocase);
@@ -2248,16 +2148,14 @@ __device__ int Jim_StringCompareLenObj(Jim_Interp *interp, Jim_Obj *firstObjPtr,
 // Convert a range, as returned by Jim_GetRange(), into an absolute index into an object of the specified length.
 // This function may return negative values, or values greater than or equal to the length of the list if the index
 // is out of range.
-static __device__ int JimRelToAbsIndex(int len, int idx)
-{
+static __device__ int JimRelToAbsIndex(int len, int idx) {
 	return (idx < 0 ? len + idx : idx);
 }
 
 // Convert a pair of indexes (*firstPtr, *lastPtr) as normalized by JimRelToAbsIndex(), into a form suitable for implementation of commands like [string range] and [lrange].
 // The resulting range is guaranteed to address valid elements of the structure.
 //
-static __device__ void JimRelToAbsRange(int len, int *firstPtr, int *lastPtr, int *rangeLenPtr)
-{
+static __device__ void JimRelToAbsRange(int len, int *firstPtr, int *lastPtr, int *rangeLenPtr) {
 	int rangeLen;
 	if (*firstPtr > *lastPtr)
 		rangeLen = 0;
@@ -2279,8 +2177,7 @@ static __device__ void JimRelToAbsRange(int len, int *firstPtr, int *lastPtr, in
 	*rangeLenPtr = rangeLen;
 }
 
-static __device__ int JimStringGetRange(Jim_Interp *interp, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr, int len, int *first, int *last, int *range)
-{
+static __device__ int JimStringGetRange(Jim_Interp *interp, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr, int len, int *first, int *last, int *range) {
 	if (Jim_GetIndex(interp, firstObjPtr, first) != JIM_OK)
 		return JIM_ERROR;
 	if (Jim_GetIndex(interp, lastObjPtr, last) != JIM_OK)
@@ -2291,8 +2188,7 @@ static __device__ int JimStringGetRange(Jim_Interp *interp, Jim_Obj *firstObjPtr
 	return JIM_OK;
 }
 
-__device__ Jim_Obj *Jim_StringByteRangeObj(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr)
-{
+__device__ Jim_Obj *Jim_StringByteRangeObj(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr) {
 	int first, last;
 	int rangeLen;
 	int bytelen;
@@ -2304,8 +2200,7 @@ __device__ Jim_Obj *Jim_StringByteRangeObj(Jim_Interp *interp, Jim_Obj *strObjPt
 	return Jim_NewStringObj(interp, str + first, rangeLen);
 }
 
-__device__ Jim_Obj *Jim_StringRangeObj(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr)
-{
+__device__ Jim_Obj *Jim_StringRangeObj(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr) {
 #ifdef JIM_UTF8
 	int first, last;
 	const char *str;
@@ -2325,8 +2220,7 @@ __device__ Jim_Obj *Jim_StringRangeObj(Jim_Interp *interp, Jim_Obj *strObjPtr, J
 #endif
 }
 
-__device__ Jim_Obj *JimStringReplaceObj(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr, Jim_Obj *newStrObj)
-{
+__device__ Jim_Obj *JimStringReplaceObj(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr, Jim_Obj *newStrObj) {
 	int len = Jim_Utf8Length(interp, strObjPtr);
 	int first, last, rangeLen;
 	if (JimStringGetRange(interp, firstObjPtr, lastObjPtr, len, &first, &last, &rangeLen) != JIM_OK)
@@ -2345,8 +2239,7 @@ __device__ Jim_Obj *JimStringReplaceObj(Jim_Interp *interp, Jim_Obj *strObjPtr, 
 }
 
 // Note: does not support embedded nulls.
-static __device__ void JimStrCopyUpperLower(char *dest, const char *str, int uc)
-{
+static __device__ void JimStrCopyUpperLower(char *dest, const char *str, int uc) {
 	while (*str) {
 		int c;
 		str += utf8_tounicode(str, &c);
@@ -2356,8 +2249,7 @@ static __device__ void JimStrCopyUpperLower(char *dest, const char *str, int uc)
 }
 
 // Note: does not support embedded nulls.
-static __device__ Jim_Obj *JimStringToLower(Jim_Interp *interp, Jim_Obj *strObjPtr)
-{
+static __device__ Jim_Obj *JimStringToLower(Jim_Interp *interp, Jim_Obj *strObjPtr) {
 	SetStringFromAny(interp, strObjPtr);
 	int len;
 	const char *str = Jim_GetString(strObjPtr, &len);
@@ -2371,8 +2263,7 @@ static __device__ Jim_Obj *JimStringToLower(Jim_Interp *interp, Jim_Obj *strObjP
 }
 
 // Note: does not support embedded nulls.
-static __device__ Jim_Obj *JimStringToUpper(Jim_Interp *interp, Jim_Obj *strObjPtr)
-{
+static __device__ Jim_Obj *JimStringToUpper(Jim_Interp *interp, Jim_Obj *strObjPtr) {
 	if (strObjPtr->typePtr != &_stringObjType)
 		SetStringFromAny(interp, strObjPtr);
 	int len;
@@ -2387,8 +2278,7 @@ static __device__ Jim_Obj *JimStringToUpper(Jim_Interp *interp, Jim_Obj *strObjP
 }
 
 // Note: does not support embedded nulls.
-static __device__ Jim_Obj *JimStringToTitle(Jim_Interp *interp, Jim_Obj *strObjPtr)
-{
+static __device__ Jim_Obj *JimStringToTitle(Jim_Interp *interp, Jim_Obj *strObjPtr) {
 	int len;
 	const char *str = Jim_GetString(strObjPtr, &len);
 	if (len == 0)
@@ -2407,8 +2297,7 @@ static __device__ Jim_Obj *JimStringToTitle(Jim_Interp *interp, Jim_Obj *strObjP
 }
 
 // Similar to memchr() except searches a UTF-8 string 'str' of byte length 'len' for unicode character 'c'. Returns the position if found or NULL if not
-static __device__ const char *utf8_memchr(const char *str, int len, int c)
-{
+static __device__ const char *utf8_memchr(const char *str, int len, int c) {
 #ifdef JIM_UTF8
 	while (len) {
 		int sc;
@@ -2427,8 +2316,7 @@ static __device__ const char *utf8_memchr(const char *str, int len, int c)
 // Searches for the first non-trim char in string (str, len)
 // If none is found, returns just past the last char.
 // Lengths are in bytes.
-static __device__ const char *JimFindTrimLeft(const char *str, int len, const char *trimchars, int trimlen)
-{
+static __device__ const char *JimFindTrimLeft(const char *str, int len, const char *trimchars, int trimlen) {
 	while (len) {
 		int c;
 		int n = utf8_tounicode(str, &c);
@@ -2443,8 +2331,7 @@ static __device__ const char *JimFindTrimLeft(const char *str, int len, const ch
 // Searches backwards for a non-trim char in string (str, len).
 // Returns a pointer to just after the non-trim char, or NULL if not found.
 // Lengths are in bytes.
-static __device__ const char *JimFindTrimRight(const char *str, int len, const char *trimchars, int trimlen)
-{
+static __device__ const char *JimFindTrimRight(const char *str, int len, const char *trimchars, int trimlen) {
 	str += len;
 	while (len) {
 		int c;
@@ -2462,8 +2349,7 @@ __constant__ static const char _default_trim_chars[] = " \t\n\r";
 // sizeof() here includes the null byte
 __constant__ static int default_trim_chars_len = sizeof(_default_trim_chars);
 
-static __device__ Jim_Obj *JimStringTrimLeft(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *trimcharsObjPtr)
-{
+static __device__ Jim_Obj *JimStringTrimLeft(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *trimcharsObjPtr) {
 	int len;
 	const char *str = Jim_GetString(strObjPtr, &len);
 	const char *trimchars = _default_trim_chars;
@@ -2477,8 +2363,7 @@ static __device__ Jim_Obj *JimStringTrimLeft(Jim_Interp *interp, Jim_Obj *strObj
 	return Jim_NewStringObj(interp, newstr, len - (int)(newstr - str));
 }
 
-static __device__ Jim_Obj *JimStringTrimRight(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *trimcharsObjPtr)
-{
+static __device__ Jim_Obj *JimStringTrimRight(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *trimcharsObjPtr) {
 	int len;
 	const char *trimchars = _default_trim_chars;
 	int trimcharslen = default_trim_chars_len;
@@ -2502,8 +2387,7 @@ static __device__ Jim_Obj *JimStringTrimRight(Jim_Interp *interp, Jim_Obj *strOb
 	return strObjPtr;
 }
 
-static __device__ Jim_Obj *JimStringTrim(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *trimcharsObjPtr)
-{
+static __device__ Jim_Obj *JimStringTrim(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *trimcharsObjPtr) {
 	// First trim left.
 	Jim_Obj *objPtr = JimStringTrimLeft(interp, strObjPtr, trimcharsObjPtr);
 	// Now trim right
@@ -2518,8 +2402,7 @@ static __device__ Jim_Obj *JimStringTrim(Jim_Interp *interp, Jim_Obj *strObjPtr,
 #ifdef HAVE_ISASCII
 #define jim_isascii isascii
 #else
-static __device__ int jim_isascii(int c)
-{
+static __device__ int jim_isascii(int c) {
 	return !(c & ~0x7f);
 }
 #endif
@@ -2536,11 +2419,10 @@ enum {
 	STR_IS_CONTROL, STR_IS_PRINT, STR_IS_GRAPH, STR_IS_PUNCT
 };
 
-static __device__ int JimStringIs(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *strClass, int strict)
-{
+static __device__ int JimStringIs(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *strClass, int strict) {
 	int strclass;
 	int i;
-	int (*isclassfunc)(int c) = NULL;
+	int(*isclassfunc)(int c) = NULL;
 	if (Jim_GetEnum(interp, strClass, _strclassnames, &strclass, "class", JIM_ERRMSG | JIM_ENUM_ABBREV) != JIM_OK)
 		return JIM_ERROR;
 	int len;
@@ -2624,8 +2506,7 @@ __constant__ static const Jim_ObjType _comparedStringObjType = {
 // The only way this object is exposed to the API is via the following function. Returns true if the string and the object string repr.
 // are the same, otherwise zero is returned.
 // Note: this isn't binary safe, but it hardly needs to be.*/
-__device__ int Jim_CompareStringImmediate(Jim_Interp *interp, Jim_Obj *objPtr, const char *str)
-{
+__device__ int Jim_CompareStringImmediate(Jim_Interp *interp, Jim_Obj *objPtr, const char *str) {
 	if (objPtr->typePtr == &_comparedStringObjType && objPtr->internalRep.ptr == str)
 		return 1;
 	else {
@@ -2641,8 +2522,7 @@ __device__ int Jim_CompareStringImmediate(Jim_Interp *interp, Jim_Obj *objPtr, c
 	}
 }
 
-static __device__ int qsortCompareStringPointers(const void *a, const void *b)
-{
+static __device__ int qsortCompareStringPointers(const void *a, const void *b) {
 	char *const *sa = (char *const *)a;
 	char *const *sb = (char *const *)b;
 	return strcmp(*sa, *sb);
@@ -2676,19 +2556,16 @@ __constant__ static const Jim_ObjType _sourceObjType = {
 	JIM_TYPE_REFERENCES,
 };
 
-__device__ void FreeSourceInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ void FreeSourceInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	Jim_DecrRefCount(interp, objPtr->internalRep.sourceValue.fileNameObj);
 }
 
-__device__ void DupSourceInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+__device__ void DupSourceInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	dupPtr->internalRep.sourceValue = srcPtr->internalRep.sourceValue;
 	Jim_IncrRefCount(dupPtr->internalRep.sourceValue.fileNameObj);
 }
 
-static __device__ void JimSetSourceInfo(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *fileNameObj, int lineNumber)
-{
+static __device__ void JimSetSourceInfo(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *fileNameObj, int lineNumber) {
 	JimPanic(Jim_IsShared(objPtr), "JimSetSourceInfo called with shared object");
 	JimPanic(objPtr->typePtr != NULL, "JimSetSourceInfo called with typed object");
 	Jim_IncrRefCount(fileNameObj);
@@ -2712,8 +2589,7 @@ __constant__ static const Jim_ObjType _scriptLineObjType = {
 	JIM_NONE,
 };
 
-static __device__ Jim_Obj *JimNewScriptLineObj(Jim_Interp *interp, int argc, int line)
-{
+static __device__ Jim_Obj *JimNewScriptLineObj(Jim_Interp *interp, int argc, int line) {
 	Jim_Obj *objPtr;
 #ifdef DEBUG_SHOW_SCRIPT
 	char buf[100];
@@ -2749,8 +2625,7 @@ __constant__ static const Jim_ObjType _scriptObjType = {
 };
 
 // Each token of a script is represented by a ScriptToken. The ScriptToken contains a type and a Jim_Obj. The Jim_Obj can be specialized by commands operating on it.
-typedef struct ScriptToken
-{
+typedef struct ScriptToken {
 	Jim_Obj *objPtr;
 	int type;
 } ScriptToken;
@@ -2813,8 +2688,7 @@ typedef struct ScriptToken
 // subst -novariables $string
 //
 // Will (re)create the internal representation of the $string object two times.
-typedef struct ScriptObj
-{
+typedef struct ScriptObj {
 	ScriptToken *token;         // Tokens array
 	Jim_Obj *fileNameObj;       // Filename
 	int len;                    // Length of token[]
@@ -2825,8 +2699,7 @@ typedef struct ScriptObj
 	int missing;                // Missing char if script failed to parse, (or space or backslash if OK)
 } ScriptObj;
 
-__device__ void FreeScriptInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ void FreeScriptInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	struct ScriptObj *script = (struct ScriptObj *)objPtr->internalRep.ptr;
 	if (--script->inUse != 0)
 		return;
@@ -2837,8 +2710,7 @@ __device__ void FreeScriptInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
 	Jim_Free(script);
 }
 
-__device__ void DupScriptInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+__device__ void DupScriptInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	JIM_NOTUSED(interp);
 	JIM_NOTUSED(srcPtr);
 	// Just return a simple string. We don't try to preserve the source info since in practice scripts are never duplicated
@@ -2846,8 +2718,7 @@ __device__ void DupScriptInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Ob
 }
 
 // A simple parse token. As the script is parsed, the created tokens point into the script string rep.
-typedef struct
-{
+typedef struct {
 	const char *token;          // Pointer to the start of the token
 	int len;                    // Length of this token
 	int type;                   // Token type
@@ -2855,8 +2726,7 @@ typedef struct
 } ParseToken;
 
 // A list of parsed tokens representing a script. Tokens are added to this list as the script is parsed. It grows as needed.
-typedef struct
-{
+typedef struct {
 	// Start with a statically allocated list of tokens which will be expanded with realloc if needed
 	ParseToken *list;           // Array of tokens
 	int size;                   // Current size of the list
@@ -2864,22 +2734,19 @@ typedef struct
 	ParseToken static_list[20]; // Small initial token space to avoid allocation
 } ParseTokenList;
 
-static __device__ void ScriptTokenListInit(ParseTokenList *tokenlist)
-{
+static __device__ void ScriptTokenListInit(ParseTokenList *tokenlist) {
 	tokenlist->list = tokenlist->static_list;
 	tokenlist->size = sizeof(tokenlist->static_list) / sizeof(ParseToken);
 	tokenlist->count = 0;
 }
 
-static __device__ void ScriptTokenListFree(ParseTokenList *tokenlist)
-{
+static __device__ void ScriptTokenListFree(ParseTokenList *tokenlist) {
 	if (tokenlist->list != tokenlist->static_list)
 		Jim_Free(tokenlist->list);
 }
 
 // Adds the new token to the tokenlist. The token has the given length, type and line number. The token list is resized as necessary.
-static __device__ void ScriptAddToken(ParseTokenList *tokenlist, const char *token, int len, int type, int line)
-{
+static __device__ void ScriptAddToken(ParseTokenList *tokenlist, const char *token, int len, int type, int line) {
 	if (tokenlist->count == tokenlist->size) {
 		// Resize the list
 		tokenlist->size *= 2;
@@ -2901,8 +2768,7 @@ static __device__ void ScriptAddToken(ParseTokenList *tokenlist, const char *tok
 // Counts the number of adjoining non-separator tokens.
 //
 // Returns -ve if the first token is the expansion operator (in which case the count doesn't include that token).
-static __device__ int JimCountWordTokens(ParseToken *t)
-{
+static __device__ int JimCountWordTokens(ParseToken *t) {
 	int expand = 1;
 	int count = 0;
 	// Is the first word {*} or {expand}?
@@ -2915,8 +2781,7 @@ static __device__ int JimCountWordTokens(ParseToken *t)
 }
 
 // Create a script/subst object from the given token.
-static __device__ Jim_Obj *JimMakeScriptObj(Jim_Interp *interp, const ParseToken *t)
-{
+static __device__ Jim_Obj *JimMakeScriptObj(Jim_Interp *interp, const ParseToken *t) {
 	if (t->type == JIM_TT_ESC && memchr(t->token, '\\', t->len) != NULL) {
 		// Convert backlash escapes. The result will never be longer than the original
 		int len = t->len;
@@ -2931,8 +2796,7 @@ static __device__ Jim_Obj *JimMakeScriptObj(Jim_Interp *interp, const ParseToken
 // Takes a tokenlist and creates the allocated list of script tokens in script->token, of length script->len.
 // Unnecessary tokens are discarded, and LINE and WORD tokens are inserted as required.
 // Also sets script->line to the line number of the first token
-static __device__ void ScriptObjAddTokens(Jim_Interp *interp, struct ScriptObj *script, ParseTokenList *tokenlist)
-{
+static __device__ void ScriptObjAddTokens(Jim_Interp *interp, struct ScriptObj *script, ParseTokenList *tokenlist) {
 	int i;
 	int lineargs = 0; // Number of tokens so far for the current command
 
@@ -3024,8 +2888,7 @@ static __device__ void ScriptObjAddTokens(Jim_Interp *interp, struct ScriptObj *
 // Sets an appropriate error message for a missing script/expression terminator.
 // Returns JIM_ERROR if 'ch' represents an unmatched/missing character.
 // Note that a trailing backslash is not considered to be an error.
-static __device__ int JimParseCheckMissing(Jim_Interp *interp, int ch)
-{
+static __device__ int JimParseCheckMissing(Jim_Interp *interp, int ch) {
 	const char *msg;
 	switch (ch) {
 	case '\\':
@@ -3040,8 +2903,7 @@ static __device__ int JimParseCheckMissing(Jim_Interp *interp, int ch)
 }
 
 // Similar to ScriptObjAddTokens(), but for subst objects.
-static __device__ void SubstObjAddTokens(Jim_Interp *interp, struct ScriptObj *script, ParseTokenList *tokenlist)
-{
+static __device__ void SubstObjAddTokens(Jim_Interp *interp, struct ScriptObj *script, ParseTokenList *tokenlist) {
 	int i;
 	struct ScriptToken *token = script->token = (ScriptToken *)Jim_Alloc(sizeof(ScriptToken) * tokenlist->count);
 	for (i = 0; i < tokenlist->count; i++) {
@@ -3057,8 +2919,7 @@ static __device__ void SubstObjAddTokens(Jim_Interp *interp, struct ScriptObj *s
 
 // This method takes the string representation of an object as a Tcl script, and generates the pre-parsed internal representation of the script.
 // On parse error, sets an error message and returns JIM_ERROR (Note: the object is still converted to a script, even if an error occurs)
-static __device__ void JimSetScriptFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
-{
+static __device__ void JimSetScriptFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr) {
 	// Try to get information about filename / line number
 	int line = 1;
 	if (objPtr->typePtr == &_sourceObjType)
@@ -3104,8 +2965,7 @@ static __device__ void JimSetScriptFromAny(Jim_Interp *interp, struct Jim_Obj *o
 static __device__ void JimAddErrorToStack(Jim_Interp *interp, ScriptObj *script);
 
 // Returns the parsed script. Note that if there is any possibility that the script is not valid, call JimScriptValid() to check
-__device__ ScriptObj *JimGetScript(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ ScriptObj *JimGetScript(Jim_Interp *interp, Jim_Obj *objPtr) {
 	if (objPtr == interp->emptyObj)
 		objPtr = interp->nullScriptObj; // Avoid converting emptyObj to a script. use nullScriptObj instead.
 	if (objPtr->typePtr != &_scriptObjType || ((struct ScriptObj *)Jim_GetIntRepPtr(objPtr))->substFlags)
@@ -3114,8 +2974,7 @@ __device__ ScriptObj *JimGetScript(Jim_Interp *interp, Jim_Obj *objPtr)
 }
 
 // Returns 1 if the script is valid (parsed ok), otherwise returns 0 and leaves an error message in the interp result.
-static __device__ int JimScriptValid(Jim_Interp *interp, ScriptObj *script)
-{
+static __device__ int JimScriptValid(Jim_Interp *interp, ScriptObj *script) {
 	if (JimParseCheckMissing(interp, script->missing) == JIM_ERROR) {
 		JimAddErrorToStack(interp, script);
 		return 0;
@@ -3130,13 +2989,11 @@ static __device__ int JimScriptValid(Jim_Interp *interp, ScriptObj *script)
 // -----------------------------------------------------------------------------
 #pragma region Commands
 
-static __device__ void JimIncrCmdRefCount(Jim_Cmd *cmdPtr)
-{
+static __device__ void JimIncrCmdRefCount(Jim_Cmd *cmdPtr) {
 	cmdPtr->inUse++;
 }
 
-static __device__ void JimDecrCmdRefCount(Jim_Interp *interp, Jim_Cmd *cmdPtr)
-{
+static __device__ void JimDecrCmdRefCount(Jim_Interp *interp, Jim_Cmd *cmdPtr) {
 	if (--cmdPtr->inUse == 0) {
 		if (cmdPtr->isproc) {
 			Jim_DecrRefCount(interp, cmdPtr->u.proc.argListObjPtr);
@@ -3162,8 +3019,7 @@ static __device__ void JimDecrCmdRefCount(Jim_Interp *interp, Jim_Cmd *cmdPtr)
 
 // Variables HashTable Type.
 // Keys are dynamic allocated strings, Values are Jim_Var structures. */
-static __device__ void JimVariablesHTValDestructor(void *interp, void *val)
-{
+static __device__ void JimVariablesHTValDestructor(void *interp, void *val) {
 	Jim_DecrRefCount((Jim_Interp *)interp, ((Jim_Var *)val)->objPtr);
 	Jim_Free(val);
 }
@@ -3179,8 +3035,7 @@ __constant__ static const Jim_HashTableType JimVariablesHashTableType = {
 
 // Commands HashTable Type.
 // Keys are dynamic allocated strings, Values are Jim_Cmd structures.
-static __device__ void JimCommandsHT_ValDestructor(void *interp, void *val)
-{
+static __device__ void JimCommandsHT_ValDestructor(void *interp, void *val) {
 	JimDecrCmdRefCount((Jim_Interp *)interp, (Jim_Cmd *)val);
 }
 
@@ -3197,11 +3052,10 @@ __constant__ static const Jim_HashTableType JimCommandsHashTableType = {
 #ifdef jim_ext_namespace
 // Returns the "unscoped" version of the given namespace. That is, the fully qualified name without the leading ::
 // The returned value is either nsObj, or an object with a zero ref count.
-static __device__ Jim_Obj *JimQualifyNameObj(Jim_Interp *interp, Jim_Obj *nsObj)
-{
+static __device__ Jim_Obj *JimQualifyNameObj(Jim_Interp *interp, Jim_Obj *nsObj) {
 	const char *name = Jim_String(nsObj);
 	if (name[0] == ':' && name[1] == ':') {
-		while (*++name == ':') { } // This command is being defined in the global namespace
+		while (*++name == ':') {} // This command is being defined in the global namespace
 		nsObj = Jim_NewStringObj(interp, name, -1);
 	}
 	else if (Jim_Length(interp->framePtr->nsObj)) {
@@ -3212,8 +3066,7 @@ static __device__ Jim_Obj *JimQualifyNameObj(Jim_Interp *interp, Jim_Obj *nsObj)
 	return nsObj;
 }
 
-__device__ Jim_Obj *Jim_MakeGlobalNamespaceName(Jim_Interp *interp, Jim_Obj *nameObjPtr)
-{
+__device__ Jim_Obj *Jim_MakeGlobalNamespaceName(Jim_Interp *interp, Jim_Obj *nameObjPtr) {
 	const char *name = Jim_String(nameObjPtr);
 	if (name[0] == ':' && name[1] == ':')
 		return nameObjPtr;
@@ -3226,11 +3079,10 @@ __device__ Jim_Obj *Jim_MakeGlobalNamespaceName(Jim_Interp *interp, Jim_Obj *nam
 
 // An efficient version of JimQualifyNameObj() where the name is available (and needed) as a 'const char *'.
 // Avoids creating an object if not necessary. The object stored in *objPtrPtr should be disposed of with JimFreeQualifiedName() after use.
-static __device__ const char *JimQualifyName(Jim_Interp *interp, const char *name, Jim_Obj **objPtrPtr)
-{
+static __device__ const char *JimQualifyName(Jim_Interp *interp, const char *name, Jim_Obj **objPtrPtr) {
 	Jim_Obj *objPtr = interp->emptyObj;
 	if (name[0] == ':' && name[1] == ':')
-		while (*++name == ':') { } // This command is being defined in the global namespace
+		while (*++name == ':') {} // This command is being defined in the global namespace
 	else if (Jim_Length(interp->framePtr->nsObj)) {
 		// This command is being defined in a non-global namespace
 		objPtr = Jim_DuplicateObj(interp, interp->framePtr->nsObj);
@@ -3249,14 +3101,12 @@ static __device__ const char *JimQualifyName(Jim_Interp *interp, const char *nam
 #define JimQualifyName(INTERP, NAME, DUMMY) ((NAME)[0] == ':' && (NAME)[1] == ':' ? (NAME) + 2 : (NAME))
 #define JimFreeQualifiedName(INTERP, DUMMY) (void)(DUMMY)
 
-__device__ Jim_Obj *Jim_MakeGlobalNamespaceName(Jim_Interp *interp, Jim_Obj *nameObjPtr)
-{
+__device__ Jim_Obj *Jim_MakeGlobalNamespaceName(Jim_Interp *interp, Jim_Obj *nameObjPtr) {
 	return nameObjPtr;
 }
 #endif
 
-static __device__ int JimCreateCommand(Jim_Interp *interp, const char *name, Jim_Cmd *cmd)
-{
+static __device__ int JimCreateCommand(Jim_Interp *interp, const char *name, Jim_Cmd *cmd) {
 	// It may already exist, so we try to delete the old one. Note that reference count means that it won't be deleted yet if it exists in the call stack.
 	// BUT, if 'local' is in force, instead of deleting the existing proc, we stash a reference to the old proc here.
 	Jim_HashEntry *he = Jim_FindHashEntry(&interp->commands, name);
@@ -3279,8 +3129,7 @@ static __device__ int JimCreateCommand(Jim_Interp *interp, const char *name, Jim
 	return JIM_OK;
 }
 
-__device__ int Jim_CreateCommand(Jim_Interp *interp, const char *cmdNameStr, Jim_CmdProc cmdProc, void *privData, Jim_DelCmdProc delProc)
-{
+__device__ int Jim_CreateCommand(Jim_Interp *interp, const char *cmdNameStr, Jim_CmdProc cmdProc, void *privData, Jim_DelCmdProc delProc) {
 	Jim_Cmd *cmdPtr = (Jim_Cmd *)Jim_Alloc(sizeof(*cmdPtr));
 	// Store the new details for this command
 	memset(cmdPtr, 0, sizeof(*cmdPtr));
@@ -3292,8 +3141,7 @@ __device__ int Jim_CreateCommand(Jim_Interp *interp, const char *cmdNameStr, Jim
 	return JIM_OK;
 }
 
-static __device__ int JimCreateProcedureStatics(Jim_Interp *interp, Jim_Cmd *cmdPtr, Jim_Obj *staticsListObjPtr)
-{
+static __device__ int JimCreateProcedureStatics(Jim_Interp *interp, Jim_Cmd *cmdPtr, Jim_Obj *staticsListObjPtr) {
 	int len = Jim_ListLength(interp, staticsListObjPtr);
 	if (len == 0)
 		return JIM_OK;
@@ -3338,8 +3186,7 @@ static __device__ int JimCreateProcedureStatics(Jim_Interp *interp, Jim_Cmd *cmd
 	return JIM_OK;
 }
 
-static __device__ void JimUpdateProcNamespace(Jim_Interp *interp, Jim_Cmd *cmdPtr, const char *cmdname)
-{
+static __device__ void JimUpdateProcNamespace(Jim_Interp *interp, Jim_Cmd *cmdPtr, const char *cmdname) {
 #ifdef jim_ext_namespace
 	if (cmdPtr->isproc) {
 		const char *pt = strrchr((char *)cmdname, ':'); // XXX: Really need JimNamespaceSplit()
@@ -3355,8 +3202,7 @@ static __device__ void JimUpdateProcNamespace(Jim_Interp *interp, Jim_Cmd *cmdPt
 #endif
 }
 
-static __device__ Jim_Cmd *JimCreateProcedureCmd(Jim_Interp *interp, Jim_Obj *argListObjPtr, Jim_Obj *staticsListObjPtr, Jim_Obj *bodyObjPtr, Jim_Obj *nsObj)
-{
+static __device__ Jim_Cmd *JimCreateProcedureCmd(Jim_Interp *interp, Jim_Obj *argListObjPtr, Jim_Obj *staticsListObjPtr, Jim_Obj *bodyObjPtr, Jim_Obj *nsObj) {
 	int argListLen = Jim_ListLength(interp, argListObjPtr);
 	// Allocate space for both the command pointer and the arg list
 	Jim_Cmd *cmdPtr = (Jim_Cmd *)Jim_Alloc(sizeof(*cmdPtr) + sizeof(struct Jim_Cmd::a_::c_::Jim_ProcArg) * argListLen);
@@ -3376,13 +3222,13 @@ static __device__ Jim_Cmd *JimCreateProcedureCmd(Jim_Interp *interp, Jim_Obj *ar
 	if (staticsListObjPtr && JimCreateProcedureStatics(interp, cmdPtr, staticsListObjPtr) != JIM_OK)
 		goto err;
 	// Parse the args out into arglist, validating as we go Examine the argument list for default parameters and 'args'
-	for (int i = 0; i < argListLen; i++) {
+	int i; for (i = 0; i < argListLen; i++) {
 		// Examine a parameter
-		Jim_Obj *argPtr = Jim_ListGetIndex(interp, argListObjPtr, i);
-		int len = Jim_ListLength(interp, argPtr);
+		Jim_Obj *argPtr; argPtr = Jim_ListGetIndex(interp, argListObjPtr, i);
+		int len; len = Jim_ListLength(interp, argPtr);
 		if (len == 0) {
 			Jim_SetResultString(interp, "argument with no name", -1);
-err:
+		err:
 			JimDecrCmdRefCount(interp, cmdPtr);
 			return NULL;
 		}
@@ -3423,8 +3269,7 @@ err:
 	return cmdPtr;
 }
 
-__device__ int Jim_DeleteCommand(Jim_Interp *interp, const char *name)
-{
+__device__ int Jim_DeleteCommand(Jim_Interp *interp, const char *name) {
 	int ret = JIM_OK;
 	Jim_Obj *qualifiedNameObj;
 	const char *qualname = JimQualifyName(interp, name, &qualifiedNameObj);
@@ -3438,8 +3283,7 @@ __device__ int Jim_DeleteCommand(Jim_Interp *interp, const char *name)
 	return ret;
 }
 
-__device__ int Jim_RenameCommand(Jim_Interp *interp, const char *oldName, const char *newName)
-{
+__device__ int Jim_RenameCommand(Jim_Interp *interp, const char *oldName, const char *newName) {
 	int ret = JIM_ERROR;
 	if (newName[0] == 0)
 		return Jim_DeleteCommand(interp, oldName);
@@ -3477,13 +3321,11 @@ __device__ int Jim_RenameCommand(Jim_Interp *interp, const char *oldName, const 
 // -----------------------------------------------------------------------------
 #pragma region Command object
 
-static __device__ void FreeCommandInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ void FreeCommandInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	Jim_DecrRefCount(interp, objPtr->internalRep.cmdValue.nsObj);
 }
 
-static __device__ void DupCommandInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+static __device__ void DupCommandInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	dupPtr->internalRep.cmdValue = srcPtr->internalRep.cmdValue;
 	dupPtr->typePtr = srcPtr->typePtr;
 	Jim_IncrRefCount(dupPtr->internalRep.cmdValue.nsObj);
@@ -3501,8 +3343,7 @@ __constant__ static const Jim_ObjType _commandObjType = {
 // a cached info instead to perform the lookup into the hash table every time. The information cached may not be uptodate, in such
 // a case the lookup is performed and the cache updated.
 // Respects the 'upcall' setting
-__device__ Jim_Cmd *Jim_GetCommand(Jim_Interp *interp, Jim_Obj *objPtr, int flags)
-{
+__device__ Jim_Cmd *Jim_GetCommand(Jim_Interp *interp, Jim_Obj *objPtr, int flags) {
 	Jim_Cmd *cmd;
 	// In order to be valid, the proc epoch must match and the lookup must have occurred in the same namespace
 	if (objPtr->typePtr != &_commandObjType || objPtr->internalRep.cmdValue.procEpoch != interp->procEpoch
@@ -3510,42 +3351,42 @@ __device__ Jim_Cmd *Jim_GetCommand(Jim_Interp *interp, Jim_Obj *objPtr, int flag
 		|| !Jim_StringEqObj(objPtr->internalRep.cmdValue.nsObj, interp->framePtr->nsObj)
 #endif
 		) {
-			// Not cached or out of date, so lookup
-			// Do we need to try the local namespace?
-			const char *name = Jim_String(objPtr);
-			Jim_HashEntry *he;
-			if (name[0] == ':' && name[1] == ':')
-				while (*++name == ':') { }
+		// Not cached or out of date, so lookup
+		// Do we need to try the local namespace?
+		const char *name = Jim_String(objPtr);
+		Jim_HashEntry *he;
+		if (name[0] == ':' && name[1] == ':')
+			while (*++name == ':') {}
 #ifdef jim_ext_namespace
-			else if (Jim_Length(interp->framePtr->nsObj)) {
-				// This command is being defined in a non-global namespace
-				Jim_Obj *nameObj = Jim_DuplicateObj(interp, interp->framePtr->nsObj);
-				Jim_AppendStrings(interp, nameObj, "::", name, NULL);
-				he = Jim_FindHashEntry(&interp->commands, Jim_String(nameObj));
-				Jim_FreeNewObj(interp, nameObj);
-				if (he)
-					goto found;
-			}
+		else if (Jim_Length(interp->framePtr->nsObj)) {
+			// This command is being defined in a non-global namespace
+			Jim_Obj *nameObj = Jim_DuplicateObj(interp, interp->framePtr->nsObj);
+			Jim_AppendStrings(interp, nameObj, "::", name, NULL);
+			he = Jim_FindHashEntry(&interp->commands, Jim_String(nameObj));
+			Jim_FreeNewObj(interp, nameObj);
+			if (he)
+				goto found;
+		}
 #endif
-			// Lookup in the global namespace
-			he = Jim_FindHashEntry(&interp->commands, name);
-			if (he == NULL) {
-				if (flags & JIM_ERRMSG)
-					Jim_SetResultFormatted(interp, "invalid command name \"%#s\"", objPtr);
-				return NULL;
-			}
+		// Lookup in the global namespace
+		he = Jim_FindHashEntry(&interp->commands, name);
+		if (he == NULL) {
+			if (flags & JIM_ERRMSG)
+				Jim_SetResultFormatted(interp, "invalid command name \"%#s\"", objPtr);
+			return NULL;
+		}
 #ifdef jim_ext_namespace
-found:
+		found :
 #endif
-			cmd = (Jim_Cmd *)Jim_GetHashEntryVal(he);
+			  cmd = (Jim_Cmd *)Jim_GetHashEntryVal(he);
 
-			// Free the old internal repr and set the new one.
-			Jim_FreeIntRep(interp, objPtr);
-			objPtr->typePtr = &_commandObjType;
-			objPtr->internalRep.cmdValue.procEpoch = interp->procEpoch;
-			objPtr->internalRep.cmdValue.cmdPtr = cmd;
-			objPtr->internalRep.cmdValue.nsObj = interp->framePtr->nsObj;
-			Jim_IncrRefCount(interp->framePtr->nsObj);
+			  // Free the old internal repr and set the new one.
+			  Jim_FreeIntRep(interp, objPtr);
+			  objPtr->typePtr = &_commandObjType;
+			  objPtr->internalRep.cmdValue.procEpoch = interp->procEpoch;
+			  objPtr->internalRep.cmdValue.cmdPtr = cmd;
+			  objPtr->internalRep.cmdValue.nsObj = interp->framePtr->nsObj;
+			  Jim_IncrRefCount(interp->framePtr->nsObj);
 	}
 	else
 		cmd = objPtr->internalRep.cmdValue.cmdPtr;
@@ -3579,8 +3420,7 @@ static __device__ const Jim_ObjType _variableObjType = {
 };
 
 // Check that the name does not contain embedded nulls. Variable and procedure names are manipulated as null terminated strings, so don't allow names with embedded nulls.
-static __device__ int JimValidName(Jim_Interp *interp, const char *type, Jim_Obj *nameObjPtr)
-{
+static __device__ int JimValidName(Jim_Interp *interp, const char *type, Jim_Obj *nameObjPtr) {
 	// Variable names and proc names can't contain embedded nulls 
 	if (nameObjPtr->typePtr != &_variableObjType) {
 		int len;
@@ -3595,8 +3435,7 @@ static __device__ int JimValidName(Jim_Interp *interp, const char *type, Jim_Obj
 
 // This method should be called only by the variable API. It returns JIM_OK on success (variable already exists),
 // JIM_ERROR if it does not exist, JIM_DICT_SUGAR if it's not a variable name, but syntax glue for [dict] i.e. the last character is ')'
-static __device__ int SetVariableFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
-{
+static __device__ int SetVariableFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr) {
 	// Check if the object is already an uptodate variable
 	Jim_CallFrame *framePtr;
 	if (objPtr->typePtr == &_variableObjType) {
@@ -3619,7 +3458,7 @@ static __device__ int SetVariableFromAny(Jim_Interp *interp, struct Jim_Obj *obj
 
 	int global;
 	if (varName[0] == ':' && varName[1] == ':') {
-		while (*++varName == ':') { }
+		while (*++varName == ':') {}
 		global = 1;
 		framePtr = interp->topFramePtr;
 	}
@@ -3650,8 +3489,7 @@ static __device__ int SetVariableFromAny(Jim_Interp *interp, struct Jim_Obj *obj
 static __device__ int JimDictSugarSet(Jim_Interp *interp, Jim_Obj *ObjPtr, Jim_Obj *valObjPtr);
 static __device__ Jim_Obj *JimDictSugarGet(Jim_Interp *interp, Jim_Obj *ObjPtr, int flags);
 
-static __device__ Jim_Var *JimCreateVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_Obj *valObjPtr)
-{
+static __device__ Jim_Var *JimCreateVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_Obj *valObjPtr) {
 	// New variable to create
 	Jim_Var *var = (Jim_Var *)Jim_Alloc(sizeof(*var));
 	var->objPtr = valObjPtr;
@@ -3662,7 +3500,7 @@ static __device__ Jim_Var *JimCreateVariable(Jim_Interp *interp, Jim_Obj *nameOb
 	int global;
 	const char *name = Jim_String(nameObjPtr);
 	if (name[0] == ':' && name[1] == ':') {
-		while (*++name == ':') { }
+		while (*++name == ':') {}
 		framePtr = interp->topFramePtr;
 		global = 1;
 	}
@@ -3684,8 +3522,7 @@ static __device__ Jim_Var *JimCreateVariable(Jim_Interp *interp, Jim_Obj *nameOb
 
 // For now that's dummy. Variables lookup should be optimized in many ways, with caching of lookups, and possibly with a table of pre-allocated vars in every CallFrame for local vars.
 // All the caching should also have an 'epoch' mechanism similar to the one used by Tcl for procedures lookup caching.
-__device__ int Jim_SetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_Obj *valObjPtr, int flags)
-{
+__device__ int Jim_SetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_Obj *valObjPtr, int flags) {
 	Jim_CallFrame *savedFramePtr;
 	int global = (flags & JIMGLOBAL_);
 	if (global) { savedFramePtr = interp->framePtr; interp->framePtr = interp->topFramePtr; }
@@ -3703,7 +3540,7 @@ __device__ int Jim_SetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_Obj 
 		JimCreateVariable(interp, nameObjPtr, valObjPtr);
 		break;
 	case JIM_OK:
-		Jim_Var *var = nameObjPtr->internalRep.varValue.varPtr;
+		Jim_Var * var = nameObjPtr->internalRep.varValue.varPtr;
 		if (var->linkFramePtr == NULL) {
 			Jim_IncrRefCount(valObjPtr);
 			Jim_DecrRefCount(interp, var->objPtr);
@@ -3727,8 +3564,7 @@ __device__ int Jim_SetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_Obj 
 	return JIM_OK;
 }
 
-__device__ int Jim_SetVariableStr(Jim_Interp *interp, const char *name, Jim_Obj *objPtr, int flags)
-{
+__device__ int Jim_SetVariableStr(Jim_Interp *interp, const char *name, Jim_Obj *objPtr, int flags) {
 	Jim_Obj *nameObjPtr = Jim_NewStringObj(interp, name, -1);
 	Jim_IncrRefCount(nameObjPtr);
 	int result = Jim_SetVariable(interp, nameObjPtr, objPtr, flags);
@@ -3736,8 +3572,7 @@ __device__ int Jim_SetVariableStr(Jim_Interp *interp, const char *name, Jim_Obj 
 	return result;
 }
 
-__device__ int Jim_SetVariableStrWithStr(Jim_Interp *interp, const char *name, const char *val, int flags)
-{
+__device__ int Jim_SetVariableStrWithStr(Jim_Interp *interp, const char *name, const char *val, int flags) {
 	Jim_Obj *nameObjPtr = Jim_NewStringObj(interp, name, -1);
 	Jim_Obj *valObjPtr = Jim_NewStringObj(interp, val, -1);
 	Jim_IncrRefCount(nameObjPtr);
@@ -3748,8 +3583,7 @@ __device__ int Jim_SetVariableStrWithStr(Jim_Interp *interp, const char *name, c
 	return result;
 }
 
-__device__ int Jim_SetVariableLink(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_Obj *targetNameObjPtr, Jim_CallFrame *targetCallFrame)
-{
+__device__ int Jim_SetVariableLink(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_Obj *targetNameObjPtr, Jim_CallFrame *targetCallFrame) {
 	// Check for an existing variable or link 
 	Jim_Var *varPtr;
 	switch (SetVariableFromAny(interp, nameObjPtr)) {
@@ -3772,7 +3606,7 @@ __device__ int Jim_SetVariableLink(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_
 	const char *varName = Jim_String(nameObjPtr);
 	Jim_CallFrame *framePtr;
 	if (varName[0] == ':' && varName[1] == ':') {
-		while (*++varName == ':') { } // Linking a global var does nothing
+		while (*++varName == ':') {} // Linking a global var does nothing
 		framePtr = interp->topFramePtr;
 	}
 	else
@@ -3780,7 +3614,7 @@ __device__ int Jim_SetVariableLink(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_
 
 	const char *targetName = Jim_String(targetNameObjPtr);
 	if (targetName[0] == ':' && targetName[1] == ':') {
-		while (*++targetName == ':') { }
+		while (*++targetName == ':') {}
 		targetNameObjPtr = Jim_NewStringObj(interp, targetName, -1);
 		targetCallFrame = interp->topFramePtr;
 	}
@@ -3824,8 +3658,7 @@ __device__ int Jim_SetVariableLink(Jim_Interp *interp, Jim_Obj *nameObjPtr, Jim_
 //
 // If JIM_UNSHARED is set and the variable is an array element (dict sugar) in a dictionary which is shared, the array variable value is duplicated first.
 // This allows the array element to be updated (e.g. append, lappend) without affecting other references to the dictionary.
-__device__ Jim_Obj *Jim_GetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, int flags)
-{
+__device__ Jim_Obj *Jim_GetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, int flags) {
 	Jim_CallFrame *savedFramePtr;
 	int global = (flags & JIMGLOBAL_);
 	if (global) { savedFramePtr = interp->framePtr; interp->framePtr = interp->topFramePtr; }
@@ -3863,8 +3696,7 @@ __device__ Jim_Obj *Jim_GetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, int
 	return NULL;
 }
 
-__device__ Jim_Obj *Jim_GetVariableStr(Jim_Interp *interp, const char *name, int flags)
-{
+__device__ Jim_Obj *Jim_GetVariableStr(Jim_Interp *interp, const char *name, int flags) {
 	Jim_Obj *nameObjPtr = Jim_NewStringObj(interp, name, -1);
 	Jim_IncrRefCount(nameObjPtr);
 	Jim_Obj *varObjPtr = Jim_GetVariable(interp, nameObjPtr, flags);
@@ -3873,8 +3705,7 @@ __device__ Jim_Obj *Jim_GetVariableStr(Jim_Interp *interp, const char *name, int
 }
 
 // Unset a variable. Note: On success unset invalidates all the variable objects created in the current call frame incrementing. */
-__device__ int Jim_UnsetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, int flags)
-{
+__device__ int Jim_UnsetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, int flags) {
 	Jim_CallFrame *savedFramePtr;
 	int global = (flags & JIMGLOBAL_);
 	if (global) { savedFramePtr = interp->framePtr; interp->framePtr = interp->topFramePtr; }
@@ -3921,8 +3752,7 @@ __device__ int Jim_UnsetVariable(Jim_Interp *interp, Jim_Obj *nameObjPtr, int fl
 // Given a variable name for [dict] operation syntax sugar, this function returns two objects, the first with the name
 // of the variable to set, and the second with the respective key. For example "foo(bar)" will return objects with string repr. of "foo" and "bar".
 // The returned objects have refcount = 1. The function can't fail.
-static __device__ void JimDictSugarParseVarKey(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj **varPtrPtr, Jim_Obj **keyPtrPtr)
-{
+static __device__ void JimDictSugarParseVarKey(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj **varPtrPtr, Jim_Obj **keyPtrPtr) {
 	int len;
 	const char *str = Jim_GetString(objPtr, &len);
 	const char *p = strchr(str, '(');
@@ -3941,8 +3771,7 @@ static __device__ void JimDictSugarParseVarKey(Jim_Interp *interp, Jim_Obj *objP
 }
 
 // Helper of Jim_SetVariable() to deal with dict-syntax variable names. Also used by Jim_UnsetVariable() with valObjPtr = NULL.
-static __device__ int JimDictSugarSet(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *valObjPtr)
-{
+static __device__ int JimDictSugarSet(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *valObjPtr) {
 	SetDictSubstFromAny(interp, objPtr);
 	int err = Jim_SetDictKeysVector(interp, objPtr->internalRep.dictSubstValue.varNameObjPtr, &objPtr->internalRep.dictSubstValue.indexObjPtr, 1, valObjPtr, JIM_MUSTEXIST);
 	if (err == JIM_OK) // Don't keep an extra ref to the result
@@ -3963,8 +3792,7 @@ static __device__ int JimDictSugarSet(Jim_Interp *interp, Jim_Obj *objPtr, Jim_O
 
 // Expands the array variable (dict sugar) and returns the result, or NULL on error.
 // If JIM_UNSHARED is set and the dictionary is shared, it will be duplicated and stored back to the variable before expansion.
-static __device__ Jim_Obj *JimDictExpandArrayVariable(Jim_Interp *interp, Jim_Obj *varObjPtr, Jim_Obj *keyObjPtr, int flags)
-{
+static __device__ Jim_Obj *JimDictExpandArrayVariable(Jim_Interp *interp, Jim_Obj *varObjPtr, Jim_Obj *keyObjPtr, int flags) {
 	Jim_Obj *dictObjPtr = Jim_GetVariable(interp, varObjPtr, JIM_ERRMSG);
 	if (!dictObjPtr)
 		return NULL;
@@ -3979,22 +3807,19 @@ static __device__ Jim_Obj *JimDictExpandArrayVariable(Jim_Interp *interp, Jim_Ob
 }
 
 // Helper of Jim_GetVariable() to deal with dict-syntax variable names
-static __device__ Jim_Obj *JimDictSugarGet(Jim_Interp *interp, Jim_Obj *objPtr, int flags)
-{
+static __device__ Jim_Obj *JimDictSugarGet(Jim_Interp *interp, Jim_Obj *objPtr, int flags) {
 	SetDictSubstFromAny(interp, objPtr);
 	return JimDictExpandArrayVariable(interp, objPtr->internalRep.dictSubstValue.varNameObjPtr, objPtr->internalRep.dictSubstValue.indexObjPtr, flags);
 }
 
 // --------- $var(INDEX) substitution, using a specialized object -----------
 
-__device__ void FreeDictSubstInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ void FreeDictSubstInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	Jim_DecrRefCount(interp, objPtr->internalRep.dictSubstValue.varNameObjPtr);
 	Jim_DecrRefCount(interp, objPtr->internalRep.dictSubstValue.indexObjPtr);
 }
 
-__device__ void DupDictSubstInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+__device__ void DupDictSubstInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	JIM_NOTUSED(interp);
 	dupPtr->internalRep.dictSubstValue.varNameObjPtr = srcPtr->internalRep.dictSubstValue.varNameObjPtr;
 	dupPtr->internalRep.dictSubstValue.indexObjPtr = srcPtr->internalRep.dictSubstValue.indexObjPtr;
@@ -4002,8 +3827,7 @@ __device__ void DupDictSubstInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim
 }
 
 // Note: The object *must* be in dict-sugar format
-static __device__ void SetDictSubstFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ void SetDictSubstFromAny(Jim_Interp *interp, Jim_Obj *objPtr) {
 	if (objPtr->typePtr != &_dictSubstObjType) {
 		Jim_Obj *varObjPtr, *keyObjPtr;
 		if (objPtr->typePtr == &_interpolatedObjType) {
@@ -4025,8 +3849,7 @@ static __device__ void SetDictSubstFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
 // This function is used to expand [dict get] sugar in the form of $var(INDEX). The function is mainly used by Jim_EvalObj()
 // to deal with tokens of type JIM_TT_DICTSUGAR. objPtr points to an object that is *guaranteed* to be in the form VARNAME(INDEX).
 // The 'index' part is [subst]ituted, and is used to lookup a key inside the [dict]ionary contained in variable VARNAME.
-static __device__ Jim_Obj *JimExpandDictSugar(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ Jim_Obj *JimExpandDictSugar(Jim_Interp *interp, Jim_Obj *objPtr) {
 	Jim_Obj *substKeyObjPtr = NULL;
 	SetDictSubstFromAny(interp, objPtr);
 	if (Jim_SubstObj(interp, objPtr->internalRep.dictSubstValue.indexObjPtr, &substKeyObjPtr, JIM_NONE) != JIM_OK)
@@ -4037,8 +3860,7 @@ static __device__ Jim_Obj *JimExpandDictSugar(Jim_Interp *interp, Jim_Obj *objPt
 	return resObjPtr;
 }
 
-static __device__ Jim_Obj *JimExpandExprSugar(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ Jim_Obj *JimExpandExprSugar(Jim_Interp *interp, Jim_Obj *objPtr) {
 	Jim_Obj *resultObjPtr;
 	if (Jim_EvalExpression(interp, objPtr, &resultObjPtr) == JIM_OK) {
 		// Note that the result has a ref count of 1, but we need a ref count of 0
@@ -4055,8 +3877,7 @@ static __device__ Jim_Obj *JimExpandExprSugar(Jim_Interp *interp, Jim_Obj *objPt
 // -----------------------------------------------------------------------------
 #pragma region CallFrame
 
-static __device__ Jim_CallFrame *JimCreateCallFrame(Jim_Interp *interp, Jim_CallFrame *parent, Jim_Obj *nsObj)
-{
+static __device__ Jim_CallFrame *JimCreateCallFrame(Jim_Interp *interp, Jim_CallFrame *parent, Jim_Obj *nsObj) {
 	Jim_CallFrame *cf;
 	if (interp->freeFramesList) {
 		cf = interp->freeFramesList;
@@ -4084,8 +3905,7 @@ static __device__ Jim_CallFrame *JimCreateCallFrame(Jim_Interp *interp, Jim_Call
 	return cf;
 }
 
-static __device__ int JimDeleteLocalProcs(Jim_Interp *interp, Jim_Stack *localCommands)
-{
+static __device__ int JimDeleteLocalProcs(Jim_Interp *interp, Jim_Stack *localCommands) {
 	// Delete any local procs
 	if (localCommands) {
 		Jim_Obj *cmdNameObj;
@@ -4120,8 +3940,7 @@ static __device__ int JimDeleteLocalProcs(Jim_Interp *interp, Jim_Stack *localCo
 
 #define JIM_FCF_FULL 0          // Always free the vars hash table
 #define JIM_FCF_REUSE 1         // Reuse the vars hash table if possible
-static __device__ void JimFreeCallFrame(Jim_Interp *interp, Jim_CallFrame *cf, int action)
-{
+static __device__ void JimFreeCallFrame(Jim_Interp *interp, Jim_CallFrame *cf, int action) {
 	JimDeleteLocalProcs(interp, cf->localCommands);
 	if (cf->procArgsObjPtr)
 		Jim_DecrRefCount(interp, cf->procArgsObjPtr);
@@ -4161,8 +3980,7 @@ static __device__ void JimFreeCallFrame(Jim_Interp *interp, Jim_CallFrame *cf, i
 
 // References HashTable Type.
 // Keys are unsigned long integers, dynamically allocated for now but in the future it's worth to cache this 4 bytes objects. Values are pointers to Jim_References.
-static __device__ void JimReferencesHTValDestructor(void *interp, void *val)
-{
+static __device__ void JimReferencesHTValDestructor(void *interp, void *val) {
 	Jim_Reference *refPtr = (Jim_Reference *)val;
 	Jim_DecrRefCount((Jim_Interp *)interp, refPtr->objPtr);
 	if (refPtr->finalizerCmdNamePtr != NULL)
@@ -4170,30 +3988,26 @@ static __device__ void JimReferencesHTValDestructor(void *interp, void *val)
 	Jim_Free(val);
 }
 
-static __device__ unsigned int JimReferencesHTHashFunction(const void *key)
-{
+static __device__ unsigned int JimReferencesHTHashFunction(const void *key) {
 	// Only the least significant bits are used.
 	const unsigned long *widePtr = (const unsigned long *)key;
 	unsigned int intValue = (unsigned int)*widePtr;
 	return Jim_IntHashFunction(intValue);
 }
 
-static __device__ void *JimReferencesHTKeyDup(void *privdata, const void *key)
-{
+static __device__ void *JimReferencesHTKeyDup(void *privdata, const void *key) {
 	JIM_NOTUSED(privdata);
 	void *copy = Jim_Alloc(sizeof(unsigned long));
 	memcpy(copy, key, sizeof(unsigned long));
 	return copy;
 }
 
-static __device__ int JimReferencesHTKeyCompare(void *privdata, const void *key1, const void *key2)
-{
+static __device__ int JimReferencesHTKeyCompare(void *privdata, const void *key1, const void *key2) {
 	JIM_NOTUSED(privdata);
 	return memcmp(key1, key2, sizeof(unsigned long)) == 0;
 }
 
-static __device__ void JimReferencesHTKeyDestructor(void *privdata, void *key)
-{
+static __device__ void JimReferencesHTKeyDestructor(void *privdata, void *key) {
 	JIM_NOTUSED(privdata);
 	Jim_Free(key);
 }
@@ -4216,8 +4030,7 @@ __constant__ static const Jim_HashTableType JimReferencesHashTableType = {
 // in length, this means that it is not necessary to check any object with a string repr < 42, and usually there aren't many of these objects.
 
 #define JIM_REFERENCE_SPACE (35+JIM_REFERENCE_TAGLEN)
-static __device__ int JimFormatReference(char *buf, Jim_Reference *refPtr, unsigned long id)
-{
+static __device__ int JimFormatReference(char *buf, Jim_Reference *refPtr, unsigned long id) {
 	const char *fmt = "<reference.<%s>.%020lu>";
 	sprintf(buf, fmt, refPtr->tag, id);
 	return JIM_REFERENCE_SPACE;
@@ -4232,21 +4045,18 @@ __constant__ static const Jim_ObjType _referenceObjType = {
 	JIM_TYPE_REFERENCES,
 };
 
-static __device__ void UpdateStringOfReference(struct Jim_Obj *objPtr)
-{
+static __device__ void UpdateStringOfReference(struct Jim_Obj *objPtr) {
 	char buf[JIM_REFERENCE_SPACE + 1];
 	JimFormatReference(buf, objPtr->internalRep.refValue.refPtr, objPtr->internalRep.refValue.id);
 	JimSetStringBytes(objPtr, buf);
 }
 
 // returns true if 'c' is a valid reference tag character. i.e. inside the range [_a-zA-Z0-9]
-static __device__ int isrefchar(int c)
-{
+static __device__ int isrefchar(int c) {
 	return (c == '_' || isalnum(c));
 }
 
-static __device__ int SetReferenceFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ int SetReferenceFromAny(Jim_Interp *interp, Jim_Obj *objPtr) {
 	// Get the string representation
 	int len;
 	const char *str = Jim_GetString(objPtr, &len);
@@ -4254,8 +4064,8 @@ static __device__ int SetReferenceFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
 	if (len < JIM_REFERENCE_SPACE)
 		goto badformat;
 	// Trim spaces
-	const char *start = str;
-	const char *end = str + len - 1;
+	const char *start; start = str;
+	const char *end; end = str + len - 1;
 	while (*start == ' ')
 		start++;
 	while (*end == ' ' && end > start)
@@ -4277,16 +4087,16 @@ static __device__ int SetReferenceFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
 	refId[20] = '\0';
 	// Try to convert the ID into an unsigned long
 	char *endptr;
-	unsigned long value = strtoul(refId, &endptr, 10);
+	unsigned long value; value = strtoul(refId, &endptr, 10);
 	if (JimCheckConversion(refId, endptr) != JIM_OK)
 		goto badformat;
 	// Check if the reference really exists!
-	Jim_HashEntry *he = Jim_FindHashEntry(&interp->references, &value);
+	Jim_HashEntry *he; he = Jim_FindHashEntry(&interp->references, &value);
 	if (he == NULL) {
 		Jim_SetResultFormatted(interp, "invalid reference id \"%#s\"", objPtr);
 		return JIM_ERROR;
 	}
-	Jim_Reference *refPtr = (Jim_Reference *)Jim_GetHashEntryVal(he);
+	Jim_Reference *refPtr; refPtr = (Jim_Reference *)Jim_GetHashEntryVal(he);
 	// Free the old internal repr and set the new one.
 	Jim_FreeIntRep(interp, objPtr);
 	objPtr->typePtr = &_referenceObjType;
@@ -4299,8 +4109,7 @@ badformat:
 }
 
 // Returns a new reference pointing to objPtr, having cmdNamePtr as finalizer command (or NULL if there is no finalizer). The returned reference object has refcount = 0.
-__device__ Jim_Obj *Jim_NewReference(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *tagPtr, Jim_Obj *cmdNamePtr)
-{
+__device__ Jim_Obj *Jim_NewReference(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *tagPtr, Jim_Obj *cmdNamePtr) {
 	// Perform the Garbage Collection if needed.
 	Jim_CollectIfNeeded(interp);
 	struct Jim_Reference *refPtr = (struct Jim_Reference *)Jim_Alloc(sizeof(*refPtr));
@@ -4331,15 +4140,13 @@ __device__ Jim_Obj *Jim_NewReference(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Ob
 	return refObjPtr;
 }
 
-__device__ Jim_Reference *Jim_GetReference(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ Jim_Reference *Jim_GetReference(Jim_Interp *interp, Jim_Obj *objPtr) {
 	if (objPtr->typePtr != &_referenceObjType && SetReferenceFromAny(interp, objPtr) == JIM_ERROR)
 		return NULL;
 	return objPtr->internalRep.refValue.refPtr;
 }
 
-__device__ int Jim_SetFinalizer(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *cmdNamePtr)
-{
+__device__ int Jim_SetFinalizer(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *cmdNamePtr) {
 	Jim_Reference *refPtr;
 	if ((refPtr = Jim_GetReference(interp, objPtr)) == NULL)
 		return JIM_ERROR;
@@ -4350,8 +4157,7 @@ __device__ int Jim_SetFinalizer(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *cm
 	return JIM_OK;
 }
 
-__device__ int Jim_GetFinalizer(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj **cmdNamePtrPtr)
-{
+__device__ int Jim_GetFinalizer(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj **cmdNamePtrPtr) {
 	Jim_Reference *refPtr;
 	if ((refPtr = Jim_GetReference(interp, objPtr)) == NULL)
 		return JIM_ERROR;
@@ -4374,8 +4180,7 @@ __constant__ static const Jim_HashTableType JimRefMarkHashTableType = {
 };
 
 // Performs the garbage collection
-__device__ int Jim_Collect(Jim_Interp *interp)
-{
+__device__ int Jim_Collect(Jim_Interp *interp) {
 	int collected = 0;
 #ifndef JIM_BOOTSTRAP
 	// Avoid recursive calls
@@ -4476,8 +4281,7 @@ __device__ int Jim_Collect(Jim_Interp *interp)
 
 #define JIM_COLLECT_ID_PERIOD 5000
 #define JIM_COLLECT_TIME_PERIOD 300
-__device__ void Jim_CollectIfNeeded(Jim_Interp *interp)
-{
+__device__ void Jim_CollectIfNeeded(Jim_Interp *interp) {
 	unsigned long elapsedId = interp->referenceNextId - interp->lastCollectId;
 	int elapsedTime = (int)(time(NULL) - interp->lastCollectTime);
 	if (elapsedId > JIM_COLLECT_ID_PERIOD || elapsedTime > JIM_COLLECT_TIME_PERIOD)
@@ -4487,12 +4291,11 @@ __device__ void Jim_CollectIfNeeded(Jim_Interp *interp)
 #endif
 #pragma endregion
 
-__device__ int Jim_IsBigEndian(void)
-{
+__device__ int Jim_IsBigEndian(void) {
 	union {
 		unsigned short s;
 		unsigned char c[2];
-	} uval = {0x0102};
+	} uval = { 0x0102 };
 	return uval.c[0] == 1;
 }
 
@@ -4501,8 +4304,7 @@ __device__ int Jim_IsBigEndian(void)
 // -----------------------------------------------------------------------------
 #pragma region Interpreter related functions
 
-__device__ Jim_Interp *Jim_CreateInterp()
-{
+__device__ Jim_Interp *Jim_CreateInterp() {
 	Jim_Interp *i = (Jim_Interp *)Jim_Alloc(sizeof(*i));
 	memset(i, 0, sizeof(*i));
 	i->maxCallFrameDepth = JIM_MAX_CALLFRAME_DEPTH;
@@ -4549,8 +4351,7 @@ __device__ Jim_Interp *Jim_CreateInterp()
 	return i;
 }
 
-__device__ void Jim_FreeInterp(Jim_Interp *i)
-{
+__device__ void Jim_FreeInterp(Jim_Interp *i) {
 	// Free the active call frames list - must be done before i->commands is destroyed
 	Jim_CallFrame *cf, *cfx;
 	for (cf = i->framePtr; cf; cf = cfx) {
@@ -4617,8 +4418,7 @@ __device__ void Jim_FreeInterp(Jim_Interp *i)
 // This function accepts the 'level' argument in the form of the commands [uplevel] and [upvar].
 // Returns NULL on error.
 // Note: for a function accepting a relative integer as level suitable for implementation of [info level ?level?], see JimGetCallFrameByInteger()
-__device__ Jim_CallFrame *Jim_GetCallFrameByLevel(Jim_Interp *interp, Jim_Obj *levelObjPtr)
-{
+__device__ Jim_CallFrame *Jim_GetCallFrameByLevel(Jim_Interp *interp, Jim_Obj *levelObjPtr) {
 	long level;
 	const char *str;
 	if (levelObjPtr) {
@@ -4649,8 +4449,7 @@ __device__ Jim_CallFrame *Jim_GetCallFrameByLevel(Jim_Interp *interp, Jim_Obj *l
 }
 
 // Similar to Jim_GetCallFrameByLevel() but the level is specified as a relative integer like in the [info level ?level?] command.
-static __device__ Jim_CallFrame *JimGetCallFrameByInteger(Jim_Interp *interp, Jim_Obj *levelObjPtr)
-{
+static __device__ Jim_CallFrame *JimGetCallFrameByInteger(Jim_Interp *interp, Jim_Obj *levelObjPtr) {
 	long level;
 	if (Jim_GetLong(interp, levelObjPtr, &level) == JIM_OK) {
 		// Convert from a relative to an absolute level
@@ -4667,15 +4466,13 @@ static __device__ Jim_CallFrame *JimGetCallFrameByInteger(Jim_Interp *interp, Ji
 	return NULL;
 }
 
-static __device__ void JimResetStackTrace(Jim_Interp *interp)
-{
+static __device__ void JimResetStackTrace(Jim_Interp *interp) {
 	Jim_DecrRefCount(interp, interp->stackTrace);
 	interp->stackTrace = Jim_NewListObj(interp, NULL, 0);
 	Jim_IncrRefCount(interp->stackTrace);
 }
 
-static __device__ void JimSetStackTrace(Jim_Interp *interp, Jim_Obj *stackTraceObj)
-{
+static __device__ void JimSetStackTrace(Jim_Interp *interp, Jim_Obj *stackTraceObj) {
 	// Increment reference first in case these are the same object
 	Jim_IncrRefCount(stackTraceObj);
 	Jim_DecrRefCount(interp, interp->stackTrace);
@@ -4688,8 +4485,7 @@ static __device__ void JimSetStackTrace(Jim_Interp *interp, Jim_Obj *stackTraceO
 			interp->addStackTrace = 1;
 }
 
-static __device__ void JimAppendStackTrace(Jim_Interp *interp, const char *procname, Jim_Obj *fileNameObj, int linenr)
-{
+static __device__ void JimAppendStackTrace(Jim_Interp *interp, const char *procname, Jim_Obj *fileNameObj, int linenr) {
 	if (!strcmp(procname, "unknown"))
 		procname = "";
 	if (!*procname && !Jim_Length(fileNameObj))
@@ -4722,16 +4518,14 @@ static __device__ void JimAppendStackTrace(Jim_Interp *interp, const char *procn
 	Jim_ListAppendElement(interp, interp->stackTrace, Jim_NewIntObj(interp, linenr));
 }
 
-__device__ int Jim_SetAssocData(Jim_Interp *interp, const char *key, Jim_InterpDeleteProc * delProc, void *data)
-{
+__device__ int Jim_SetAssocData(Jim_Interp *interp, const char *key, Jim_InterpDeleteProc * delProc, void *data) {
 	AssocDataValue *assocEntryPtr = (AssocDataValue *)Jim_Alloc(sizeof(AssocDataValue));
 	assocEntryPtr->delProc = delProc;
 	assocEntryPtr->data = data;
 	return Jim_AddHashEntry(&interp->assocData, key, assocEntryPtr);
 }
 
-__device__ void *Jim_GetAssocData(Jim_Interp *interp, const char *key)
-{
+__device__ void *Jim_GetAssocData(Jim_Interp *interp, const char *key) {
 	Jim_HashEntry *entryPtr = Jim_FindHashEntry(&interp->assocData, key);
 	if (entryPtr != NULL) {
 		AssocDataValue *assocEntryPtr = (AssocDataValue *)Jim_GetHashEntryVal(entryPtr);
@@ -4740,13 +4534,11 @@ __device__ void *Jim_GetAssocData(Jim_Interp *interp, const char *key)
 	return NULL;
 }
 
-__device__ int Jim_DeleteAssocData(Jim_Interp *interp, const char *key)
-{
+__device__ int Jim_DeleteAssocData(Jim_Interp *interp, const char *key) {
 	return Jim_DeleteHashEntry(&interp->assocData, key);
 }
 
-__device__ int Jim_GetExitCode(Jim_Interp *interp)
-{
+__device__ int Jim_GetExitCode(Jim_Interp *interp) {
 	return interp->exitCode;
 }
 
@@ -4778,8 +4570,7 @@ __constant__ static const Jim_ObjType _coercedDoubleObjType = {
 	JIM_TYPE_NONE,
 };
 
-static __device__ void UpdateStringOfInt(struct Jim_Obj *objPtr)
-{
+static __device__ void UpdateStringOfInt(struct Jim_Obj *objPtr) {
 	char buf[JIM_INTEGER_SPACE + 1];
 	jim_wide wideValue = JimWideValue(objPtr);
 	int pos = 0;
@@ -4807,8 +4598,7 @@ static __device__ void UpdateStringOfInt(struct Jim_Obj *objPtr)
 	JimSetStringBytes(objPtr, buf);
 }
 
-static __device__ int SetIntFromAny(Jim_Interp *interp, Jim_Obj *objPtr, int flags)
-{
+static __device__ int SetIntFromAny(Jim_Interp *interp, Jim_Obj *objPtr, int flags) {
 	if (objPtr->typePtr == &_coercedDoubleObjType) {
 		// Simple switch
 		objPtr->typePtr = &_intObjType;
@@ -4835,14 +4625,12 @@ static __device__ int SetIntFromAny(Jim_Interp *interp, Jim_Obj *objPtr, int fla
 }
 
 #ifdef JIM_OPTIMIZATION
-static __device__ int JimIsWide(Jim_Obj *objPtr)
-{
+static __device__ int JimIsWide(Jim_Obj *objPtr) {
 	return objPtr->typePtr == &_intObjType;
 }
 #endif
 
-__device__ int Jim_GetWide(Jim_Interp *interp, Jim_Obj *objPtr, jim_wide *widePtr)
-{
+__device__ int Jim_GetWide(Jim_Interp *interp, Jim_Obj *objPtr, jim_wide *widePtr) {
 	if (objPtr->typePtr != &_intObjType && SetIntFromAny(interp, objPtr, JIM_ERRMSG) == JIM_ERROR)
 		return JIM_ERROR;
 	*widePtr = JimWideValue(objPtr);
@@ -4858,8 +4646,7 @@ static __device__ int JimGetWideNoErr(Jim_Interp *interp, Jim_Obj *objPtr, jim_w
 	return JIM_OK;
 }
 
-__device__ int Jim_GetLong(Jim_Interp *interp, Jim_Obj *objPtr, long *longPtr)
-{
+__device__ int Jim_GetLong(Jim_Interp *interp, Jim_Obj *objPtr, long *longPtr) {
 	jim_wide wideValue;
 	int retval = Jim_GetWide(interp, objPtr, &wideValue);
 	if (retval == JIM_OK) {
@@ -4869,8 +4656,7 @@ __device__ int Jim_GetLong(Jim_Interp *interp, Jim_Obj *objPtr, long *longPtr)
 	return JIM_ERROR;
 }
 
-__device__ Jim_Obj *Jim_NewIntObj(Jim_Interp *interp, jim_wide wideValue)
-{
+__device__ Jim_Obj *Jim_NewIntObj(Jim_Interp *interp, jim_wide wideValue) {
 	Jim_Obj *objPtr = Jim_NewObj(interp);
 	objPtr->typePtr = &_intObjType;
 	objPtr->bytes = NULL;
@@ -4907,8 +4693,7 @@ __constant__ static const Jim_ObjType _doubleObjType = {
 #define isinf(X) (1.0 / (X) == 0.0)
 #endif
 
-static __device__ void UpdateStringOfDouble(struct Jim_Obj *objPtr)
-{
+static __device__ void UpdateStringOfDouble(struct Jim_Obj *objPtr) {
 	double value = objPtr->internalRep.doubleValue;
 	if (isnan(value)) {
 		JimSetStringBytes(objPtr, "NaN");
@@ -4949,8 +4734,7 @@ static __device__ void UpdateStringOfDouble(struct Jim_Obj *objPtr)
 	}
 }
 
-static __device__ int SetDoubleFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ int SetDoubleFromAny(Jim_Interp *interp, Jim_Obj *objPtr) {
 	double doubleValue;
 	jim_wide wideValue;
 	// Preserve the string representation. Needed so we can convert back to int without loss
@@ -4988,8 +4772,7 @@ static __device__ int SetDoubleFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
 		return JIM_OK;
 }
 
-__device__ int Jim_GetDouble(Jim_Interp *interp, Jim_Obj *objPtr, double *doublePtr)
-{
+__device__ int Jim_GetDouble(Jim_Interp *interp, Jim_Obj *objPtr, double *doublePtr) {
 	if (objPtr->typePtr == &_coercedDoubleObjType) {
 		*doublePtr = (double)JimWideValue(objPtr);
 		return JIM_OK;
@@ -5000,8 +4783,7 @@ __device__ int Jim_GetDouble(Jim_Interp *interp, Jim_Obj *objPtr, double *double
 	return JIM_OK;
 }
 
-__device__ Jim_Obj *Jim_NewDoubleObj(Jim_Interp *interp, double doubleValue)
-{
+__device__ Jim_Obj *Jim_NewDoubleObj(Jim_Interp *interp, double doubleValue) {
 	Jim_Obj *objPtr = Jim_NewObj(interp);
 	objPtr->typePtr = &_doubleObjType;
 	objPtr->bytes = NULL;
@@ -5033,15 +4815,13 @@ __constant__ static const Jim_ObjType _listObjType = {
 	JIM_TYPE_NONE,
 };
 
-__device__ void FreeListInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ void FreeListInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	for (int i = 0; i < objPtr->internalRep.listValue.len; i++)
 		Jim_DecrRefCount(interp, objPtr->internalRep.listValue.ele[i]);
 	Jim_Free(objPtr->internalRep.listValue.ele);
 }
 
-__device__ void DupListInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+__device__ void DupListInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	JIM_NOTUSED(interp);
 	dupPtr->internalRep.listValue.len = srcPtr->internalRep.listValue.len;
 	dupPtr->internalRep.listValue.maxLen = srcPtr->internalRep.listValue.maxLen;
@@ -5056,8 +4836,7 @@ __device__ void DupListInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj 
 #define JIM_ELESTR_SIMPLE 0
 #define JIM_ELESTR_BRACE 1
 #define JIM_ELESTR_QUOTE 2
-static __device__ unsigned char ListElementQuotingType(const char *s, int len)
-{
+static __device__ unsigned char ListElementQuotingType(const char *s, int len) {
 	int i, level, blevel, trySimple = 1;
 	// Try with the SIMPLE case
 	if (len == 0)
@@ -5084,7 +4863,7 @@ static __device__ unsigned char ListElementQuotingType(const char *s, int len)
 		case '{':
 		case '}':
 			goto testbrace;
-	}
+		}
 	return JIM_ELESTR_SIMPLE;
 testbrace:
 	// Test if it's possible to do with braces
@@ -5136,7 +4915,7 @@ testbrace:
 			case '\f':
 			case '\v':
 				return JIM_ELESTR_BRACE;
-		}
+			}
 		return JIM_ELESTR_SIMPLE;
 	}
 	return JIM_ELESTR_QUOTE;
@@ -5144,8 +4923,7 @@ testbrace:
 
 // Backslashes-escapes the null-terminated string 's' into the buffer at 'q' The buffer must be at least strlen(s) * 2 + 1 bytes long for the worst-case scenario.
 // Returns the length of the result.
-static __device__ int BackslashQuoteString(const char *s, int len, char *q)
-{
+static __device__ int BackslashQuoteString(const char *s, int len, char *q) {
 	char *p = q;
 	while (len--)
 		switch (*s) {
@@ -5189,13 +4967,12 @@ static __device__ int BackslashQuoteString(const char *s, int len, char *q)
 		default:
 			*p++ = *s++;
 			break;
-	}
+		}
 	*p = '\0';
 	return (int)(p - q);
 }
 
-static __device__ void JimMakeListStringRep(Jim_Obj *objPtr, Jim_Obj **objv, int objc)
-{
+static __device__ void JimMakeListStringRep(Jim_Obj *objPtr, Jim_Obj **objv, int objc) {
 #define STATIC_QUOTING_LEN 32
 	int i;
 	const char *strRep;
@@ -5267,13 +5044,11 @@ static __device__ void JimMakeListStringRep(Jim_Obj *objPtr, Jim_Obj **objv, int
 		Jim_Free(quotingType);
 }
 
-static __device__ void UpdateStringOfList(struct Jim_Obj *objPtr)
-{
+static __device__ void UpdateStringOfList(struct Jim_Obj *objPtr) {
 	JimMakeListStringRep(objPtr, objPtr->internalRep.listValue.ele, objPtr->internalRep.listValue.len);
 }
 
-static __device__ int SetListFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
-{
+static __device__ int SetListFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr) {
 	if (objPtr->typePtr == &_listObjType)
 		return JIM_OK;
 	// Optimise dict -> list for object with no string rep. Note that this may only save a little time, but it also preserves any source location of the dict elements which can be very useful
@@ -5328,8 +5103,7 @@ static __device__ int SetListFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
 	return JIM_OK;
 }
 
-__device__ Jim_Obj *Jim_NewListObj(Jim_Interp *interp, Jim_Obj *const *elements, int len)
-{
+__device__ Jim_Obj *Jim_NewListObj(Jim_Interp *interp, Jim_Obj *const *elements, int len) {
 	Jim_Obj *objPtr = Jim_NewObj(interp);
 	objPtr->typePtr = &_listObjType;
 	objPtr->bytes = NULL;
@@ -5344,15 +5118,13 @@ __device__ Jim_Obj *Jim_NewListObj(Jim_Interp *interp, Jim_Obj *const *elements,
 // Return a vector of Jim_Obj with the elements of a Jim list, and the length of the vector. Note that the user of this function should make
 // sure that the list object can't shimmer while the vector returned is in use, this vector is the one stored inside the internal representation
 // of the list object. This function is not exported, extensions should always access to the List object elements using Jim_ListIndex().
-static __device__ void JimListGetElements(Jim_Interp *interp, Jim_Obj *listObj, int *listLen, Jim_Obj ***listVec)
-{
+static __device__ void JimListGetElements(Jim_Interp *interp, Jim_Obj *listObj, int *listLen, Jim_Obj ***listVec) {
 	*listLen = Jim_ListLength(interp, listObj);
 	*listVec = listObj->internalRep.listValue.ele;
 }
 
 // Sorting uses ints, but commands may return wide
-static __device__ int JimSign(jim_wide w)
-{
+static __device__ int JimSign(jim_wide w) {
 	if (w == 0) return 0;
 	else if (w < 0) return -1;
 	return 1;
@@ -5374,13 +5146,12 @@ struct lsort_info {
 	int index;
 	int indexed;
 	int unique;
-	int (*subfn)(Jim_Obj **, Jim_Obj **);
+	int(*subfn)(Jim_Obj **, Jim_Obj **);
 };
 
 static __device__ struct lsort_info *sort_info;
 
-static __device__ int ListSortIndexHelper(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
-{
+static __device__ int ListSortIndexHelper(Jim_Obj **lhsObj, Jim_Obj **rhsObj) {
 	Jim_Obj *lObj, *rObj;
 	if (Jim_ListIndex(sort_info->interp, *lhsObj, sort_info->index, &lObj, JIM_ERRMSG) != JIM_OK || Jim_ListIndex(sort_info->interp, *rhsObj, sort_info->index, &rObj, JIM_ERRMSG) != JIM_OK)
 		longjmp(sort_info->jmpbuf, JIM_ERROR);
@@ -5388,26 +5159,22 @@ static __device__ int ListSortIndexHelper(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
 }
 
 // Sort the internal rep of a list.
-static __device__ int ListSortString(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
-{
+static __device__ int ListSortString(Jim_Obj **lhsObj, Jim_Obj **rhsObj) {
 	return Jim_StringCompareObj(sort_info->interp, *lhsObj, *rhsObj, 0) * sort_info->order;
 }
 
-static __device__ int ListSortStringNoCase(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
-{
+static __device__ int ListSortStringNoCase(Jim_Obj **lhsObj, Jim_Obj **rhsObj) {
 	return Jim_StringCompareObj(sort_info->interp, *lhsObj, *rhsObj, 1) * sort_info->order;
 }
 
-static __device__ int ListSortInteger(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
-{
+static __device__ int ListSortInteger(Jim_Obj **lhsObj, Jim_Obj **rhsObj) {
 	jim_wide lhs = 0, rhs = 0;
 	if (Jim_GetWide(sort_info->interp, *lhsObj, &lhs) != JIM_OK || Jim_GetWide(sort_info->interp, *rhsObj, &rhs) != JIM_OK)
 		longjmp(sort_info->jmpbuf, JIM_ERROR);
 	return JimSign(lhs - rhs) * sort_info->order;
 }
 
-static __device__ int ListSortReal(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
-{
+static __device__ int ListSortReal(Jim_Obj **lhsObj, Jim_Obj **rhsObj) {
 	double lhs = 0, rhs = 0;
 	if (Jim_GetDouble(sort_info->interp, *lhsObj, &lhs) != JIM_OK || Jim_GetDouble(sort_info->interp, *rhsObj, &rhs) != JIM_OK)
 		longjmp(sort_info->jmpbuf, JIM_ERROR);
@@ -5418,8 +5185,7 @@ static __device__ int ListSortReal(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
 	return -sort_info->order;
 }
 
-static __device__ int ListSortCommand(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
-{
+static __device__ int ListSortCommand(Jim_Obj **lhsObj, Jim_Obj **rhsObj) {
 	// This must be a valid list
 	Jim_Obj *compare_script = Jim_DuplicateObj(sort_info->interp, sort_info->command);
 	Jim_ListAppendElement(sort_info->interp, compare_script, *lhsObj);
@@ -5433,8 +5199,7 @@ static __device__ int ListSortCommand(Jim_Obj **lhsObj, Jim_Obj **rhsObj)
 
 // Remove duplicate elements from the (sorted) list in-place, according to the comparison function, comp.
 // Note that the last unique value is kept, not the first
-static __device__ void ListRemoveDuplicates(Jim_Obj *listObjPtr, int (*comp)(Jim_Obj **lhs, Jim_Obj **rhs))
-{
+static __device__ void ListRemoveDuplicates(Jim_Obj *listObjPtr, int(*comp)(Jim_Obj **lhs, Jim_Obj **rhs)) {
 	int src;
 	int dst = 0;
 	Jim_Obj **ele = listObjPtr->internalRep.listValue.ele;
@@ -5454,8 +5219,7 @@ static __device__ void ListRemoveDuplicates(Jim_Obj *listObjPtr, int (*comp)(Jim
 }
 
 // Sort a list *in place*. MUST be called with a non-shared list.
-static __device__ int ListSortElements(Jim_Interp *interp, Jim_Obj *listObjPtr, struct lsort_info *info)
-{
+static __device__ int ListSortElements(Jim_Interp *interp, Jim_Obj *listObjPtr, struct lsort_info *info) {
 	JimPanic(Jim_IsShared(listObjPtr), "ListSortElements called with shared object");
 	SetListFromAny(interp, listObjPtr);
 	// Allow lsort to be called reentrantly
@@ -5463,8 +5227,8 @@ static __device__ int ListSortElements(Jim_Interp *interp, Jim_Obj *listObjPtr, 
 	sort_info = info;
 	Jim_Obj **vector = listObjPtr->internalRep.listValue.ele;
 	int len = listObjPtr->internalRep.listValue.len;
-	typedef int (qsort_comparator)(const void*,const void*);
-	int (*fn)(Jim_Obj**,Jim_Obj**);
+	typedef int (qsort_comparator)(const void*, const void*);
+	int(*fn)(Jim_Obj**, Jim_Obj**);
 	switch (info->type) {
 	case lsort_info::JIM_LSORT_ASCII: fn = ListSortString; break;
 	case lsort_info::JIM_LSORT_NOCASE: fn = ListSortStringNoCase; break;
@@ -5495,8 +5259,7 @@ static __device__ int ListSortElements(Jim_Interp *interp, Jim_Obj *listObjPtr, 
 // check and invalidates the string repr. This version is used in the internals of the List Object and is not exported.
 // NOTE: this function can be called only against objects with internal type of List.
 // An insertion point (idx) of -1 means end-of-list.
-static __device__ void ListInsertElements(Jim_Obj *listPtr, int idx, int elemc, Jim_Obj *const *elemVec)
-{
+static __device__ void ListInsertElements(Jim_Obj *listPtr, int idx, int elemc, Jim_Obj *const *elemVec) {
 	int currentLen = listPtr->internalRep.listValue.len;
 	int requiredLen = currentLen + elemc;
 	if (requiredLen > listPtr->internalRep.listValue.maxLen) {
@@ -5520,27 +5283,23 @@ static __device__ void ListInsertElements(Jim_Obj *listPtr, int idx, int elemc, 
 }
 
 // Convenience call to ListInsertElements() to append a single element.
-static __device__ void ListAppendElement(Jim_Obj *listPtr, Jim_Obj *objPtr)
-{
+static __device__ void ListAppendElement(Jim_Obj *listPtr, Jim_Obj *objPtr) {
 	ListInsertElements(listPtr, -1, 1, &objPtr);
 }
 
 // Appends every element of appendListPtr into listPtr. Both have to be of the list type. Convenience call to ListInsertElements()
-static __device__ void ListAppendList(Jim_Obj *listPtr, Jim_Obj *appendListPtr)
-{
+static __device__ void ListAppendList(Jim_Obj *listPtr, Jim_Obj *appendListPtr) {
 	ListInsertElements(listPtr, -1, appendListPtr->internalRep.listValue.len, appendListPtr->internalRep.listValue.ele);
 }
 
-__device__ void Jim_ListAppendElement(Jim_Interp *interp, Jim_Obj *listPtr, Jim_Obj *objPtr)
-{
+__device__ void Jim_ListAppendElement(Jim_Interp *interp, Jim_Obj *listPtr, Jim_Obj *objPtr) {
 	JimPanic(Jim_IsShared(listPtr), "Jim_ListAppendElement called with shared object");
 	SetListFromAny(interp, listPtr);
 	Jim_InvalidateStringRep(listPtr);
 	ListAppendElement(listPtr, objPtr);
 }
 
-__device__ void Jim_ListAppendList(Jim_Interp *interp, Jim_Obj *listPtr, Jim_Obj *appendListPtr)
-{
+__device__ void Jim_ListAppendList(Jim_Interp *interp, Jim_Obj *listPtr, Jim_Obj *appendListPtr) {
 	JimPanic(Jim_IsShared(listPtr), "Jim_ListAppendList called with shared object");
 	SetListFromAny(interp, listPtr);
 	SetListFromAny(interp, appendListPtr);
@@ -5548,14 +5307,12 @@ __device__ void Jim_ListAppendList(Jim_Interp *interp, Jim_Obj *listPtr, Jim_Obj
 	ListAppendList(listPtr, appendListPtr);
 }
 
-__device__ int Jim_ListLength(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ int Jim_ListLength(Jim_Interp *interp, Jim_Obj *objPtr) {
 	SetListFromAny(interp, objPtr);
 	return objPtr->internalRep.listValue.len;
 }
 
-__device__ void Jim_ListInsertElements(Jim_Interp *interp, Jim_Obj *listPtr, int idx, int objc, Jim_Obj *const *objVec)
-{
+__device__ void Jim_ListInsertElements(Jim_Interp *interp, Jim_Obj *listPtr, int idx, int objc, Jim_Obj *const *objVec) {
 	JimPanic(Jim_IsShared(listPtr), "Jim_ListInsertElement called with shared object");
 	SetListFromAny(interp, listPtr);
 	if (idx >= 0 && idx > listPtr->internalRep.listValue.len)
@@ -5566,8 +5323,7 @@ __device__ void Jim_ListInsertElements(Jim_Interp *interp, Jim_Obj *listPtr, int
 	ListInsertElements(listPtr, idx, objc, objVec);
 }
 
-__device__ Jim_Obj *Jim_ListGetIndex(Jim_Interp *interp, Jim_Obj *listPtr, int idx)
-{
+__device__ Jim_Obj *Jim_ListGetIndex(Jim_Interp *interp, Jim_Obj *listPtr, int idx) {
 	SetListFromAny(interp, listPtr);
 	if ((idx >= 0 && idx >= listPtr->internalRep.listValue.len) || (idx < 0 && (-idx - 1) >= listPtr->internalRep.listValue.len))
 		return NULL;
@@ -5576,8 +5332,7 @@ __device__ Jim_Obj *Jim_ListGetIndex(Jim_Interp *interp, Jim_Obj *listPtr, int i
 	return listPtr->internalRep.listValue.ele[idx];
 }
 
-__device__ int Jim_ListIndex(Jim_Interp *interp, Jim_Obj *listPtr, int idx, Jim_Obj **objPtrPtr, int flags)
-{
+__device__ int Jim_ListIndex(Jim_Interp *interp, Jim_Obj *listPtr, int idx, Jim_Obj **objPtrPtr, int flags) {
 	*objPtrPtr = Jim_ListGetIndex(interp, listPtr, idx);
 	if (*objPtrPtr == NULL) {
 		if (flags & JIM_ERRMSG)
@@ -5587,8 +5342,7 @@ __device__ int Jim_ListIndex(Jim_Interp *interp, Jim_Obj *listPtr, int idx, Jim_
 	return JIM_OK;
 }
 
-static __device__ int ListSetIndex(Jim_Interp *interp, Jim_Obj *listPtr, int idx, Jim_Obj *newObjPtr, int flags)
-{
+static __device__ int ListSetIndex(Jim_Interp *interp, Jim_Obj *listPtr, int idx, Jim_Obj *newObjPtr, int flags) {
 	SetListFromAny(interp, listPtr);
 	if ((idx >= 0 && idx >= listPtr->internalRep.listValue.len) || (idx < 0 && (-idx - 1) >= listPtr->internalRep.listValue.len)) {
 		if (flags & JIM_ERRMSG)
@@ -5604,8 +5358,7 @@ static __device__ int ListSetIndex(Jim_Interp *interp, Jim_Obj *listPtr, int idx
 }
 
 // Modify the list stored in the variable named 'varNamePtr' setting the element specified by the 'indexc' indexes objects in 'indexv', with the new element 'newObjptr'. (implements the [lset] command)
-__device__ int Jim_ListSetIndex(Jim_Interp *interp, Jim_Obj *varNamePtr, Jim_Obj *const *indexv, int indexc, Jim_Obj *newObjPtr)
-{
+__device__ int Jim_ListSetIndex(Jim_Interp *interp, Jim_Obj *varNamePtr, Jim_Obj *const *indexv, int indexc, Jim_Obj *newObjPtr) {
 	Jim_Obj *varObjPtr, *objPtr;
 	varObjPtr = objPtr = Jim_GetVariable(interp, varNamePtr, JIM_ERRMSG | JIM_UNSHARED);
 	if (objPtr == NULL)
@@ -5642,8 +5395,7 @@ err:
 	return JIM_ERROR;
 }
 
-__device__ Jim_Obj *Jim_ListJoin(Jim_Interp *interp, Jim_Obj *listObjPtr, const char *joinStr, int joinStrLen)
-{
+__device__ Jim_Obj *Jim_ListJoin(Jim_Interp *interp, Jim_Obj *listObjPtr, const char *joinStr, int joinStrLen) {
 	int listLen = Jim_ListLength(interp, listObjPtr);
 	Jim_Obj *resObjPtr = Jim_NewEmptyStringObj(interp);
 	for (int i = 0; i < listLen;) {
@@ -5654,8 +5406,7 @@ __device__ Jim_Obj *Jim_ListJoin(Jim_Interp *interp, Jim_Obj *listObjPtr, const 
 	return resObjPtr;
 }
 
-__device__ Jim_Obj *Jim_ConcatObj(Jim_Interp *interp, int objc, Jim_Obj *const *objv)
-{
+__device__ Jim_Obj *Jim_ConcatObj(Jim_Interp *interp, int objc, Jim_Obj *const *objv) {
 	int i;
 	// If all the objects in objv are lists, it's possible to return a list as result, that's the concatenation of all the lists.
 	for (i = 0; i < objc; i++)
@@ -5700,8 +5451,7 @@ __device__ Jim_Obj *Jim_ConcatObj(Jim_Interp *interp, int objc, Jim_Obj *const *
 }
 
 // Returns a list composed of the elements in the specified range. first and start are directly accepted as Jim_Objects and processed for the end?-index? case.
-__device__ Jim_Obj *Jim_ListRange(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr)
-{
+__device__ Jim_Obj *Jim_ListRange(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr) {
 	int first, last;
 	if (Jim_GetIndex(interp, firstObjPtr, &first) != JIM_OK || Jim_GetIndex(interp, lastObjPtr, &last) != JIM_OK)
 		return NULL;
@@ -5729,26 +5479,22 @@ static __device__ int SetDictFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
 
 // Dict HashTable Type.
 // Keys and Values are Jim objects.
-static __device__ unsigned int JimObjectHTHashFunction(const void *key)
-{
+static __device__ unsigned int JimObjectHTHashFunction(const void *key) {
 	int len;
 	const char *str = Jim_GetString((Jim_Obj *)key, &len);
 	return Jim_GenHashFunction((const unsigned char *)str, len);
 }
 
-static __device__ int JimObjectHTKeyCompare(void *privdata, const void *key1, const void *key2)
-{
+static __device__ int JimObjectHTKeyCompare(void *privdata, const void *key1, const void *key2) {
 	return Jim_StringEqObj((Jim_Obj *)key1, (Jim_Obj *)key2);
 }
 
-static __device__ void *JimObjectHTKeyValDup(void *privdata, const void *val)
-{
+static __device__ void *JimObjectHTKeyValDup(void *privdata, const void *val) {
 	Jim_IncrRefCount((Jim_Obj *)val);
 	return (void *)val;
 }
 
-static __device__ void JimObjectHTKeyValDestructor(void *interp, void *val)
-{
+static __device__ void JimObjectHTKeyValDestructor(void *interp, void *val) {
 	Jim_DecrRefCount((Jim_Interp *)interp, (Jim_Obj *)val);
 }
 
@@ -5771,15 +5517,13 @@ __constant__ static const Jim_ObjType _dictObjType = {
 	JIM_TYPE_NONE,
 };
 
-__device__ void FreeDictInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ void FreeDictInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	JIM_NOTUSED(interp);
 	Jim_FreeHashTable((Jim_HashTable *)objPtr->internalRep.ptr);
 	Jim_Free(objPtr->internalRep.ptr);
 }
 
-__device__ void DupDictInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+__device__ void DupDictInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	// Create a new hash table
 	Jim_HashTable *ht = (Jim_HashTable *)srcPtr->internalRep.ptr;
 	Jim_HashTable *dupHt = (Jim_HashTable *)Jim_Alloc(sizeof(*dupHt));
@@ -5796,8 +5540,7 @@ __device__ void DupDictInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj 
 	dupPtr->typePtr = &_dictObjType;
 }
 
-static __device__ Jim_Obj **JimDictPairs(Jim_Obj *dictPtr, int *len)
-{
+static __device__ Jim_Obj **JimDictPairs(Jim_Obj *dictPtr, int *len) {
 	Jim_HashTable *ht = (Jim_HashTable *)dictPtr->internalRep.ptr;
 	// Turn the hash table into a flat vector of Jim_Objects.
 	Jim_Obj **objv = (Jim_Obj **)Jim_Alloc((ht->used * 2) * sizeof(Jim_Obj *));
@@ -5813,8 +5556,7 @@ static __device__ Jim_Obj **JimDictPairs(Jim_Obj *dictPtr, int *len)
 	return objv;
 }
 
-static __device__ void UpdateStringOfDict(struct Jim_Obj *objPtr)
-{
+static __device__ void UpdateStringOfDict(struct Jim_Obj *objPtr) {
 	// Turn the hash table into a flat vector of Jim_Objects.
 	int len;
 	Jim_Obj **objv = JimDictPairs(objPtr, &len);
@@ -5823,8 +5565,7 @@ static __device__ void UpdateStringOfDict(struct Jim_Obj *objPtr)
 	Jim_Free(objv);
 }
 
-static __device__ int SetDictFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
-{
+static __device__ int SetDictFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr) {
 	if (objPtr->typePtr == &_dictObjType)
 		return JIM_OK;
 	// A shared list, so get the string representation now to avoid changing the order in case of fast conversion to dict.
@@ -5857,8 +5598,7 @@ static __device__ int SetDictFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
 // Add an element to a dict. objPtr must be of the "dict" type. The higher-level exported function is Jim_DictAddElement().
 // If an element with the specified key already exists, the value associated is replaced with the new one.
 // if valueObjPtr == NULL, the key is instead removed if it exists.
-static __device__ int DictAddElement(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *keyObjPtr, Jim_Obj *valueObjPtr)
-{
+static __device__ int DictAddElement(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *keyObjPtr, Jim_Obj *valueObjPtr) {
 	Jim_HashTable *ht = (Jim_HashTable *)objPtr->internalRep.ptr;
 	if (valueObjPtr == NULL) // unset
 		return Jim_DeleteHashEntry(ht, keyObjPtr);
@@ -5868,8 +5608,7 @@ static __device__ int DictAddElement(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Ob
 
 // Add an element, higher-level interface for DictAddElement().
 // If valueObjPtr == NULL, the key is removed if it exists.
-__device__ int Jim_DictAddElement(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *keyObjPtr, Jim_Obj *valueObjPtr)
-{
+__device__ int Jim_DictAddElement(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *keyObjPtr, Jim_Obj *valueObjPtr) {
 	JimPanic(Jim_IsShared(objPtr), "Jim_DictAddElement called with shared object");
 	if (SetDictFromAny(interp, objPtr) != JIM_OK)
 		return JIM_ERROR;
@@ -5877,8 +5616,7 @@ __device__ int Jim_DictAddElement(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *
 	return DictAddElement(interp, objPtr, keyObjPtr, valueObjPtr);
 }
 
-__device__ Jim_Obj *Jim_NewDictObj(Jim_Interp *interp, Jim_Obj *const *elements, int len)
-{
+__device__ Jim_Obj *Jim_NewDictObj(Jim_Interp *interp, Jim_Obj *const *elements, int len) {
 	JimPanic(len % 2, "Jim_NewDictObj() 'len' argument must be even");
 	Jim_Obj *objPtr = Jim_NewObj(interp);
 	objPtr->typePtr = &_dictObjType;
@@ -5892,8 +5630,7 @@ __device__ Jim_Obj *Jim_NewDictObj(Jim_Interp *interp, Jim_Obj *const *elements,
 
 // Return the value associated to the specified dict key. Returns JIM_OK if OK, JIM_ERROR if entry not found or -1 if can't create dict value
 // Sets *objPtrPtr to non-NULL only upon success.
-__device__ int Jim_DictKey(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj *keyPtr, Jim_Obj **objPtrPtr, int flags)
-{
+__device__ int Jim_DictKey(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj *keyPtr, Jim_Obj **objPtrPtr, int flags) {
 	if (SetDictFromAny(interp, dictPtr) != JIM_OK)
 		return -1;
 	Jim_HashTable *ht = (Jim_HashTable *)dictPtr->internalRep.ptr;
@@ -5908,8 +5645,7 @@ __device__ int Jim_DictKey(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj *keyPtr
 }
 
 // Return an allocated array of key/value pairs for the dictionary. Stores the length in *len
-__device__ int Jim_DictPairs(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj ***objPtrPtr, int *len)
-{
+__device__ int Jim_DictPairs(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj ***objPtrPtr, int *len) {
 	if (SetDictFromAny(interp, dictPtr) != JIM_OK)
 		return JIM_ERROR;
 	*objPtrPtr = JimDictPairs(dictPtr, len);
@@ -5918,8 +5654,7 @@ __device__ int Jim_DictPairs(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj ***ob
 
 
 // Return the value associated to the specified dict keys
-__device__ int Jim_DictKeysVector(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj *const *keyv, int keyc, Jim_Obj **objPtrPtr, int flags)
-{
+__device__ int Jim_DictKeysVector(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj *const *keyv, int keyc, Jim_Obj **objPtrPtr, int flags) {
 	if (keyc == 0) {
 		*objPtrPtr = dictPtr;
 		return JIM_OK;
@@ -5938,8 +5673,7 @@ __device__ int Jim_DictKeysVector(Jim_Interp *interp, Jim_Obj *dictPtr, Jim_Obj 
 // Modify the dict stored into the variable named 'varNamePtr' setting the element specified by the 'keyc' keys objects in 'keyv', with the new value of the element 'newObjPtr'.
 // If newObjPtr == NULL the operation is to remove the given key from the dictionary.
 // If flags & JIM_ERRMSG, then failure to remove the key is considered an error and JIM_ERROR is returned. Otherwise it is ignored and JIM_OK is returned.
-__device__ int Jim_SetDictKeysVector(Jim_Interp *interp, Jim_Obj *varNamePtr, Jim_Obj *const *keyv, int keyc, Jim_Obj *newObjPtr, int flags)
-{
+__device__ int Jim_SetDictKeysVector(Jim_Interp *interp, Jim_Obj *varNamePtr, Jim_Obj *const *keyv, int keyc, Jim_Obj *newObjPtr, int flags) {
 	Jim_Obj *varObjPtr, *objPtr;
 	varObjPtr = objPtr = Jim_GetVariable(interp, varNamePtr, flags);
 	if (objPtr == NULL) {
@@ -6017,8 +5751,7 @@ __constant__ static const Jim_ObjType _indexObjType = {
 	JIM_TYPE_NONE,
 };
 
-static __device__ void UpdateStringOfIndex(struct Jim_Obj *objPtr)
-{
+static __device__ void UpdateStringOfIndex(struct Jim_Obj *objPtr) {
 	if (objPtr->internalRep.intValue == -1)
 		JimSetStringBytes(objPtr, "end");
 	else {
@@ -6032,8 +5765,7 @@ static __device__ void UpdateStringOfIndex(struct Jim_Obj *objPtr)
 	}
 }
 
-static __device__ int SetIndexFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ int SetIndexFromAny(Jim_Interp *interp, Jim_Obj *objPtr) {
 	// Get the string representation 
 	const char *str = Jim_String(objPtr);
 	// Try to convert into an index
@@ -6077,8 +5809,7 @@ badindex:
 	return JIM_ERROR;
 }
 
-__device__ int Jim_GetIndex(Jim_Interp *interp, Jim_Obj *objPtr, int *indexPtr)
-{
+__device__ int Jim_GetIndex(Jim_Interp *interp, Jim_Obj *objPtr, int *indexPtr) {
 	// Avoid shimmering if the object is an integer
 	if (objPtr->typePtr == &_intObjType) {
 		jim_wide val = JimWideValue(objPtr);
@@ -6123,13 +5854,11 @@ __constant__ static const Jim_ObjType _returnCodeObjType = {
 };
 
 // Converts a (standard) return code to a string. Returns "?" for non-standard return codes.
-__device__ const char *Jim_ReturnCode(int code)
-{
+__device__ const char *Jim_ReturnCode(int code) {
 	return (code < 0 || code >= (int)jimReturnCodesSize ? "?" : jimReturnCodes[code]);
 }
 
-static __device__ int SetReturnCodeFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ int SetReturnCodeFromAny(Jim_Interp *interp, Jim_Obj *objPtr) {
 	// Try to convert into an integer
 	int returnCode;
 	jim_wide wideValue;
@@ -6167,8 +5896,7 @@ static __device__ int JimParseExprIrrational(struct JimParserCtx *pc);
 
 // Exrp's Stack machine operators opcodes
 // Binary operators (numbers)
-enum
-{
+enum {
 	// Continues on from the JIM_TT_ space
 	// Operations
 	JIM_EXPROP_MUL = JIM_TT_EXPR_OP,// 20
@@ -6245,8 +5973,7 @@ enum
 	JIM_EXPROP_FUNC_POW,
 };
 
-struct JimExprState
-{
+struct JimExprState {
 	Jim_Obj **stack;
 	int stacklen;
 	int opcode;
@@ -6254,29 +5981,25 @@ struct JimExprState
 };
 
 // Operators table
-typedef struct Jim_ExprOperator
-{
+typedef struct Jim_ExprOperator {
 	const char *name;
-	int (*funcop)(Jim_Interp*interp,struct JimExprState*e);
+	int(*funcop)(Jim_Interp*interp, struct JimExprState*e);
 	unsigned char precedence;
 	unsigned char arity;
 	unsigned char lazy;
 	unsigned char namelen;
 } Jim_ExprOperator;
 
-static __device__ void ExprPush(struct JimExprState *e, Jim_Obj *obj)
-{
+static __device__ void ExprPush(struct JimExprState *e, Jim_Obj *obj) {
 	Jim_IncrRefCount(obj);
 	e->stack[e->stacklen++] = obj;
 }
 
-static __device__ Jim_Obj *ExprPop(struct JimExprState *e)
-{
+static __device__ Jim_Obj *ExprPop(struct JimExprState *e) {
 	return e->stack[--e->stacklen];
 }
 
-static __device__ int JimExprOpNumUnary(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpNumUnary(Jim_Interp *interp, struct JimExprState *e) {
 	int intresult = 1;
 	int rc = JIM_OK;
 	Jim_Obj *A = ExprPop(e);
@@ -6293,7 +6016,7 @@ static __device__ int JimExprOpNumUnary(Jim_Interp *interp, struct JimExprState 
 		case JIM_EXPROP_UNARYMINUS: wC = -wA; break;
 		case JIM_EXPROP_NOT: wC = !wA; break;
 		default: abort();
-	}
+		}
 	else if ((rc = Jim_GetDouble(interp, A, &dA)) == JIM_OK)
 		switch (e->opcode) {
 		case JIM_EXPROP_FUNC_INT:
@@ -6305,7 +6028,7 @@ static __device__ int JimExprOpNumUnary(Jim_Interp *interp, struct JimExprState 
 		case JIM_EXPROP_UNARYMINUS: dC = -dA; intresult = 0; break;
 		case JIM_EXPROP_NOT: wC = !dA; break;
 		default: abort();
-	}
+		}
 	if (rc == JIM_OK)
 		if (intresult)
 			ExprPush(e, Jim_NewIntObj(interp, wC));
@@ -6315,15 +6038,13 @@ static __device__ int JimExprOpNumUnary(Jim_Interp *interp, struct JimExprState 
 	return rc;
 }
 
-static __device__ double JimRandDouble(Jim_Interp *interp)
-{
+static __device__ double JimRandDouble(Jim_Interp *interp) {
 	unsigned long x;
 	JimRandomBytes(interp, &x, sizeof(x));
 	return (double)x / (unsigned long)~0;
 }
 
-static __device__ int JimExprOpIntUnary(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpIntUnary(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *A = ExprPop(e);
 	jim_wide wA;
 	int rc = Jim_GetWide(interp, A, &wA);
@@ -6338,21 +6059,19 @@ static __device__ int JimExprOpIntUnary(Jim_Interp *interp, struct JimExprState 
 			break;
 		default:
 			abort();
-	}
+		}
 	Jim_DecrRefCount(interp, A);
 	return rc;
 }
 
-static __device__ int JimExprOpNone(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpNone(Jim_Interp *interp, struct JimExprState *e) {
 	JimPanic(e->opcode != JIM_EXPROP_FUNC_RAND, "JimExprOpNone only support rand()");
 	ExprPush(e, Jim_NewDoubleObj(interp, JimRandDouble(interp)));
 	return JIM_OK;
 }
 
 #ifdef JIM_MATH_FUNCTIONS
-static __device__ int JimExprOpDoubleUnary(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpDoubleUnary(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *A = ExprPop(e);
 	double dA, dC;
 	int rc = Jim_GetDouble(interp, A, &dA);
@@ -6383,8 +6102,7 @@ static __device__ int JimExprOpDoubleUnary(Jim_Interp *interp, struct JimExprSta
 #endif
 
 // A binary operation on two ints
-static __device__ int JimExprOpIntBin(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpIntBin(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *B = ExprPop(e);
 	Jim_Obj *A = ExprPop(e);
 	jim_wide wA, wB;
@@ -6443,8 +6161,7 @@ static __device__ int JimExprOpIntBin(Jim_Interp *interp, struct JimExprState *e
 }
 
 // A binary operation on two ints or two doubles (or two strings for some ops)
-static __device__ int JimExprOpBin(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpBin(Jim_Interp *interp, struct JimExprState *e) {
 	int intresult = 1;
 	int rc = JIM_OK;
 	double dA, dB, dC = 0;
@@ -6484,7 +6201,7 @@ static __device__ int JimExprOpBin(Jim_Interp *interp, struct JimExprState *e)
 		case JIM_EXPROP_NUMEQ: wC = wA == wB; break;
 		case JIM_EXPROP_NUMNE: wC = wA != wB; break;
 		default: abort();
-	}
+		}
 	else if (Jim_GetDouble(interp, A, &dA) == JIM_OK && Jim_GetDouble(interp, B, &dB) == JIM_OK) {
 		intresult = 0;
 		switch (e->opcode) {
@@ -6544,8 +6261,7 @@ static __device__ int JimExprOpBin(Jim_Interp *interp, struct JimExprState *e)
 	return rc;
 }
 
-static __device__ int JimSearchList(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_Obj *valObj)
-{
+static __device__ int JimSearchList(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_Obj *valObj) {
 	int listlen = Jim_ListLength(interp, listObjPtr);
 	for (int i = 0; i < listlen; i++)
 		if (Jim_StringEqObj(Jim_ListGetIndex(interp, listObjPtr, i), valObj))
@@ -6553,8 +6269,7 @@ static __device__ int JimSearchList(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim
 	return 0;
 }
 
-static __device__ int JimExprOpStrBin(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpStrBin(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *B = ExprPop(e);
 	Jim_Obj *A = ExprPop(e);
 	jim_wide wC;
@@ -6575,8 +6290,7 @@ static __device__ int JimExprOpStrBin(Jim_Interp *interp, struct JimExprState *e
 	return JIM_OK;
 }
 
-static __device__ int ExprBool(Jim_Interp *interp, Jim_Obj *obj)
-{
+static __device__ int ExprBool(Jim_Interp *interp, Jim_Obj *obj) {
 	long l;
 	double d;
 	if (Jim_GetLong(interp, obj, &l) == JIM_OK) return l != 0;
@@ -6584,8 +6298,7 @@ static __device__ int ExprBool(Jim_Interp *interp, Jim_Obj *obj)
 	return -1;
 }
 
-static __device__ int JimExprOpAndLeft(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpAndLeft(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *skip = ExprPop(e);
 	Jim_Obj *A = ExprPop(e);
 	int rc = JIM_OK;
@@ -6602,8 +6315,7 @@ static __device__ int JimExprOpAndLeft(Jim_Interp *interp, struct JimExprState *
 	return rc;
 }
 
-static __device__ int JimExprOpOrLeft(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpOrLeft(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *skip = ExprPop(e);
 	Jim_Obj *A = ExprPop(e);
 	int rc = JIM_OK;
@@ -6621,8 +6333,7 @@ static __device__ int JimExprOpOrLeft(Jim_Interp *interp, struct JimExprState *e
 	return rc;
 }
 
-static __device__ int JimExprOpAndOrRight(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpAndOrRight(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *A = ExprPop(e);
 	int rc = JIM_OK;
 	switch (ExprBool(interp, A)) {
@@ -6634,8 +6345,7 @@ static __device__ int JimExprOpAndOrRight(Jim_Interp *interp, struct JimExprStat
 	return rc;
 }
 
-static __device__ int JimExprOpTernaryLeft(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpTernaryLeft(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *skip = ExprPop(e);
 	Jim_Obj *A = ExprPop(e);
 	int rc = JIM_OK;
@@ -6656,8 +6366,7 @@ static __device__ int JimExprOpTernaryLeft(Jim_Interp *interp, struct JimExprSta
 	return rc;
 }
 
-static __device__ int JimExprOpColonLeft(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpColonLeft(Jim_Interp *interp, struct JimExprState *e) {
 	Jim_Obj *skip = ExprPop(e);
 	Jim_Obj *B = ExprPop(e);
 	Jim_Obj *A = ExprPop(e);
@@ -6674,13 +6383,11 @@ static __device__ int JimExprOpColonLeft(Jim_Interp *interp, struct JimExprState
 	return JIM_OK;
 }
 
-static __device__ int JimExprOpNull(Jim_Interp *interp, struct JimExprState *e)
-{
+static __device__ int JimExprOpNull(Jim_Interp *interp, struct JimExprState *e) {
 	return JIM_OK;
 }
 
-enum
-{
+enum {
 	LAZY_NONE,
 	LAZY_OP,
 	LAZY_LEFT,
@@ -6779,8 +6486,7 @@ __constant__ static const struct Jim_ExprOperator Jim_ExprOperators[] = {
 #undef OPRINIT_LAZY
 #define JIM_EXPR_OPERATORS_NUM (sizeof(Jim_ExprOperators)/sizeof(struct Jim_ExprOperator))
 
-static __device__ int JimParseExpression(struct JimParserCtx *pc)
-{
+static __device__ int JimParseExpression(struct JimParserCtx *pc) {
 	// Discard spaces and quoted newline
 	while (isspace(*pc->p) || (*(pc->p) == '\\' && *(pc->p + 1) == '\n')) {
 		if (*pc->p == '\n')
@@ -6806,7 +6512,7 @@ static __device__ int JimParseExpression(struct JimParserCtx *pc)
 		goto singlechar;
 	case ',':
 		pc->tt = JIM_TT_SUBEXPR_COMMA;
-singlechar:
+	singlechar:
 		pc->tend = pc->p;
 		pc->p++;
 		pc->len--;
@@ -6847,8 +6553,7 @@ singlechar:
 	return JIM_OK;
 }
 
-static __device__ int JimParseExprNumber(struct JimParserCtx *pc)
-{
+static __device__ int JimParseExprNumber(struct JimParserCtx *pc) {
 	// Assume an integer for now
 	pc->tt = JIM_TT_EXPR_INT;
 	jim_strtoull(pc->p, (char **)&pc->p);
@@ -6856,7 +6561,7 @@ static __device__ int JimParseExprNumber(struct JimParserCtx *pc)
 	if (strchr("eENnIi.", *pc->p) || pc->p == pc->tstart) {
 		// Some stupid compilers insist they are cleverer that we are. Even a (void) cast doesn't prevent this warning!
 		char *end;
-		if (strtod(pc->tstart, &end)) { } // nothing
+		if (strtod(pc->tstart, &end)) {} // nothing
 		if (end == pc->tstart)
 			return JIM_ERROR;
 		if (end > pc->p) {
@@ -6870,8 +6575,7 @@ static __device__ int JimParseExprNumber(struct JimParserCtx *pc)
 	return JIM_OK;
 }
 
-static __device__ int JimParseExprIrrational(struct JimParserCtx *pc)
-{
+static __device__ int JimParseExprIrrational(struct JimParserCtx *pc) {
 	const char *irrationals[] = { "NaN", "nan", "NAN", "Inf", "inf", "INF", NULL };
 	for (int i = 0; irrationals[i]; i++) {
 		const char *irr = irrationals[i];
@@ -6886,8 +6590,7 @@ static __device__ int JimParseExprIrrational(struct JimParserCtx *pc)
 	return JIM_ERROR;
 }
 
-static __device__ int JimParseExprOperator(struct JimParserCtx *pc)
-{
+static __device__ int JimParseExprOperator(struct JimParserCtx *pc) {
 	// Try to get the longest match
 	int bestIdx = -1, bestLen = 0;
 	for (int i = 0; i < (signed)JIM_EXPR_OPERATORS_NUM; i++) {
@@ -6918,8 +6621,7 @@ static __device__ int JimParseExprOperator(struct JimParserCtx *pc)
 }
 
 __constant__ static Jim_ExprOperator _dummy_op;
-static __device__ const struct Jim_ExprOperator *JimExprOperatorInfoByOpcode(int opcode)
-{
+static __device__ const struct Jim_ExprOperator *JimExprOperatorInfoByOpcode(int opcode) {
 	return (opcode < JIM_TT_EXPR_OP ? &_dummy_op : &Jim_ExprOperators[opcode - JIM_TT_EXPR_OP]);
 }
 
@@ -6929,8 +6631,7 @@ __constant__ static const char * const _tt_names[JIM_TT_EXPR_OP] =
 #ifdef __CUDACC__
 __device__ char _jim_tt_name_buf[20];
 #endif
-__device__ const char *jim_tt_name(int type)
-{
+__device__ const char *jim_tt_name(int type) {
 	if (type < JIM_TT_EXPR_OP)
 		return _tt_names[type];
 	const struct Jim_ExprOperator *op = JimExprOperatorInfoByOpcode(type);
@@ -6963,23 +6664,20 @@ __constant__ static const Jim_ObjType _exprObjType = {
 };
 
 // Expr bytecode structure
-typedef struct ExprByteCode
-{
+typedef struct ExprByteCode {
 	ScriptToken *token;         // Tokens array
 	int len;                    // Length as number of tokens
 	int inUse;                  // Used for sharing
 } ExprByteCode;
 
-static __device__ void ExprFreeByteCode(Jim_Interp *interp, ExprByteCode *expr)
-{
+static __device__ void ExprFreeByteCode(Jim_Interp *interp, ExprByteCode *expr) {
 	for (int i = 0; i < expr->len; i++)
 		Jim_DecrRefCount(interp, expr->token[i].objPtr);
 	Jim_Free(expr->token);
 	Jim_Free(expr);
 }
 
-static __device__ void FreeExprInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ void FreeExprInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	ExprByteCode *expr = (ExprByteCode *)objPtr->internalRep.ptr;
 	if (expr) {
 		if (--expr->inUse != 0)
@@ -6988,8 +6686,7 @@ static __device__ void FreeExprInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
 	}
 }
 
-static __device__ void DupExprInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+static __device__ void DupExprInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	JIM_NOTUSED(interp);
 	JIM_NOTUSED(srcPtr);
 	// Just returns an simple string
@@ -6997,8 +6694,7 @@ static __device__ void DupExprInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, J
 }
 
 // Check if an expr program looks correct
-static __device__ int ExprCheckCorrectness(ExprByteCode *expr)
-{
+static __device__ int ExprCheckCorrectness(ExprByteCode *expr) {
 	int stacklen = 0;
 	int ternary = 0;
 	// Try to check if there are stack underflows, and make sure at the end of the program there is a single result on the stack.
@@ -7038,8 +6734,7 @@ static __device__ int ExprCheckCorrectness(ExprByteCode *expr)
 //   2) If it is false pushes 0 and skips <offset> instructions to reach the opcode just after &R
 // "&R" checks if 'a' is true:
 //      if it is true pushes 1, otherwise pushes 0.
-static __device__ int ExprAddLazyOperator(Jim_Interp *interp, ExprByteCode *expr, ParseToken *t)
-{
+static __device__ int ExprAddLazyOperator(Jim_Interp *interp, ExprByteCode *expr, ParseToken *t) {
 	// Search for the end of the first operator
 	int leftindex = expr->len - 1;
 	int arity = 1;
@@ -7068,15 +6763,14 @@ static __device__ int ExprAddLazyOperator(Jim_Interp *interp, ExprByteCode *expr
 	// Do we need to adjust the skip count for any &L, |L, ?L or :L in the left operand? */
 	for (int i = leftindex - 1; i > 0; i--) {
 		const struct Jim_ExprOperator *op = JimExprOperatorInfoByOpcode(expr->token[i].type);
-		if (op->lazy == LAZY_LEFT) 
+		if (op->lazy == LAZY_LEFT)
 			if (JimWideValue(expr->token[i - 1].objPtr) + i - 1 >= leftindex)
 				JimWideValue(expr->token[i - 1].objPtr) += 2;
 	}
 	return JIM_OK;
 }
 
-static __device__ int ExprAddOperator(Jim_Interp *interp, ExprByteCode * expr, ParseToken *t)
-{
+static __device__ int ExprAddOperator(Jim_Interp *interp, ExprByteCode * expr, ParseToken *t) {
 	struct ScriptToken *token = &expr->token[expr->len];
 	const struct Jim_ExprOperator *op = JimExprOperatorInfoByOpcode(t->type);
 	if (op->lazy == LAZY_OP) {
@@ -7095,8 +6789,7 @@ static __device__ int ExprAddOperator(Jim_Interp *interp, ExprByteCode * expr, P
 
 // Returns the index of the COLON_LEFT to the left of 'right_index' taking into account nesting.
 // The expression *must* be well formed, thus a COLON_LEFT will always be found.
-static __device__ int ExprTernaryGetColonLeftIndex(ExprByteCode *expr, int right_index)
-{
+static __device__ int ExprTernaryGetColonLeftIndex(ExprByteCode *expr, int right_index) {
 	int ternary_count = 1;
 	right_index--;
 	while (right_index > 1) {
@@ -7113,8 +6806,7 @@ static __device__ int ExprTernaryGetColonLeftIndex(ExprByteCode *expr, int right
 
 // Find the left/right indices for the ternary expression to the left of 'right_index'.
 // Returns 1 if found, and fills in *prev_right_index and *prev_left_index. Otherwise returns 0.
-static __device__ int ExprTernaryGetMoveIndices(ExprByteCode *expr, int right_index, int *prev_right_index, int *prev_left_index)
-{
+static __device__ int ExprTernaryGetMoveIndices(ExprByteCode *expr, int right_index, int *prev_right_index, int *prev_left_index) {
 	int i = right_index - 1;
 	int ternary_count = 1;
 	while (i > 1) {
@@ -7170,8 +6862,7 @@ static __device__ int ExprTernaryGetMoveIndices(ExprByteCode *expr, int right_in
 //    end if
 //
 // Note: care has to be taken for nested ternary constructs!!!
-static __device__ void ExprTernaryReorderExpression(Jim_Interp *interp, ExprByteCode *expr)
-{
+static __device__ void ExprTernaryReorderExpression(Jim_Interp *interp, ExprByteCode *expr) {
 	for (int i = expr->len - 1; i > 1; i--) {
 		if (expr->token[i].type != JIM_EXPROP_COLON_RIGHT)
 			continue;
@@ -7200,14 +6891,13 @@ static __device__ void ExprTernaryReorderExpression(Jim_Interp *interp, ExprByte
 		// This is 'colon left increment' = i - prev_right_index
 		// [prev_left_index]      : JIM_EXPROP_LEFT_RIGHT
 		// [prev_left_index-1]    : skip_count
-		JimWideValue(expr->token[prev_left_index-1].objPtr) += (i - prev_right_index);
+		JimWideValue(expr->token[prev_left_index - 1].objPtr) += (i - prev_right_index);
 		// Adjust for i-- in the loop
 		i++;
 	}
 }
 
-static __device__ ExprByteCode *ExprCreateByteCode(Jim_Interp *interp, const ParseTokenList *tokenlist, Jim_Obj *fileNameObj)
-{
+static __device__ ExprByteCode *ExprCreateByteCode(Jim_Interp *interp, const ParseTokenList *tokenlist, Jim_Obj *fileNameObj) {
 	int ok = 1;
 	int i;
 	int prevtt = JIM_TT_NONE;
@@ -7245,7 +6935,7 @@ static __device__ ExprByteCode *ExprCreateByteCode(Jim_Interp *interp, const Par
 		case JIM_TT_EXPRSUGAR:
 		case JIM_TT_CMD:
 			token->type = t->type;
-strexpr:
+		strexpr:
 			token->objPtr = Jim_NewStringObj(interp, t->token, t->len);
 			// Only commands need source info
 			if (t->type == JIM_TT_CMD)
@@ -7349,8 +7039,7 @@ err:
 }
 
 // This method takes the string representation of an expression and generates a program for the Expr's stack-based VM.
-static __device__ int SetExprFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
-{
+static __device__ int SetExprFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr) {
 	int rc = JIM_ERROR;
 	// Try to get information about filename / line number
 	int line;
@@ -7375,7 +7064,7 @@ static __device__ int SetExprFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr)
 	while (!parser.eof) {
 		if (JimParseExpression(&parser) != JIM_OK) {
 			ScriptTokenListFree(&tokenlist);
-invalidexpr:
+		invalidexpr:
 			Jim_SetResultFormatted(interp, "syntax error in expression: \"%#s\"", objPtr);
 			expr = NULL;
 			goto err;
@@ -7425,8 +7114,7 @@ err:
 	return rc;
 }
 
-static __device__ ExprByteCode *JimGetExpression(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ ExprByteCode *JimGetExpression(Jim_Interp *interp, Jim_Obj *objPtr) {
 	if (objPtr->typePtr != &_exprObjType)
 		if (SetExprFromAny(interp, objPtr) != JIM_OK)
 			return NULL;
@@ -7434,8 +7122,7 @@ static __device__ ExprByteCode *JimGetExpression(Jim_Interp *interp, Jim_Obj *ob
 }
 
 #ifdef JIM_OPTIMIZATION
-static __device__ Jim_Obj *JimExprIntValOrVar(Jim_Interp *interp, const ScriptToken *token)
-{
+static __device__ Jim_Obj *JimExprIntValOrVar(Jim_Interp *interp, const ScriptToken *token) {
 	if (token->type == JIM_TT_EXPR_INT) return token->objPtr;
 	else if (token->type == JIM_TT_VAR) return Jim_GetVariable(interp, token->objPtr, JIM_NONE);
 	else if (token->type == JIM_TT_DICTSUGAR) return JimExpandDictSugar(interp, token->objPtr);
@@ -7452,8 +7139,7 @@ static __device__ Jim_Obj *JimExprIntValOrVar(Jim_Interp *interp, const ScriptTo
 // -----------------------------------------------------------------------------
 #define JIM_EE_STATICSTACK_LEN 10
 
-__device__ int Jim_EvalExpression(Jim_Interp *interp, Jim_Obj *exprObjPtr, Jim_Obj **exprResultPtrPtr)
-{
+__device__ int Jim_EvalExpression(Jim_Interp *interp, Jim_Obj *exprObjPtr, Jim_Obj **exprResultPtrPtr) {
 	Jim_Obj *staticStack[JIM_EE_STATICSTACK_LEN];
 	int i;
 	int retcode = JIM_OK;
@@ -7569,7 +7255,7 @@ noopt:
 			// Skip some opcodes if necessary
 			i += e.skip;
 			continue; }
-	}
+		}
 	expr->inUse--;
 
 	if (retcode == JIM_OK)
@@ -7581,8 +7267,7 @@ noopt:
 	return retcode;
 }
 
-__device__ int Jim_GetBoolFromExpr(Jim_Interp *interp, Jim_Obj *exprObjPtr, int *boolPtr)
-{
+__device__ int Jim_GetBoolFromExpr(Jim_Interp *interp, Jim_Obj *exprObjPtr, int *boolPtr) {
 	jim_wide wideValue;
 	double doubleValue;
 	Jim_Obj *exprResultPtr;
@@ -7618,8 +7303,7 @@ __device__ int Jim_GetBoolFromExpr(Jim_Interp *interp, Jim_Obj *exprObjPtr, int 
 
 // A ScanFmtPartDescr will held the information of /one/ part of the whole scanformat string. This part will later be used to extract information
 // out from the string to be parsed by Jim_ScanString
-typedef struct ScanFmtPartDescr
-{
+typedef struct ScanFmtPartDescr {
 	char *arg;                  // Specification of a CHARSET conversion
 	char *prefix;               // Prefix to be scanned literally before conversion
 	size_t width;               // Maximal width of input to be converted
@@ -7633,8 +7317,7 @@ typedef struct ScanFmtPartDescr
 //As an add-on the internal object representation adds some scratch pad area for usage by Jim_ScanString to avoid endless allocating and freeing of memory for purpose of string scanning.
 //The error member points to a static allocated string in case of a mal-formed scanformat string or it contains '0' (NULL) in case of a valid parse representation.
 //The whole memory of the internal representation is allocated as a single area of memory that will be internally separated. So freeing and duplicating of such an object is cheap
-typedef struct ScanFmtStringObj
-{
+typedef struct ScanFmtStringObj {
 	jim_wide size;              // Size of internal repr in bytes
 	char *stringRep;            // Original string representation
 	size_t count;               // Number of ScanFmtPartDescr contained
@@ -7657,15 +7340,13 @@ __constant__ static const Jim_ObjType _scanFmtStringObjType = {
 	JIM_TYPE_NONE,
 };
 
-__device__ void FreeScanFmtInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ void FreeScanFmtInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	JIM_NOTUSED(interp);
 	Jim_Free((char *)objPtr->internalRep.ptr);
 	objPtr->internalRep.ptr = 0;
 }
 
-__device__ void DupScanFmtInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr)
-{
+__device__ void DupScanFmtInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_Obj *dupPtr) {
 	JIM_NOTUSED(interp);
 	size_t size = (size_t)((ScanFmtStringObj *)srcPtr->internalRep.ptr)->size;
 	ScanFmtStringObj *newVec = (ScanFmtStringObj *)Jim_Alloc((int)size);
@@ -7674,16 +7355,14 @@ __device__ void DupScanFmtInternalRep(Jim_Interp *interp, Jim_Obj *srcPtr, Jim_O
 	dupPtr->typePtr = &_scanFmtStringObjType;
 }
 
-static __device__ void UpdateStringOfScanFmt(Jim_Obj *objPtr)
-{
+static __device__ void UpdateStringOfScanFmt(Jim_Obj *objPtr) {
 	JimSetStringBytes(objPtr, ((ScanFmtStringObj *)objPtr->internalRep.ptr)->stringRep);
 }
 
 // SetScanFmtFromAny will parse a given string and create the internal representation of the format specification. In case of an error
 // the error data member of the internal representation will be set to an descriptive error text and the function will be left with
 // JIM_ERROR to indicate unsucessful parsing (aka. malformed scanformat specification
-static __device__ int SetScanFmtFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ int SetScanFmtFromAny(Jim_Interp *interp, Jim_Obj *objPtr) {
 	int maxCount, i, lastPos = -1;
 	const char *fmt = objPtr->bytes;
 	int maxFmtLen = objPtr->length;
@@ -7771,7 +7450,7 @@ static __device__ int SetScanFmtFromAny(Jim_Interp *interp, Jim_Obj *objPtr)
 					descr->width = width;
 					fmt += skip;
 				}
-				if (descr->pos > 0 && (size_t) descr->pos > fmtObj->maxPos)
+				if (descr->pos > 0 && (size_t)descr->pos > fmtObj->maxPos)
 					fmtObj->maxPos = descr->pos;
 			}
 			// Number was not a XPG3, so it has to be a width
@@ -7841,8 +7520,7 @@ done:
 #define FormatGetError(_fo_) ((ScanFmtStringObj*)((_fo_)->internalRep.ptr))->error
 
 // JimScanAString is used to scan an unspecified string that ends with next WS, or a string that is specified via a charset.
-static __device__ Jim_Obj *JimScanAString(Jim_Interp *interp, const char *sdescr, const char *str)
-{
+static __device__ Jim_Obj *JimScanAString(Jim_Interp *interp, const char *sdescr, const char *str) {
 	char *buffer = Jim_StrDup(str);
 	char *p = buffer;
 	while (*str) {
@@ -7862,8 +7540,7 @@ static __device__ Jim_Obj *JimScanAString(Jim_Interp *interp, const char *sdescr
 
 // ScanOneEntry will scan one entry out of the string passed as argument. It use the sscanf() function for this task. After extracting and
 // converting of the value, the count of scanned characters will be returned of -1 in case of no conversion tool place and string was already scanned thru
-static __device__ int ScanOneEntry(Jim_Interp *interp, const char *str, int pos, int strLen, ScanFmtStringObj * fmtObj, long idx, Jim_Obj **valObjPtr)
-{
+static __device__ int ScanOneEntry(Jim_Interp *interp, const char *str, int pos, int strLen, ScanFmtStringObj * fmtObj, long idx, Jim_Obj **valObjPtr) {
 	const char *tok;
 	const ScanFmtPartDescr *descr = &fmtObj->descr[idx];
 	size_t scanned = 0;
@@ -7883,10 +7560,10 @@ static __device__ int ScanOneEntry(Jim_Interp *interp, const char *str, int pos,
 				break;
 			// Prefix matched so far, next round
 			else
-				++pos;          
+				++pos;
 		}
 		// All of str consumed: EOF condition
-		if (pos >= strLen) return -1; 
+		if (pos >= strLen) return -1;
 		// Not whole prefix consumed, no conversion possible
 		else if (descr->prefix[i] != 0) return 0;
 	}
@@ -7942,7 +7619,7 @@ static __device__ int ScanOneEntry(Jim_Interp *interp, const char *str, int pos,
 				scanned = (*tok ? 0 : -1);
 			break; }
 		case 's':
-		case '[':{
+		case '[': {
 			*valObjPtr = JimScanAString(interp, descr->arg, tok);
 			scanned += Jim_Length(*valObjPtr);
 			break; }
@@ -7971,8 +7648,7 @@ static __device__ int ScanOneEntry(Jim_Interp *interp, const char *str, int pos,
 
 // Jim_ScanString is the workhorse of string scanning. It will scan a given string and returns all converted (and not ignored) values in a list back
 // to the caller. If an error occured, a NULL pointer will be returned
-__device__ Jim_Obj *Jim_ScanString(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *fmtObjPtr, int flags)
-{
+__device__ Jim_Obj *Jim_ScanString(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *fmtObjPtr, int flags) {
 	int scanned = 1;
 	const char *str = Jim_String(strObjPtr);
 	int strLen = Jim_Utf8Length(interp, strObjPtr);
@@ -8059,8 +7735,7 @@ err:
 #pragma region Pseudo Random Number Generation
 
 // Initialize the sbox with the numbers from 0 to 255
-static __device__ void JimPrngInit(Jim_Interp *interp)
-{
+static __device__ void JimPrngInit(Jim_Interp *interp) {
 #define PRNG_SEED_SIZE 256
 	time_t t = time(NULL);
 	interp->prngState = (Jim_PrngState *)Jim_Alloc(sizeof(Jim_PrngState));
@@ -8072,8 +7747,7 @@ static __device__ void JimPrngInit(Jim_Interp *interp)
 }
 
 // Generates N bytes of random data
-static __device__ void JimRandomBytes(Jim_Interp *interp, void *dest, unsigned int len)
-{
+static __device__ void JimRandomBytes(Jim_Interp *interp, void *dest, unsigned int len) {
 	unsigned char *destByte = (unsigned char *)dest;
 	unsigned int si, sj, x;
 	// initialization, only needed the first time
@@ -8093,8 +7767,7 @@ static __device__ void JimRandomBytes(Jim_Interp *interp, void *dest, unsigned i
 }
 
 // Re-seed the generator with user-provided bytes
-static __device__ void JimPrngSeed(Jim_Interp *interp, unsigned char *seed, int seedLen)
-{
+static __device__ void JimPrngSeed(Jim_Interp *interp, unsigned char *seed, int seedLen) {
 	int i;
 	// initialization, only needed the first time
 	if (interp->prngState == NULL)
@@ -8116,8 +7789,7 @@ static __device__ void JimPrngSeed(Jim_Interp *interp, unsigned char *seed, int 
 }
 
 // [incr]
-static __device__ int Jim_IncrCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_IncrCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	jim_wide wideValue, increment = 1;
 	if (argc != 2 && argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "varName ?increment?");
@@ -8162,8 +7834,7 @@ static __device__ int Jim_IncrCoreCommand(ClientData dummy, Jim_Interp *interp, 
 #define JIM_EVAL_SINTV_LEN 8    // static interpolation vector length
 
 // Handle calls to the [unknown] command
-static __device__ int JimUnknown(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int JimUnknown(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	// If JimUnknown() is recursively called too many times... done here
 	if (interp->unknown_called > 50)
 		return JIM_ERROR;
@@ -8178,8 +7849,7 @@ static __device__ int JimUnknown(Jim_Interp *interp, int argc, Jim_Obj *const *a
 	return retcode;
 }
 
-static __device__ int JimInvokeCommand(Jim_Interp *interp, int objc, Jim_Obj *const *objv)
-{
+static __device__ int JimInvokeCommand(Jim_Interp *interp, int objc, Jim_Obj *const *objv) {
 #if 0
 	printf("invoke");
 	for (int j = 0; j < objc; j++)
@@ -8225,8 +7895,7 @@ out:
 // 
 // This is possible because the string representation of a list object generated by the UpdateStringOfList is made
 // in a way that ensures that every list element is a different command argument.
-__device__ int Jim_EvalObjVector(Jim_Interp *interp, int objc, Jim_Obj *const *objv)
-{
+__device__ int Jim_EvalObjVector(Jim_Interp *interp, int objc, Jim_Obj *const *objv) {
 	// Incr refcount of arguments
 	int i;
 	for (i = 0; i < objc; i++)
@@ -8239,8 +7908,7 @@ __device__ int Jim_EvalObjVector(Jim_Interp *interp, int objc, Jim_Obj *const *o
 }
 
 // Invokes 'prefix' as a command with the objv array as arguments.
-__device__ int Jim_EvalObjPrefix(Jim_Interp *interp, Jim_Obj *prefix, int objc, Jim_Obj *const *objv)
-{
+__device__ int Jim_EvalObjPrefix(Jim_Interp *interp, Jim_Obj *prefix, int objc, Jim_Obj *const *objv) {
 	Jim_Obj **nargv = (Jim_Obj **)Jim_Alloc((objc + 1) * sizeof(*nargv));
 	nargv[0] = prefix;
 	memcpy(&nargv[1], &objv[0], sizeof(nargv[0]) * objc);
@@ -8249,8 +7917,7 @@ __device__ int Jim_EvalObjPrefix(Jim_Interp *interp, Jim_Obj *prefix, int objc, 
 	return ret;
 }
 
-static __device__ void JimAddErrorToStack(Jim_Interp *interp, ScriptObj *script)
-{
+static __device__ void JimAddErrorToStack(Jim_Interp *interp, ScriptObj *script) {
 	if (!interp->errorFlag) {
 		// This is the first error, so save the file/line information and reset the stack
 		interp->errorFlag = 1;
@@ -8275,8 +7942,7 @@ static __device__ void JimAddErrorToStack(Jim_Interp *interp, ScriptObj *script)
 	}
 }
 
-static __device__ int JimSubstOneToken(Jim_Interp *interp, const ScriptToken *token, Jim_Obj **objPtrPtr)
-{
+static __device__ int JimSubstOneToken(Jim_Interp *interp, const ScriptToken *token, Jim_Obj **objPtrPtr) {
 	Jim_Obj *objPtr;
 	switch (token->type) {
 	case JIM_TT_STR:
@@ -8306,8 +7972,7 @@ static __device__ int JimSubstOneToken(Jim_Interp *interp, const ScriptToken *to
 }
 
 // Interpolate the given tokens into a unique Jim_Obj returned by reference via *objPtrPtr. This function is only called by Jim_EvalObj() and Jim_SubstObj() The returned object has refcount = 0.
-static __device__ Jim_Obj *JimInterpolateTokens(Jim_Interp *interp, const ScriptToken * token, int tokens, int flags)
-{
+static __device__ Jim_Obj *JimInterpolateTokens(Jim_Interp *interp, const ScriptToken * token, int tokens, int flags) {
 	int totlen = 0, i;
 	Jim_Obj *sintv[JIM_EVAL_SINTV_LEN];
 	Jim_Obj **intv = (tokens <= JIM_EVAL_SINTV_LEN ? sintv : (Jim_Obj **)Jim_Alloc(sizeof(Jim_Obj *) * tokens));
@@ -8380,8 +8045,7 @@ static __device__ Jim_Obj *JimInterpolateTokens(Jim_Interp *interp, const Script
 }
 
 // listPtr *must* be a list. The contents of the list is evaluated with the first element as the command and the remaining elements as the arguments.
-static __device__ int JimEvalObjList(Jim_Interp *interp, Jim_Obj *listPtr)
-{
+static __device__ int JimEvalObjList(Jim_Interp *interp, Jim_Obj *listPtr) {
 	int retcode = JIM_OK;
 	JimPanic(Jim_IsList(listPtr) == 0, "JimEvalObjList() invoked on non-list.");
 	if (listPtr->internalRep.listValue.len) {
@@ -8392,14 +8056,12 @@ static __device__ int JimEvalObjList(Jim_Interp *interp, Jim_Obj *listPtr)
 	return retcode;
 }
 
-__device__ int Jim_EvalObjList(Jim_Interp *interp, Jim_Obj *listPtr)
-{
+__device__ int Jim_EvalObjList(Jim_Interp *interp, Jim_Obj *listPtr) {
 	SetListFromAny(interp, listPtr);
 	return JimEvalObjList(interp, listPtr);
 }
 
-__device__ int Jim_EvalObj(Jim_Interp *interp, Jim_Obj *scriptObjPtr)
-{
+__device__ int Jim_EvalObj(Jim_Interp *interp, Jim_Obj *scriptObjPtr) {
 	int i;
 	ScriptToken *token;
 	int retcode = JIM_OK;
@@ -8429,14 +8091,14 @@ __device__ int Jim_EvalObj(Jim_Interp *interp, Jim_Obj *scriptObjPtr)
 		&& token[1].objPtr->internalRep.cmdValue.cmdPtr->isproc == 0
 		&& token[1].objPtr->internalRep.cmdValue.cmdPtr->u.native.cmdProc == Jim_IncrCoreCommand
 		&& token[2].objPtr->typePtr == &_variableObjType) {
-			Jim_Obj *objPtr = Jim_GetVariable(interp, token[2].objPtr, JIM_NONE);
-			if (objPtr && !Jim_IsShared(objPtr) && objPtr->typePtr == &_intObjType) {
-				JimWideValue(objPtr)++;
-				Jim_InvalidateStringRep(objPtr);
-				Jim_DecrRefCount(interp, scriptObjPtr);
-				Jim_SetResult(interp, objPtr);
-				return JIM_OK;
-			}
+		Jim_Obj *objPtr = Jim_GetVariable(interp, token[2].objPtr, JIM_NONE);
+		if (objPtr && !Jim_IsShared(objPtr) && objPtr->typePtr == &_intObjType) {
+			JimWideValue(objPtr)++;
+			Jim_InvalidateStringRep(objPtr);
+			Jim_DecrRefCount(interp, scriptObjPtr);
+			Jim_SetResult(interp, objPtr);
+			return JIM_OK;
+		}
 	}
 #endif
 	// Now we have to make sure the internal repr will not be freed on shimmering.
@@ -8486,7 +8148,7 @@ __device__ int Jim_EvalObj(Jim_Interp *interp, Jim_Obj *scriptObjPtr)
 						wordObjPtr = Jim_GetResult(interp);
 					break;
 				default: JimPanic(1, "default token type reached " "in Jim_EvalObj().");
-			}
+				}
 			// For interpolation we call a helper function to do the work for us.
 			else wordObjPtr = JimInterpolateTokens(interp, token + i, wordtokens, JIM_NONE);
 			if (!wordObjPtr) {
@@ -8562,8 +8224,7 @@ __device__ int Jim_EvalObj(Jim_Interp *interp, Jim_Obj *scriptObjPtr)
 	return retcode;
 }
 
-static __device__ int JimSetProcArg(Jim_Interp *interp, Jim_Obj *argNameObj, Jim_Obj *argValObj)
-{
+static __device__ int JimSetProcArg(Jim_Interp *interp, Jim_Obj *argNameObj, Jim_Obj *argValObj) {
 	int retcode;
 	// If argObjPtr begins with '&', do an automatic upvar
 	const char *varname = Jim_String(argNameObj);
@@ -8588,8 +8249,7 @@ static __device__ int JimSetProcArg(Jim_Interp *interp, Jim_Obj *argNameObj, Jim
 }
 
 // Sets the interp result to be an error message indicating the required proc args.
-static __device__ void JimSetProcWrongArgs(Jim_Interp *interp, Jim_Obj *procNameObj, Jim_Cmd *cmd)
-{
+static __device__ void JimSetProcWrongArgs(Jim_Interp *interp, Jim_Obj *procNameObj, Jim_Cmd *cmd) {
 	// Create a nice error message, consistent with Tcl 8.5
 	Jim_Obj *argmsg = Jim_NewStringObj(interp, "", 0);
 	for (int i = 0; i < cmd->u.proc.argListLen; i++) {
@@ -8625,8 +8285,7 @@ static __device__ void JimSetProcWrongArgs(Jim_Interp *interp, Jim_Obj *procName
 
 #ifdef jim_ext_namespace
 // [namespace eval]
-__device__ int Jim_EvalNamespace(Jim_Interp *interp, Jim_Obj *scriptObj, Jim_Obj *nsObj)
-{
+__device__ int Jim_EvalNamespace(Jim_Interp *interp, Jim_Obj *scriptObj, Jim_Obj *nsObj) {
 	// Create a new callframe
 	Jim_CallFrame *callFramePtr = JimCreateCallFrame(interp, interp->framePtr, nsObj);
 	callFramePtr->argv = &interp->emptyObj;
@@ -8645,7 +8304,7 @@ __device__ int Jim_EvalNamespace(Jim_Interp *interp, Jim_Obj *scriptObj, Jim_Obj
 		retcode = JIM_ERROR;
 	}
 	// Eval the body
-	else	
+	else
 		retcode = Jim_EvalObj(interp, scriptObj);
 	// Destroy the callframe
 	interp->framePtr = interp->framePtr->parent;
@@ -8657,8 +8316,7 @@ __device__ int Jim_EvalNamespace(Jim_Interp *interp, Jim_Obj *scriptObj, Jim_Obj
 // Call a procedure implemented in Tcl. It's possible to speed-up a lot this function, currently the callframes are not cached, but allocated and
 // destroied every time. What is expecially costly is to create/destroy the local vars hash table every time.
 // This can be fixed just implementing callframes caching in JimCreateCallFrame() and JimFreeCallFrame().
-static __device__ int JimCallProcedure(Jim_Interp *interp, Jim_Cmd *cmd, int argc, Jim_Obj *const *argv)
-{
+static __device__ int JimCallProcedure(Jim_Interp *interp, Jim_Cmd *cmd, int argc, Jim_Obj *const *argv) {
 	// Check arity
 	if (argc - 1 < cmd->u.proc.reqArity || (cmd->u.proc.argsPos < 0 && argc - 1 > cmd->u.proc.reqArity + cmd->u.proc.optArity)) {
 		JimSetProcWrongArgs(interp, argv[0], cmd);
@@ -8706,7 +8364,7 @@ static __device__ int JimCallProcedure(Jim_Interp *interp, Jim_Cmd *cmd, int arg
 
 			/* It is possible to rename args. */
 			if (cmd->u.proc.arglist[d].defaultObjPtr) {
-				nameObjPtr =cmd->u.proc.arglist[d].defaultObjPtr;
+				nameObjPtr = cmd->u.proc.arglist[d].defaultObjPtr;
 			}
 			retcode = Jim_SetVariable(interp, nameObjPtr, listObjPtr);
 			if (retcode != JIM_OK)
@@ -8768,8 +8426,7 @@ badargset:
 	return retcode;
 }
 
-__device__ int Jim_EvalSource(Jim_Interp *interp, const char *filename, int lineno, const char *script)
-{
+__device__ int Jim_EvalSource(Jim_Interp *interp, const char *filename, int lineno, const char *script) {
 	int retval;
 	Jim_Obj *scriptObjPtr = Jim_NewStringObj(interp, script, -1);
 	Jim_IncrRefCount(scriptObjPtr);
@@ -8787,14 +8444,12 @@ __device__ int Jim_EvalSource(Jim_Interp *interp, const char *filename, int line
 	return retval;
 }
 
-__device__ int Jim_Eval(Jim_Interp *interp, const char *script)
-{
+__device__ int Jim_Eval(Jim_Interp *interp, const char *script) {
 	return Jim_EvalObj(interp, Jim_NewStringObj(interp, script, -1));
 }
 
 // Execute script in the scope of the global level
-__device__ int Jim_EvalGlobal(Jim_Interp *interp, const char *script)
-{
+__device__ int Jim_EvalGlobal(Jim_Interp *interp, const char *script) {
 	Jim_CallFrame *savedFramePtr = interp->framePtr;
 	interp->framePtr = interp->topFramePtr;
 	int retval = Jim_Eval(interp, script);
@@ -8802,8 +8457,7 @@ __device__ int Jim_EvalGlobal(Jim_Interp *interp, const char *script)
 	return retval;
 }
 
-__device__ int Jim_EvalFileGlobal(Jim_Interp *interp, const char *filename)
-{
+__device__ int Jim_EvalFileGlobal(Jim_Interp *interp, const char *filename) {
 	Jim_CallFrame *savedFramePtr = interp->framePtr;
 	interp->framePtr = interp->topFramePtr;
 	int retval = Jim_EvalFile(interp, filename);
@@ -8813,8 +8467,7 @@ __device__ int Jim_EvalFileGlobal(Jim_Interp *interp, const char *filename)
 
 #include <sys/statcu.h>
 
-__device__ int Jim_EvalFile(Jim_Interp *interp, const char *filename)
-{
+__device__ int Jim_EvalFile(Jim_Interp *interp, const char *filename) {
 	FILE *fp;
 	struct stat sb;
 	if (stat(filename, &sb) != 0 || (fp = fopen(filename, "rt")) == NULL) {
@@ -8825,7 +8478,6 @@ __device__ int Jim_EvalFile(Jim_Interp *interp, const char *filename)
 		fclose(fp);
 		return JIM_OK;
 	}
-
 	char *buf = (char *)Jim_Alloc(sb.st_size + 1);
 	int readlen = (int)fread(buf, 1, sb.st_size, fp);
 	if (ferror(fp)) {
@@ -8869,8 +8521,7 @@ __device__ int Jim_EvalFile(Jim_Interp *interp, const char *filename)
 // -----------------------------------------------------------------------------
 #pragma region Subst
 
-static __device__ void JimParseSubst(struct JimParserCtx *pc, int flags)
-{
+static __device__ void JimParseSubst(struct JimParserCtx *pc, int flags) {
 	pc->tstart = pc->p;
 	pc->tline = pc->linenr;
 	if (pc->len == 0) {
@@ -8910,8 +8561,7 @@ static __device__ void JimParseSubst(struct JimParserCtx *pc, int flags)
 // for what is needed for [subst]itution tasks, but the reuse helps to deal with a single data structure at the cost of some more memory usage for substitutions.
 
 // This method takes the string representation of an object as a Tcl string where to perform [subst]itution, and generates the pre-parsed internal representation.
-static __device__ int SetSubstFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr, int flags)
-{
+static __device__ int SetSubstFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr, int flags) {
 	int scriptTextLen;
 	const char *scriptText = Jim_GetString(objPtr, &scriptTextLen);
 
@@ -8925,7 +8575,7 @@ static __device__ int SetSubstFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr
 		JimParseSubst(&parser, flags);
 		if (parser.eof)
 			// Note that subst doesn't need the EOL token
-				break;
+			break;
 		ScriptAddToken(&tokenlist, parser.tstart, (int)(parser.tend - parser.tstart + 1), parser.tt, parser.tline);
 	}
 
@@ -8954,16 +8604,14 @@ static __device__ int SetSubstFromAny(Jim_Interp *interp, struct Jim_Obj *objPtr
 	return JIM_OK;
 }
 
-static __device__ ScriptObj *Jim_GetSubst(Jim_Interp *interp, Jim_Obj *objPtr, int flags)
-{
+static __device__ ScriptObj *Jim_GetSubst(Jim_Interp *interp, Jim_Obj *objPtr, int flags) {
 	if (objPtr->typePtr != &_scriptObjType || ((ScriptObj *)Jim_GetIntRepPtr(objPtr))->substFlags != flags)
 		SetSubstFromAny(interp, objPtr, flags);
-	return (ScriptObj *) Jim_GetIntRepPtr(objPtr);
+	return (ScriptObj *)Jim_GetIntRepPtr(objPtr);
 }
 
 // Performs commands,variables,blackslashes substitution, storing the result object (with refcount 0) into resObjPtrPtr.
-__device__ int Jim_SubstObj(Jim_Interp *interp, Jim_Obj *substObjPtr, Jim_Obj **resObjPtrPtr, int flags)
-{
+__device__ int Jim_SubstObj(Jim_Interp *interp, Jim_Obj *substObjPtr, Jim_Obj **resObjPtrPtr, int flags) {
 	ScriptObj *script = Jim_GetSubst(interp, substObjPtr, flags);
 	Jim_IncrRefCount(substObjPtr); // Make sure it's shared
 	// In order to preserve the internal rep, we increment the inUse field of the script internal rep structure.
@@ -8981,8 +8629,7 @@ __device__ int Jim_SubstObj(Jim_Interp *interp, Jim_Obj *substObjPtr, Jim_Obj **
 // -----------------------------------------------------------------------------
 #pragma region Core commands utility functions
 
-__device__ void Jim_WrongNumArgs(Jim_Interp *interp, int argc, Jim_Obj *const *argv, const char *msg)
-{
+__device__ void Jim_WrongNumArgs(Jim_Interp *interp, int argc, Jim_Obj *const *argv, const char *msg) {
 	Jim_Obj *listObjPtr = Jim_NewListObj(interp, argv, argc);
 	if (*msg)
 		Jim_ListAppendElement(interp, listObjPtr, Jim_NewStringObj(interp, msg, -1));
@@ -9000,8 +8647,7 @@ typedef void JimHashtableIteratorCallbackType(Jim_Interp *interp, Jim_Obj *listO
 #define JimTrivialMatch(pattern) (strpbrk((pattern), "*[?\\") == NULL)
 
 // For each key of the hash table 'ht' (with string keys) which matches the glob pattern (all if NULL), invoke the callback to add entries to a list. Returns the list.
-static __device__ Jim_Obj *JimHashtablePatternMatch(Jim_Interp *interp, Jim_HashTable *ht, Jim_Obj *patternObjPtr, JimHashtableIteratorCallbackType *callback, int type)
-{
+static __device__ Jim_Obj *JimHashtablePatternMatch(Jim_Interp *interp, Jim_HashTable *ht, Jim_Obj *patternObjPtr, JimHashtableIteratorCallbackType *callback, int type) {
 	Jim_HashEntry *he;
 	Jim_Obj *listObjPtr = Jim_NewListObj(interp, NULL, 0);
 	// Check for the non-pattern case. We can do this much more efficiently.
@@ -9026,8 +8672,7 @@ static __device__ Jim_Obj *JimHashtablePatternMatch(Jim_Interp *interp, Jim_Hash
 #define JIM_CMDLIST_CHANNELS 2
 
 // Adds matching command names (procs, channels) to the list.
-static __device__ void JimCommandMatch(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_HashEntry *he, int type)
-{
+static __device__ void JimCommandMatch(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_HashEntry *he, int type) {
 	Jim_Cmd *cmdPtr = (Jim_Cmd *)Jim_GetHashEntryVal(he);
 	// not a proc
 	if (type == JIM_CMDLIST_PROCS && !cmdPtr->isproc)
@@ -9040,8 +8685,7 @@ static __device__ void JimCommandMatch(Jim_Interp *interp, Jim_Obj *listObjPtr, 
 }
 
 // type is JIM_CMDLIST_xxx
-static __device__ Jim_Obj *JimCommandsList(Jim_Interp *interp, Jim_Obj *patternObjPtr, int type)
-{
+static __device__ Jim_Obj *JimCommandsList(Jim_Interp *interp, Jim_Obj *patternObjPtr, int type) {
 	return JimHashtablePatternMatch(interp, &interp->commands, patternObjPtr, JimCommandMatch, type);
 }
 
@@ -9052,8 +8696,7 @@ static __device__ Jim_Obj *JimCommandsList(Jim_Interp *interp, Jim_Obj *patternO
 #define JIM_VARLIST_VALUES 0x1000
 
 // Adds matching variable names to the list
-static __device__ void JimVariablesMatch(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_HashEntry *he, int type)
-{
+static __device__ void JimVariablesMatch(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_HashEntry *he, int type) {
 	Jim_Var *varPtr = (Jim_Var *)Jim_GetHashEntryVal(he);
 	if (type != JIM_VARLIST_LOCALS || varPtr->linkFramePtr == NULL) {
 		Jim_ListAppendElement(interp, listObjPtr, Jim_NewStringObj(interp, (const char *)he->key, -1));
@@ -9063,8 +8706,7 @@ static __device__ void JimVariablesMatch(Jim_Interp *interp, Jim_Obj *listObjPtr
 }
 
 // mode is JIM_VARLIST_xxx
-static __device__ Jim_Obj *JimVariablesList(Jim_Interp *interp, Jim_Obj *patternObjPtr, int mode)
-{
+static __device__ Jim_Obj *JimVariablesList(Jim_Interp *interp, Jim_Obj *patternObjPtr, int mode) {
 	// For [info locals], if we are at top level an emtpy list is returned. I don't agree, but we aim at compatibility (SS)
 	if (mode == JIM_VARLIST_LOCALS && interp->framePtr == interp->topFramePtr)
 		return interp->emptyObj;
@@ -9074,8 +8716,7 @@ static __device__ Jim_Obj *JimVariablesList(Jim_Interp *interp, Jim_Obj *pattern
 	}
 }
 
-static __device__ int JimInfoLevel(Jim_Interp *interp, Jim_Obj *levelObjPtr, Jim_Obj **objPtrPtr, int info_level_cmd)
-{
+static __device__ int JimInfoLevel(Jim_Interp *interp, Jim_Obj *levelObjPtr, Jim_Obj **objPtrPtr, int info_level_cmd) {
 	Jim_CallFrame *targetCallFrame = JimGetCallFrameByInteger(interp, levelObjPtr);
 	if (targetCallFrame == NULL)
 		return JIM_ERROR;
@@ -9104,8 +8745,7 @@ static __device__ int JimInfoLevel(Jim_Interp *interp, Jim_Obj *levelObjPtr, Jim
 #pragma region Core commands
 
 // fake [puts] -- not the real puts, just for debugging.
-static __device__ int Jim_PutsCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_PutsCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2 && argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "?-nonewline? string");
 		return JIM_ERROR;
@@ -9124,8 +8764,7 @@ static __device__ int Jim_PutsCoreCommand(ClientData dummy, Jim_Interp *interp, 
 }
 
 // Helper for [+] and [*]
-static __device__ int JimAddMulHelper(Jim_Interp *interp, int argc, Jim_Obj *const *argv, int op)
-{
+static __device__ int JimAddMulHelper(Jim_Interp *interp, int argc, Jim_Obj *const *argv, int op) {
 	int i;
 	jim_wide res = (op == JIM_EXPROP_ADD ? 0 : 1);
 	for (i = 1; i < argc; i++) {
@@ -9155,8 +8794,7 @@ trydouble:
 }
 
 /* Helper for [-] and [/] */
-static __device__ int JimSubDivHelper(Jim_Interp *interp, int argc, Jim_Obj *const *argv, int op)
-{
+static __device__ int JimSubDivHelper(Jim_Interp *interp, int argc, Jim_Obj *const *argv, int op) {
 	jim_wide wideValue, res = 0;
 	double doubleValue, doubleRes = 0;
 	int i = 2;
@@ -9192,7 +8830,7 @@ static __device__ int JimSubDivHelper(Jim_Interp *interp, int argc, Jim_Obj *con
 		if (Jim_GetWide(interp, argv[1], &res) != JIM_OK) {
 			if (Jim_GetDouble(interp, argv[1], &doubleRes)
 				!= JIM_OK) {
-					return JIM_ERROR;
+				return JIM_ERROR;
 			}
 			else {
 				goto trydouble;
@@ -9225,32 +8863,27 @@ trydouble:
 }
 
 // [+]
-static __device__ int Jim_AddCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_AddCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return JimAddMulHelper(interp, argc, argv, JIM_EXPROP_ADD);
 }
 
 // [*]
-static __device__ int Jim_MulCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_MulCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return JimAddMulHelper(interp, argc, argv, JIM_EXPROP_MUL);
 }
 
 // [-]
-static __device__ int Jim_SubCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_SubCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return JimSubDivHelper(interp, argc, argv, JIM_EXPROP_SUB);
 }
 
 // [/]
-static __device__ int Jim_DivCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_DivCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return JimSubDivHelper(interp, argc, argv, JIM_EXPROP_DIV);
 }
 
 // [set]
-static __device__ int Jim_SetCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_SetCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2 && argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "varName ?newValue?");
 		return JIM_ERROR;
@@ -9271,8 +8904,7 @@ static __device__ int Jim_SetCoreCommand(ClientData dummy, Jim_Interp *interp, i
 
 // [unset]
 // unset ?-nocomplain? ?--? ?varName ...?
-static __device__ int Jim_UnsetCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_UnsetCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int i = 1;
 	int complain = 1;
 	while (i < argc) {
@@ -9296,8 +8928,7 @@ static __device__ int Jim_UnsetCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [while]
-static __device__ int Jim_WhileCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_WhileCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "condition body");
 		return JIM_ERROR;
@@ -9314,7 +8945,7 @@ static __device__ int Jim_WhileCoreCommand(ClientData dummy, Jim_Interp *interp,
 			case JIM_BREAK: goto out;
 			case JIM_CONTINUE: continue;
 			default: return retval;
-		}
+			}
 	}
 out:
 	Jim_ResetResult(interp);
@@ -9322,8 +8953,7 @@ out:
 }
 
 // [for]
-static __device__ int Jim_ForCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ForCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 5) {
 		Jim_WrongNumArgs(interp, 1, argv, "start test next body");
 		return JIM_ERROR;
@@ -9434,10 +9064,10 @@ evalstart:
 		// Body
 		retval = Jim_EvalObj(interp, argv[4]);
 		if (retval == JIM_OK || retval == JIM_CONTINUE) {
-evalnext: // increment
+		evalnext: // increment
 			retval = Jim_EvalObj(interp, argv[3]);
 			if (retval == JIM_OK || retval == JIM_CONTINUE) {
-testcond: // test
+			testcond: // test
 				retval = Jim_GetBoolFromExpr(interp, argv[2], &boolean);
 			}
 		}
@@ -9455,8 +9085,7 @@ out:
 }
 
 // [loop]
-static __device__ int Jim_LoopCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LoopCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 5 && argc != 6) {
 		Jim_WrongNumArgs(interp, 1, argv, "var first limit ?incr? body");
 		return JIM_ERROR;
@@ -9511,27 +9140,23 @@ typedef struct {
 } Jim_ListIter;
 
 // Initialise the iterator at the start of the list.
-static __device__ void JimListIterInit(Jim_ListIter *iter, Jim_Obj *objPtr)
-{
+static __device__ void JimListIterInit(Jim_ListIter *iter, Jim_Obj *objPtr) {
 	iter->objPtr = objPtr;
 	iter->idx = 0;
 }
 
 // Returns the next object from the list, or NULL on end-of-list.
-static __device__ Jim_Obj *JimListIterNext(Jim_Interp *interp, Jim_ListIter *iter)
-{
+static __device__ Jim_Obj *JimListIterNext(Jim_Interp *interp, Jim_ListIter *iter) {
 	return (iter->idx >= Jim_ListLength(interp, iter->objPtr) ? NULL : iter->objPtr->internalRep.listValue.ele[iter->idx++]);
 }
 
 // Returns 1 if end-of-list has been reached.
-static __device__ int JimListIterDone(Jim_Interp *interp, Jim_ListIter *iter)
-{
+static __device__ int JimListIterDone(Jim_Interp *interp, Jim_ListIter *iter) {
 	return iter->idx >= Jim_ListLength(interp, iter->objPtr);
 }
 
 // foreach + lmap implementation
-static __device__ int JimForeachMapHelper(Jim_Interp *interp, int argc, Jim_Obj *const *argv, int doMap)
-{
+static __device__ int JimForeachMapHelper(Jim_Interp *interp, int argc, Jim_Obj *const *argv, int doMap) {
 	int i;
 	if (argc < 4 || argc % 2 != 0) {
 		Jim_WrongNumArgs(interp, 1, argv, "varList list ?varList list ...? script");
@@ -9599,20 +9224,17 @@ err:
 }
 
 // [foreach]
-static __device__ int Jim_ForeachCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ForeachCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return JimForeachMapHelper(interp, argc, argv, 0);
 }
 
 // [lmap]
-static __device__ int Jim_LmapCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LmapCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return JimForeachMapHelper(interp, argc, argv, 1);
 }
 
 // [lassign]
-static __device__ int Jim_LassignCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LassignCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "varList list ?varName ...?");
 		return JIM_ERROR;
@@ -9634,8 +9256,7 @@ static __device__ int Jim_LassignCoreCommand(ClientData dummy, Jim_Interp *inter
 }
 
 // [if]
-static __device__ int Jim_IfCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_IfCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int boolean, retval, current = 1, falsebody = 0;
 	if (argc >= 3) {
 		while (1) {
@@ -9682,8 +9303,7 @@ err:
 }
 
 // Returns 1 if match, 0 if no match or -<error> on error (e.g. -JIM_ERROR, -JIM_BREAK)
-__device__ int Jim_CommandMatchObj(Jim_Interp *interp, Jim_Obj *commandObj, Jim_Obj *patternObj, Jim_Obj *stringObj, int nocase)
-{
+__device__ int Jim_CommandMatchObj(Jim_Interp *interp, Jim_Obj *commandObj, Jim_Obj *patternObj, Jim_Obj *stringObj, int nocase) {
 	int argc = 0;
 	Jim_Obj *parms[4];
 	parms[argc++] = commandObj;
@@ -9698,17 +9318,17 @@ __device__ int Jim_CommandMatchObj(Jim_Interp *interp, Jim_Obj *commandObj, Jim_
 	return eq;
 }
 
-enum
-{ SWITCH_EXACT, SWITCH_GLOB, SWITCH_RE, SWITCH_CMD };
+enum {
+	SWITCH_EXACT, SWITCH_GLOB, SWITCH_RE, SWITCH_CMD
+};
 
 // [switch]
-static __device__ int Jim_SwitchCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_SwitchCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int matchOpt = SWITCH_EXACT, opt = 1, patCount, i;
 	Jim_Obj *command = 0, *const *caseList = 0, *strObj;
 	Jim_Obj *script = 0;
 	if (argc < 3) {
-wrongnumargs:
+	wrongnumargs:
 		Jim_WrongNumArgs(interp, 1, argv, "?options? string pattern body ... ?default body?   or   {pattern body ?pattern body ...?}");
 		return JIM_ERROR;
 	}
@@ -9758,7 +9378,7 @@ wrongnumargs:
 			case SWITCH_RE:
 				command = Jim_NewStringObj(interp, "regexp", -1);
 				// Fall thru intentionally
-			case SWITCH_CMD:{
+			case SWITCH_CMD: {
 				int rc = Jim_CommandMatchObj(interp, command, patObj, strObj, 0);
 				// After the execution of a command we need to make sure to reconvert the object into a list again. Only for the single-list style [switch].
 				if (argc - opt == 1) {
@@ -9772,7 +9392,7 @@ wrongnumargs:
 				if (rc)
 					script = caseList[i + 1];
 				break; }
-		}
+			}
 		else
 			script = caseList[i + 1];
 	}
@@ -9787,16 +9407,14 @@ wrongnumargs:
 }
 
 // [list]
-static __device__ int Jim_ListCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ListCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *listObjPtr = Jim_NewListObj(interp, argv + 1, argc - 1);
 	Jim_SetResult(interp, listObjPtr);
 	return JIM_OK;
 }
 
 // [lindex]
-static __device__ int Jim_LindexCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LindexCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "list ?index ...?");
 		return JIM_ERROR;
@@ -9825,8 +9443,7 @@ static __device__ int Jim_LindexCoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // [llength]
-static __device__ int Jim_LlengthCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LlengthCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "list");
 		return JIM_ERROR;
@@ -9840,11 +9457,11 @@ __constant__ static const char * const _lsearch_options[] = {
 	"-bool", "-not", "-nocase", "-exact", "-glob", "-regexp", "-all", "-inline", "-command",
 	NULL
 };
-static __device__ int Jim_LsearchCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
-	enum
-	{ OPT_BOOL, OPT_NOT, OPT_NOCASE, OPT_EXACT, OPT_GLOB, OPT_REGEXP, OPT_ALL, OPT_INLINE,
-	OPT_COMMAND };
+static __device__ int Jim_LsearchCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+	enum {
+		OPT_BOOL, OPT_NOT, OPT_NOCASE, OPT_EXACT, OPT_GLOB, OPT_REGEXP, OPT_ALL, OPT_INLINE,
+		OPT_COMMAND
+	};
 	int i;
 	int opt_bool = 0;
 	int opt_not = 0;
@@ -9856,7 +9473,7 @@ static __device__ int Jim_LsearchCoreCommand(ClientData dummy, Jim_Interp *inter
 	Jim_Obj *listObjPtr = NULL;
 	Jim_Obj *commandObj = NULL;
 	if (argc < 3) {
-wrongargs:
+	wrongargs:
 		Jim_WrongNumArgs(interp, 1, argv, "?-exact|-glob|-regexp|-command 'command'? ?-bool|-inline? ?-not? ?-nocase? ?-all? list value");
 		return JIM_ERROR;
 	}
@@ -9964,8 +9581,7 @@ done:
 }
 
 // [lappend]
-static __device__ int Jim_LappendCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LappendCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "varName ?value value ...?");
 		return JIM_ERROR;
@@ -9994,8 +9610,7 @@ static __device__ int Jim_LappendCoreCommand(ClientData dummy, Jim_Interp *inter
 }
 
 // [linsert]
-static __device__ int Jim_LinsertCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LinsertCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "list index ?element ...?");
 		return JIM_ERROR;
@@ -10006,7 +9621,7 @@ static __device__ int Jim_LinsertCoreCommand(ClientData dummy, Jim_Interp *inter
 	int idx;
 	if (Jim_GetIndex(interp, argv[2], &idx) != JIM_OK)
 		goto err;
-	int len = Jim_ListLength(interp, listPtr);
+	int len; len = Jim_ListLength(interp, listPtr);
 	if (idx >= len)
 		idx = len;
 	else if (idx < 0)
@@ -10021,8 +9636,7 @@ err:
 }
 
 // [lreplace]
-static __device__ int Jim_LreplaceCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LreplaceCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 4) {
 		Jim_WrongNumArgs(interp, 1, argv, "list first last ?element ...?");
 		return JIM_ERROR;
@@ -10038,7 +9652,7 @@ static __device__ int Jim_LreplaceCoreCommand(ClientData dummy, Jim_Interp *inte
 	JimRelToAbsRange(len, &first, &last, &rangeLen);
 	// Now construct a new list which consists of: <elements before first> <supplied elements> <elements after last>
 	// Check to see if trying to replace past the end of the list
-	if (first < len) { } // OK. Not past the end
+	if (first < len) {} // OK. Not past the end
 	else if (len == 0)
 		first = 0; // Special for empty list, adjust first to 0
 	else {
@@ -10057,8 +9671,7 @@ static __device__ int Jim_LreplaceCoreCommand(ClientData dummy, Jim_Interp *inte
 }
 
 // [lset]
-static __device__ int Jim_LsetCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LsetCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "listVar ?index...? newVal");
 		return JIM_ERROR;
@@ -10077,10 +9690,10 @@ static __device__ int Jim_LsetCoreCommand(ClientData dummy, Jim_Interp *interp, 
 __constant__ static const char * const _lsort_options[] = {
 	"-ascii", "-nocase", "-increasing", "-decreasing", "-command", "-integer", "-real", "-index", "-unique", NULL
 };
-static __device__ int Jim_LsortCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const argv[])
-{
-	enum
-	{ OPT_ASCII, OPT_NOCASE, OPT_INCREASING, OPT_DECREASING, OPT_COMMAND, OPT_INTEGER, OPT_REAL, OPT_INDEX, OPT_UNIQUE };
+static __device__ int Jim_LsortCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const argv[]) {
+	enum {
+		OPT_ASCII, OPT_NOCASE, OPT_INCREASING, OPT_DECREASING, OPT_COMMAND, OPT_INTEGER, OPT_REAL, OPT_INDEX, OPT_UNIQUE
+	};
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "?options? list");
 		return JIM_ERROR;
@@ -10135,8 +9748,7 @@ static __device__ int Jim_LsortCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [append]
-static __device__ int Jim_AppendCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_AppendCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "varName ?value ...?");
 		return JIM_ERROR;
@@ -10179,11 +9791,9 @@ __constant__ static const char *const _debug_options[] = {
 	NULL
 };
 #endif
-static __device__ int Jim_DebugCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_DebugCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 #if defined(JIM_DEBUG_COMMAND) && !defined(JIM_BOOTSTRAP)
-	enum
-	{
+	enum {
 		OPT_REFCOUNT, OPT_OBJCOUNT, OPT_OBJECTS, OPT_INVSTR, OPT_SCRIPTLEN,
 		OPT_EXPRLEN, OPT_EXPRBC, OPT_SHOW,
 	};
@@ -10345,8 +9955,7 @@ static __device__ int Jim_DebugCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [eval]
-static __device__ int Jim_EvalCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_EvalCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "arg ?arg ...?");
 		return JIM_ERROR;
@@ -10359,8 +9968,7 @@ static __device__ int Jim_EvalCoreCommand(ClientData dummy, Jim_Interp *interp, 
 }
 
 // [uplevel]
-static __device__ int Jim_UplevelCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_UplevelCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc >= 2) {
 		// Save the old callframe pointer
 		Jim_CallFrame *savedCallFrame = interp->framePtr;
@@ -10394,8 +10002,7 @@ static __device__ int Jim_UplevelCoreCommand(ClientData dummy, Jim_Interp *inter
 }
 
 // [expr]
-static __device__ int Jim_ExprCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ExprCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *exprResultPtr;
 	int retcode;
 	if (argc == 2)
@@ -10418,8 +10025,7 @@ static __device__ int Jim_ExprCoreCommand(ClientData dummy, Jim_Interp *interp, 
 }
 
 // [break]
-static __device__ int Jim_BreakCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_BreakCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 1) {
 		Jim_WrongNumArgs(interp, 1, argv, "");
 		return JIM_ERROR;
@@ -10428,8 +10034,7 @@ static __device__ int Jim_BreakCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [continue]
-static __device__ int Jim_ContinueCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ContinueCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 1) {
 		Jim_WrongNumArgs(interp, 1, argv, "");
 		return JIM_ERROR;
@@ -10438,8 +10043,7 @@ static __device__ int Jim_ContinueCoreCommand(ClientData dummy, Jim_Interp *inte
 }
 
 // [return]
-static __device__ int Jim_ReturnCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ReturnCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int i;
 	Jim_Obj *stackTraceObj = NULL;
 	Jim_Obj *errorCodeObj = NULL;
@@ -10479,8 +10083,7 @@ static __device__ int Jim_ReturnCoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // [tailcall]
-static __device__ int Jim_TailcallCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_TailcallCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (interp->framePtr->level == 0) {
 		Jim_SetResultString(interp, "tailcall can only be called from a proc or lambda", -1);
 		return JIM_ERROR;
@@ -10505,8 +10108,7 @@ static __device__ int Jim_TailcallCoreCommand(ClientData dummy, Jim_Interp *inte
 	return JIM_OK;
 }
 
-static __device__ int JimAliasCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int JimAliasCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *prefixListObj = (Jim_Obj *)Jim_CmdPrivData(interp);
 	// prefixListObj is a list to which the args need to be appended
 	Jim_Obj *cmdList = Jim_DuplicateObj(interp, prefixListObj);
@@ -10514,14 +10116,12 @@ static __device__ int JimAliasCmd(ClientData dummy, Jim_Interp *interp, int argc
 	return JimEvalObjList(interp, cmdList);
 }
 
-static __device__ void JimAliasCmdDelete(ClientData privData, Jim_Interp *interp)
-{
+static __device__ void JimAliasCmdDelete(ClientData privData, Jim_Interp *interp) {
 	Jim_Obj *prefixListObj = (Jim_Obj *)privData;
 	Jim_DecrRefCount(interp, prefixListObj);
 }
 
-static __device__ int Jim_AliasCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_AliasCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "newname command ?args ...?");
 		return JIM_ERROR;
@@ -10530,15 +10130,14 @@ static __device__ int Jim_AliasCoreCommand(ClientData dummy, Jim_Interp *interp,
 	Jim_IncrRefCount(prefixListObj);
 	const char *newname = Jim_String(argv[1]);
 	if (newname[0] == ':' && newname[1] == ':') {
-		while (*++newname == ':') { }
+		while (*++newname == ':') {}
 	}
 	Jim_SetResult(interp, argv[1]);
 	return Jim_CreateCommand(interp, newname, JimAliasCmd, prefixListObj, JimAliasCmdDelete);
 }
 
 // [proc]
-static __device__ int Jim_ProcCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ProcCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 4 && argc != 5) {
 		Jim_WrongNumArgs(interp, 1, argv, "name arglist ?statics? body");
 		return JIM_ERROR;
@@ -10562,8 +10161,7 @@ static __device__ int Jim_ProcCoreCommand(ClientData dummy, Jim_Interp *interp, 
 }
 
 // [local]
-static __device__ int Jim_LocalCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LocalCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "cmd ?args ...?");
 		return JIM_ERROR;
@@ -10588,8 +10186,7 @@ static __device__ int Jim_LocalCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [upcall]
-static __device__ int Jim_UpcallCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_UpcallCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "cmd ?args ...?");
 		return JIM_ERROR;
@@ -10613,8 +10210,7 @@ static __device__ int Jim_UpcallCoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // [apply]
-static __device__ int Jim_ApplyCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ApplyCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "lambdaExpr ?arg ...?");
 		return JIM_ERROR;
@@ -10654,15 +10250,13 @@ static __device__ int Jim_ApplyCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [concat]
-static __device__ int Jim_ConcatCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ConcatCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_SetResult(interp, Jim_ConcatObj(interp, argc - 1, argv + 1));
 	return JIM_OK;
 }
 
 // [upvar]
-static __device__ int Jim_UpvarCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_UpvarCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv){
 	Jim_CallFrame *targetCallFrame;
 	// Lookup the target frame pointer
 	if (argc > 3 && (argc % 2 == 0)) {
@@ -10687,8 +10281,7 @@ static __device__ int Jim_UpvarCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [global]
-static __device__ int JimGLOBAL_CoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int JimGLOBAL_CoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "varName ?varName ...?");
 		return JIM_ERROR;
@@ -10707,8 +10300,7 @@ static __device__ int JimGLOBAL_CoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // does the [string map] operation. On error NULL is returned, otherwise a new string object with the result, having refcount = 0, is returned.
-static __device__ Jim_Obj *JimStringMap(Jim_Interp *interp, Jim_Obj *mapListObjPtr, Jim_Obj *objPtr, int nocase)
-{
+static __device__ Jim_Obj *JimStringMap(Jim_Interp *interp, Jim_Obj *mapListObjPtr, Jim_Obj *objPtr, int nocase) {
 	int numMaps = Jim_ListLength(interp, mapListObjPtr);
 	if (numMaps % 2) {
 		Jim_SetResultString(interp, "list must contain an even number of elements", -1);
@@ -10764,10 +10356,8 @@ __constant__ static const char *const _string_nocase_options[] = {
 __constant__ static const char *const _string_nocase_length_options[] = {
 	"-nocase", "-length", NULL
 };
-static __device__ int Jim_StringCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
-	enum
-	{
+static __device__ int Jim_StringCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+	enum {
 		OPT_BYTELENGTH, OPT_LENGTH, OPT_COMPARE, OPT_MATCH, OPT_EQUAL, OPT_IS, OPT_BYTERANGE, OPT_RANGE, OPT_REPLACE,
 		OPT_MAP, OPT_REPEAT, OPT_REVERSE, OPT_INDEX, OPT_FIRST, OPT_LAST, OPT_CAT,
 		OPT_TRIM, OPT_TRIMLEFT, OPT_TRIMRIGHT, OPT_TOLOWER, OPT_TOUPPER, OPT_TOTITLE
@@ -10812,7 +10402,7 @@ static __device__ int Jim_StringCoreCommand(ClientData dummy, Jim_Interp *interp
 		while (n > 0) {
 			int subopt;
 			if (Jim_GetEnum(interp, argv[i++], _string_nocase_length_options, &subopt, NULL, JIM_ENUM_ABBREV) != JIM_OK) {
-badcompareargs:
+			badcompareargs:
 				Jim_WrongNumArgs(interp, 2, argv, "?-nocase? ?-length int? string1 string2");
 				return JIM_ERROR;
 			}
@@ -10866,7 +10456,7 @@ badcompareargs:
 		Jim_SetResult(interp, objPtr);
 		return JIM_OK; }
 	case OPT_RANGE:
-	case OPT_BYTERANGE:{
+	case OPT_BYTERANGE: {
 		if (argc != 5) {
 			Jim_WrongNumArgs(interp, 2, argv, "string first last");
 			return JIM_ERROR;
@@ -10876,7 +10466,7 @@ badcompareargs:
 			return JIM_ERROR;
 		Jim_SetResult(interp, objPtr);
 		return JIM_OK; }
-	case OPT_REPLACE:{
+	case OPT_REPLACE: {
 		if (argc != 5 && argc != 6) {
 			Jim_WrongNumArgs(interp, 2, argv, "string first last ?string?");
 			return JIM_ERROR;
@@ -10886,7 +10476,7 @@ badcompareargs:
 			return JIM_ERROR;
 		Jim_SetResult(interp, objPtr);
 		return JIM_OK; }
-	case OPT_REPEAT:{
+	case OPT_REPEAT: {
 		if (argc != 4) {
 			Jim_WrongNumArgs(interp, 2, argv, "string count");
 			return JIM_ERROR;
@@ -10900,7 +10490,7 @@ badcompareargs:
 				Jim_AppendObj(interp, objPtr, argv[2]);
 		Jim_SetResult(interp, objPtr);
 		return JIM_OK; }
-	case OPT_REVERSE:{
+	case OPT_REVERSE: {
 		if (argc != 3) {
 			Jim_WrongNumArgs(interp, 2, argv, "string");
 			return JIM_ERROR;
@@ -10912,7 +10502,7 @@ badcompareargs:
 		for (int i = 0; i < len; ) { int c; UNUSED_SYMBOL(c); int l = utf8_tounicode(str, &c); memcpy(p - l, str, l); p -= l; i += l; str += l; }
 		Jim_SetResult(interp, Jim_NewStringObjNoAlloc(interp, buf, len));
 		return JIM_OK; }
-	case OPT_INDEX:{
+	case OPT_INDEX: {
 		if (argc != 4) {
 			Jim_WrongNumArgs(interp, 2, argv, "string index");
 			return JIM_ERROR;
@@ -10930,13 +10520,13 @@ badcompareargs:
 		else if (len == Jim_Length(argv[2]))
 			Jim_SetResultString(interp, str + idx, 1);
 		else {
-			
+
 			int i = utf8_index(str, idx);
 			int c; UNUSED_SYMBOL(c); Jim_SetResultString(interp, str + i, utf8_tounicode(str + i, &c));
 		}
 		return JIM_OK; }
 	case OPT_FIRST:
-	case OPT_LAST:{
+	case OPT_LAST: {
 		if (argc != 4 && argc != 5) {
 			Jim_WrongNumArgs(interp, 2, argv, "subString string ?index?");
 			return JIM_ERROR;
@@ -10964,7 +10554,7 @@ badcompareargs:
 		return JIM_OK; }
 	case OPT_TRIM:
 	case OPT_TRIMLEFT:
-	case OPT_TRIMRIGHT:{
+	case OPT_TRIMRIGHT: {
 		if (argc != 3 && argc != 4) {
 			Jim_WrongNumArgs(interp, 2, argv, "string ?trimchars?");
 			return JIM_ERROR;
@@ -11001,8 +10591,7 @@ badcompareargs:
 }
 
 // [time]
-static __device__ int Jim_TimeCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_TimeCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "script ?count?");
 		return JIM_ERROR;
@@ -11028,8 +10617,7 @@ static __device__ int Jim_TimeCoreCommand(ClientData dummy, Jim_Interp *interp, 
 }
 
 // [exit]
-static __device__ int Jim_ExitCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ExitCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc > 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "?exitCode?");
 		return JIM_ERROR;
@@ -11042,8 +10630,7 @@ static __device__ int Jim_ExitCoreCommand(ClientData dummy, Jim_Interp *interp, 
 }
 
 // [catch]
-static __device__ int Jim_CatchCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_CatchCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	// Which return codes are ignored (passed through)? By default, only exit, eval and signal
 	jim_wide ignore_mask = (1 << JIM_EXIT) | (1 << JIM_EVAL) | (1 << JIM_SIGNAL);
 	const int max_ignore_code = sizeof(ignore_mask) * 8;
@@ -11076,7 +10663,7 @@ static __device__ int Jim_CatchCoreCommand(ClientData dummy, Jim_Interp *interp,
 	}
 	argc -= i;
 	if (argc < 1 || argc > 3) {
-wrongargs:
+	wrongargs:
 		Jim_WrongNumArgs(interp, 1, argv, "?-?no?code ... --? script ?resultVarName? ?optionVarName?");
 		return JIM_ERROR;
 	}
@@ -11136,8 +10723,7 @@ wrongargs:
 #ifdef JIM_REFERENCES
 
 // [ref]
-static __device__ int Jim_RefCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_RefCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 3 && argc != 4) {
 		Jim_WrongNumArgs(interp, 1, argv, "string tag ?finalizer?");
 		return JIM_ERROR;
@@ -11150,8 +10736,7 @@ static __device__ int Jim_RefCoreCommand(ClientData dummy, Jim_Interp *interp, i
 }
 
 // [getref]
-static __device__ int Jim_GetrefCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_GetrefCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "reference");
 		return JIM_ERROR;
@@ -11164,8 +10749,7 @@ static __device__ int Jim_GetrefCoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // [setref]
-static __device__ int Jim_SetrefCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_SetrefCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "reference newValue");
 		return JIM_ERROR;
@@ -11181,8 +10765,7 @@ static __device__ int Jim_SetrefCoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // [collect]
-static __device__ int Jim_CollectCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_CollectCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 1) {
 		Jim_WrongNumArgs(interp, 1, argv, "");
 		return JIM_ERROR;
@@ -11198,8 +10781,7 @@ static __device__ int Jim_CollectCoreCommand(ClientData dummy, Jim_Interp *inter
 }
 
 // [finalize] reference ?newValue?
-static __device__ int Jim_FinalizeCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_FinalizeCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2 && argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "reference ?finalizerProc?");
 		return JIM_ERROR;
@@ -11220,8 +10802,7 @@ static __device__ int Jim_FinalizeCoreCommand(ClientData dummy, Jim_Interp *inte
 }
 
 // [info references]
-static __device__ int JimInfoReferences(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int JimInfoReferences(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *listObjPtr = Jim_NewListObj(interp, NULL, 0);
 	Jim_HashTableIterator htiter;
 	Jim_HashEntry *he;
@@ -11240,8 +10821,7 @@ static __device__ int JimInfoReferences(Jim_Interp *interp, int argc, Jim_Obj *c
 #endif
 
 // [rename]
-static __device__ int Jim_RenameCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_RenameCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "oldName newName");
 		return JIM_ERROR;
@@ -11255,16 +10835,14 @@ static __device__ int Jim_RenameCoreCommand(ClientData dummy, Jim_Interp *interp
 
 typedef void JimDictMatchCallbackType(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_HashEntry *he, int type);
 
-static __device__ void JimDictMatchKeys(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_HashEntry *he, int type)
-{
+static __device__ void JimDictMatchKeys(Jim_Interp *interp, Jim_Obj *listObjPtr, Jim_HashEntry *he, int type) {
 	Jim_ListAppendElement(interp, listObjPtr, (Jim_Obj *)he->key);
 	if (type & JIM_DICTMATCH_VALUES)
 		Jim_ListAppendElement(interp, listObjPtr, (Jim_Obj *)Jim_GetHashEntryVal(he));
 }
 
 // Like JimHashtablePatternMatch, but for dictionaries.
-static __device__ Jim_Obj *JimDictPatternMatch(Jim_Interp *interp, Jim_HashTable *ht, Jim_Obj *patternObjPtr, JimDictMatchCallbackType *callback, int type)
-{
+static __device__ Jim_Obj *JimDictPatternMatch(Jim_Interp *interp, Jim_HashTable *ht, Jim_Obj *patternObjPtr, JimDictMatchCallbackType *callback, int type) {
 	Jim_Obj *listObjPtr = Jim_NewListObj(interp, NULL, 0);
 	// Check for the non-pattern case. We can do this much more efficiently.
 	Jim_HashEntry *he;
@@ -11276,31 +10854,27 @@ static __device__ Jim_Obj *JimDictPatternMatch(Jim_Interp *interp, Jim_HashTable
 	return listObjPtr;
 }
 
-__device__ int Jim_DictKeys(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *patternObjPtr)
-{
+__device__ int Jim_DictKeys(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *patternObjPtr) {
 	if (SetDictFromAny(interp, objPtr) != JIM_OK)
 		return JIM_ERROR;
 	Jim_SetResult(interp, JimDictPatternMatch(interp, (Jim_HashTable *)objPtr->internalRep.ptr, patternObjPtr, JimDictMatchKeys, 0));
 	return JIM_OK;
 }
 
-__device__ int Jim_DictValues(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *patternObjPtr)
-{
+__device__ int Jim_DictValues(Jim_Interp *interp, Jim_Obj *objPtr, Jim_Obj *patternObjPtr) {
 	if (SetDictFromAny(interp, objPtr) != JIM_OK)
 		return JIM_ERROR;
 	Jim_SetResult(interp, JimDictPatternMatch(interp, (Jim_HashTable *)objPtr->internalRep.ptr, patternObjPtr, JimDictMatchKeys, JIM_DICTMATCH_VALUES));
 	return JIM_OK;
 }
 
-__device__ int Jim_DictSize(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ int Jim_DictSize(Jim_Interp *interp, Jim_Obj *objPtr) {
 	if (SetDictFromAny(interp, objPtr) != JIM_OK)
 		return -1;
 	return ((Jim_HashTable *)objPtr->internalRep.ptr)->used;
 }
 
-__device__ int Jim_DictInfo(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+__device__ int Jim_DictInfo(Jim_Interp *interp, Jim_Obj *objPtr) {
 	if (SetDictFromAny(interp, objPtr) != JIM_OK)
 		return JIM_ERROR;
 	Jim_HashTable *ht = (Jim_HashTable *)objPtr->internalRep.ptr;
@@ -11320,8 +10894,7 @@ __device__ int Jim_DictInfo(Jim_Interp *interp, Jim_Obj *objPtr)
 	return JIM_OK;
 }
 
-static __device__ int Jim_EvalEnsemble(Jim_Interp *interp, const char *basecmd, const char *subcmd, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_EvalEnsemble(Jim_Interp *interp, const char *basecmd, const char *subcmd, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *prefixObj = Jim_NewStringObj(interp, basecmd, -1);
 	Jim_AppendString(interp, prefixObj, " ", 1);
 	Jim_AppendString(interp, prefixObj, subcmd, -1);
@@ -11334,10 +10907,8 @@ __constant__ static const char * const _dict_options[] = {
 	"merge", "with", "append", "lappend", "incr", "remove", "values", "for",
 	"replace", "update", NULL
 };
-static __device__ int Jim_DictCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{	
-	enum
-	{
+static __device__ int Jim_DictCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+	enum {
 		OPT_CREATE, OPT_GET, OPT_SET, OPT_UNSET, OPT_EXISTS, OPT_KEYS, OPT_SIZE, OPT_INFO,
 		OPT_MERGE, OPT_WITH, OPT_APPEND, OPT_LAPPEND, OPT_INCR, OPT_REMOVE, OPT_VALUES, OPT_FOR,
 		OPT_REPLACE, OPT_UPDATE,
@@ -11375,7 +10946,7 @@ static __device__ int Jim_DictCoreCommand(ClientData dummy, Jim_Interp *interp, 
 			int rc = Jim_DictKeysVector(interp, argv[2], argv + 3, argc - 3, &objPtr, JIM_ERRMSG);
 			if (rc < 0)
 				return JIM_ERROR;
-			Jim_SetResultBool(interp,  rc == JIM_OK);
+			Jim_SetResultBool(interp, rc == JIM_OK);
 			return JIM_OK;
 		}
 	case OPT_UNSET:
@@ -11436,10 +11007,10 @@ static __device__ int Jim_DictCoreCommand(ClientData dummy, Jim_Interp *interp, 
 __constant__ static const char *const _subst_options[] = {
 	"-nobackslashes", "-nocommands", "-novariables", NULL
 };
-static __device__ int Jim_SubstCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
-	enum
-	{ OPT_NOBACKSLASHES, OPT_NOCOMMANDS, OPT_NOVARIABLES };
+static __device__ int Jim_SubstCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+	enum {
+		OPT_NOBACKSLASHES, OPT_NOCOMMANDS, OPT_NOVARIABLES
+	};
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "?options? string");
 		return JIM_ERROR;
@@ -11469,13 +11040,12 @@ __constant__ static const char *const _info_commands[] = {
 	"script", "source", "stacktrace", "nameofexecutable", "returncodes",
 	"references", "alias", NULL
 };
-static __device__ int Jim_InfoCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
-	enum
-	{ INFO_BODY, INFO_STATICS, INFO_COMMANDS, INFO_PROCS, INFO_CHANNELS, INFO_EXISTS, INFOGLOBAL_S, INFO_LEVEL,
-	INFO_FRAME, INFO_LOCALS, INFO_VARS, INFO_VERSION, INFO_PATCHLEVEL, INFO_COMPLETE, INFO_ARGS,
-	INFO_HOSTNAME, INFO_SCRIPT, INFO_SOURCE, INFO_STACKTRACE, INFO_NAMEOFEXECUTABLE,
-	INFO_RETURNCODES, INFO_REFERENCES, INFO_ALIAS,
+static __device__ int Jim_InfoCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+	enum {
+		INFO_BODY, INFO_STATICS, INFO_COMMANDS, INFO_PROCS, INFO_CHANNELS, INFO_EXISTS, INFOGLOBAL_S, INFO_LEVEL,
+		INFO_FRAME, INFO_LOCALS, INFO_VARS, INFO_VERSION, INFO_PATCHLEVEL, INFO_COMPLETE, INFO_ARGS,
+		INFO_HOSTNAME, INFO_SCRIPT, INFO_SOURCE, INFO_STACKTRACE, INFO_NAMEOFEXECUTABLE,
+		INFO_RETURNCODES, INFO_REFERENCES, INFO_ALIAS,
 	};
 #ifdef jim_ext_namespace
 	int nons = 0;
@@ -11504,7 +11074,7 @@ static __device__ int Jim_InfoCoreCommand(ClientData dummy, Jim_Interp *interp, 
 		}
 		Jim_SetResultBool(interp, Jim_GetVariable(interp, argv[2], 0) != NULL);
 		break;
-	case INFO_ALIAS:{
+	case INFO_ALIAS: {
 		Jim_Cmd *cmdPtr;
 		if (argc != 3) {
 			Jim_WrongNumArgs(interp, 2, argv, "command");
@@ -11563,7 +11133,7 @@ static __device__ int Jim_InfoCoreCommand(ClientData dummy, Jim_Interp *interp, 
 		}
 		Jim_SetResult(interp, JimGetScript(interp, interp->currentScriptObj)->fileNameObj);
 		break;
-	case INFO_SOURCE:{
+	case INFO_SOURCE: {
 		if (argc != 3 && argc != 5) {
 			Jim_WrongNumArgs(interp, 2, argv, "source ?filename line?");
 			return JIM_ERROR;
@@ -11618,7 +11188,7 @@ static __device__ int Jim_InfoCoreCommand(ClientData dummy, Jim_Interp *interp, 
 		break;
 	case INFO_BODY:
 	case INFO_STATICS:
-	case INFO_ARGS:{
+	case INFO_ARGS: {
 		if (argc != 3) {
 			Jim_WrongNumArgs(interp, 2, argv, "procname");
 			return JIM_ERROR;
@@ -11708,8 +11278,7 @@ static __device__ int Jim_InfoCoreCommand(ClientData dummy, Jim_Interp *interp, 
 __constant__ static const char *const _exists_options[] = {
 	"-command", "-proc", "-alias", "-var", NULL
 };
-static __device__ int Jim_ExistsCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ExistsCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	enum {
 		OPT_COMMAND, OPT_PROC, OPT_ALIAS, OPT_VAR
 	};
@@ -11739,15 +11308,14 @@ static __device__ int Jim_ExistsCoreCommand(ClientData dummy, Jim_Interp *interp
 			case OPT_COMMAND: result = 1; break;
 			case OPT_ALIAS: result = cmd->isproc == 0 && cmd->u.native.cmdProc == JimAliasCmd; break;
 			case OPT_PROC: result = cmd->isproc; break;
-		}
+			}
 	}
 	Jim_SetResultBool(interp, result);
 	return JIM_OK;
 }
 
 // [split]
-static __device__ int Jim_SplitCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_SplitCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2 && argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "string ?splitChars?");
 		return JIM_ERROR;
@@ -11824,8 +11392,7 @@ static __device__ int Jim_SplitCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [join]
-static __device__ int Jim_JoinCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_JoinCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2 && argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "list ?joinString?");
 		return JIM_ERROR;
@@ -11844,8 +11411,7 @@ static __device__ int Jim_JoinCoreCommand(ClientData dummy, Jim_Interp *interp, 
 }
 
 // [format]
-static __device__ int Jim_FormatCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_FormatCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "formatString ?arg arg ...?");
 		return JIM_ERROR;
@@ -11858,8 +11424,7 @@ static __device__ int Jim_FormatCoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // [scan]
-static __device__ int Jim_ScanCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ScanCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "string format ?varName varName ...?");
 		return JIM_ERROR;
@@ -11924,8 +11489,7 @@ static __device__ int Jim_ScanCoreCommand(ClientData dummy, Jim_Interp *interp, 
 }
 
 // [error]
-static __device__ int Jim_ErrorCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_ErrorCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2 && argc != 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "message ?stacktrace?");
 		return JIM_ERROR;
@@ -11940,8 +11504,7 @@ static __device__ int Jim_ErrorCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [lrange]
-static __device__ int Jim_LrangeCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LrangeCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 4) {
 		Jim_WrongNumArgs(interp, 1, argv, "list first last");
 		return JIM_ERROR;
@@ -11954,8 +11517,7 @@ static __device__ int Jim_LrangeCoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // [lrepeat]
-static __device__ int Jim_LrepeatCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LrepeatCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	long count;
 	if (argc < 2 || Jim_GetLong(interp, argv[1], &count) != JIM_OK || count < 0) {
 		Jim_WrongNumArgs(interp, 1, argv, "count ?value ...?");
@@ -11972,8 +11534,7 @@ static __device__ int Jim_LrepeatCoreCommand(ClientData dummy, Jim_Interp *inter
 	return JIM_OK;
 }
 
-__device__ char **Jim_GetEnviron()
-{
+__device__ char **Jim_GetEnviron() {
 #if __CUDACC__
 	return nullptr;
 #else
@@ -11988,8 +11549,7 @@ __device__ char **Jim_GetEnviron()
 #endif
 }
 
-__device__ void Jim_SetEnviron(char **env)
-{
+__device__ void Jim_SetEnviron(char **env) {
 #if __CUDACC__
 	return;
 #else
@@ -12005,8 +11565,7 @@ __device__ void Jim_SetEnviron(char **env)
 }
 
 // [env]
-static __device__ int Jim_EnvCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_EnvCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc == 1) {
 		char **e = Jim_GetEnviron();
 		Jim_Obj *listObjPtr = Jim_NewListObj(interp, NULL, 0);
@@ -12038,8 +11597,7 @@ static __device__ int Jim_EnvCoreCommand(ClientData dummy, Jim_Interp *interp, i
 }
 
 // [source]
-static __device__ int Jim_SourceCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_SourceCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "fileName");
 		return JIM_ERROR;
@@ -12049,8 +11607,7 @@ static __device__ int Jim_SourceCoreCommand(ClientData dummy, Jim_Interp *interp
 }
 
 // [lreverse]
-static __device__ int Jim_LreverseCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LreverseCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "list");
 		return JIM_ERROR;
@@ -12066,8 +11623,7 @@ static __device__ int Jim_LreverseCoreCommand(ClientData dummy, Jim_Interp *inte
 	return JIM_OK;
 }
 
-static __device__ int JimRangeLen(jim_wide start, jim_wide end, jim_wide step)
-{
+static __device__ int JimRangeLen(jim_wide start, jim_wide end, jim_wide step) {
 	if (step == 0)
 		return -1;
 	if (start == end)
@@ -12089,8 +11645,7 @@ static __device__ int JimRangeLen(jim_wide start, jim_wide end, jim_wide step)
 }
 
 // [range]
-static __device__ int Jim_RangeCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_RangeCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2 || argc > 4) {
 		Jim_WrongNumArgs(interp, 1, argv, "?start? end ?step?");
 		return JIM_ERROR;
@@ -12119,8 +11674,7 @@ static __device__ int Jim_RangeCoreCommand(ClientData dummy, Jim_Interp *interp,
 }
 
 // [rand]
-static __device__ int Jim_RandCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_RandCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 1 || argc > 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "?min? max");
 		return JIM_ERROR;
@@ -12128,14 +11682,16 @@ static __device__ int Jim_RandCoreCommand(ClientData dummy, Jim_Interp *interp, 
 	jim_wide min = 0, max = 0, len, maxMul;
 	if (argc == 1) {
 		max = JIM_WIDE_MAX;
-	} else if (argc == 2) {
+	}
+	else if (argc == 2) {
 		if (Jim_GetWide(interp, argv[1], &max) != JIM_OK)
 			return JIM_ERROR;
-	} else if (argc == 3) {
+	}
+	else if (argc == 3) {
 		if (Jim_GetWide(interp, argv[1], &min) != JIM_OK || Jim_GetWide(interp, argv[2], &max) != JIM_OK)
 			return JIM_ERROR;
 	}
-	len = max-min;
+	len = max - min;
 	if (len < 0) {
 		Jim_SetResultString(interp, "Invalid arguments (max < min)", -1);
 		return JIM_ERROR;
@@ -12146,14 +11702,13 @@ static __device__ int Jim_RandCoreCommand(ClientData dummy, Jim_Interp *interp, 
 		JimRandomBytes(interp, &r, sizeof(jim_wide));
 		if (r < 0 || r >= maxMul)
 			continue;
-		r = (len == 0 ? 0 : r%len);
-		Jim_SetResultInt(interp, min+r);
+		r = (len == 0 ? 0 : r % len);
+		Jim_SetResultInt(interp, min + r);
 		return JIM_OK;
 	}
 }
 
-static __device__ int InterpObjCmd(ClientData clientData, Jim_Interp *interp, int argc, Jim_Obj *const args[])
-{
+static __device__ int InterpObjCmd(ClientData clientData, Jim_Interp *interp, int argc, Jim_Obj *const args[]) {
 	if (argc < 2)
 	{
 		Jim_WrongNumArgs(interp, 1, args, "SUBCOMMAND ...");
@@ -12162,8 +11717,7 @@ static __device__ int InterpObjCmd(ClientData clientData, Jim_Interp *interp, in
 	return JIM_OK;
 }
 
-static __device__ void InterpDeleteCmd(ClientData data, Jim_Interp *interp)
-{
+static __device__ void InterpDeleteCmd(ClientData data, Jim_Interp *interp) {
 	Jim_Interp *p = (Jim_Interp *)data;
 	Jim_FreeInterp(p);
 }
@@ -12172,8 +11726,7 @@ static __device__ void InterpDeleteCmd(ClientData data, Jim_Interp *interp)
 __constant__ static const char *const _interp_commands[] = {
 	"create", "alias", "eval", "delete", NULL
 };
-static __device__ int Jim_InterpCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_InterpCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	enum {
 		INTERP_CREATE, INTERP_ALIAS, INTERP_EVAL, INTERP_DELETE
 	};
@@ -12326,8 +11879,7 @@ __constant__ static const struct {
 	{NULL, NULL},
 };
 
-__device__ void Jim_RegisterCoreCommands(Jim_Interp *interp)
-{
+__device__ void Jim_RegisterCoreCommands(Jim_Interp *interp) {
 	int i = 0;
 	while (Jim_CoreCommandsTable[i].name != NULL) {
 		Jim_CreateCommand(interp, Jim_CoreCommandsTable[i].name, Jim_CoreCommandsTable[i].cmdProc, NULL, NULL);
@@ -12342,18 +11894,16 @@ __device__ void Jim_RegisterCoreCommands(Jim_Interp *interp)
 // -----------------------------------------------------------------------------
 #pragma region Interactive prompt
 
-__device__ void Jim_MakeErrorMessage(Jim_Interp *interp)
-{
+__device__ void Jim_MakeErrorMessage(Jim_Interp *interp) {
 	Jim_Obj *argv[2];
 	argv[0] = Jim_NewStringObj(interp, "errorInfo", -1);
 	argv[1] = interp->result;
 	Jim_EvalObjVector(interp, 2, argv);
 }
 
-static __device__ void JimSetFailedEnumResult(Jim_Interp *interp, const char *arg, const char *badtype, const char *prefix, const char *const *tablePtr, const char *name)
-{
+static __device__ void JimSetFailedEnumResult(Jim_Interp *interp, const char *arg, const char *badtype, const char *prefix, const char *const *tablePtr, const char *name) {
 	int count;
-	for (count = 0; tablePtr[count]; count++) { }
+	for (count = 0; tablePtr[count]; count++) {}
 	if (name == NULL)
 		name = "option";
 	Jim_SetResultFormatted(interp, "%s%s \"%s\": must be ", badtype, name, arg);
@@ -12370,8 +11920,7 @@ static __device__ void JimSetFailedEnumResult(Jim_Interp *interp, const char *ar
 	Jim_Free(tablePtrSorted);
 }
 
-__device__ int Jim_GetEnum(Jim_Interp *interp, Jim_Obj *objPtr, const char *const *tablePtr, int *indexPtr, const char *name, int flags)
-{
+__device__ int Jim_GetEnum(Jim_Interp *interp, Jim_Obj *objPtr, const char *const *tablePtr, int *indexPtr, const char *name, int flags) {
 	const char *bad = "bad ";
 	const char *const *entryPtr = NULL;
 	int i;
@@ -12407,8 +11956,7 @@ ambiguous:
 	return JIM_ERROR;
 }
 
-__device__ int Jim_GetEnumFromStruct(Jim_Interp *interp, Jim_Obj *objPtr, const void **tablePtr, int elementSize, int *indexPtr, const char *name, int flags)
-{
+__device__ int Jim_GetEnumFromStruct(Jim_Interp *interp, Jim_Obj *objPtr, const void **tablePtr, int elementSize, int *indexPtr, const char *name, int flags) {
 	const char *bad = "bad ";
 	const void **entryPtrStruct = NULL;
 	const char *const *entryPtr = NULL;
@@ -12417,7 +11965,7 @@ __device__ int Jim_GetEnumFromStruct(Jim_Interp *interp, Jim_Obj *objPtr, const 
 	const char *arg = Jim_GetString(objPtr, &arglen);
 	int match = -1;
 	*indexPtr = -1;
-	for (entryPtrStruct = tablePtr, i = 0; *entryPtrStruct != NULL; entryPtrStruct+=elementSize, i++) {
+	for (entryPtrStruct = tablePtr, i = 0; *entryPtrStruct != NULL; entryPtrStruct += elementSize, i++) {
 		entryPtr = (const char *const *)entryPtrStruct;
 		if (Jim_CompareStringImmediate(interp, objPtr, *entryPtr)) {
 			// Found an exact match
@@ -12446,21 +11994,18 @@ ambiguous:
 	return JIM_ERROR;
 }
 
-__device__ int Jim_FindByName(const char *name, const char * const array[], size_t len)
-{
+__device__ int Jim_FindByName(const char *name, const char * const array[], size_t len) {
 	for (int i = 0; i < (int)len; i++)
 		if (array[i] && !strcmp(array[i], name))
 			return i;
 	return -1;
 }
 
-__device__ int Jim_IsDict(Jim_Obj *objPtr)
-{
+__device__ int Jim_IsDict(Jim_Obj *objPtr) {
 	return objPtr->typePtr == &_dictObjType;
 }
 
-__device__ int Jim_IsList(Jim_Obj *objPtr)
-{
+__device__ int Jim_IsList(Jim_Obj *objPtr) {
 	return objPtr->typePtr == &_listObjType;
 }
 
@@ -12476,8 +12021,7 @@ __device__ int Jim_IsList(Jim_Obj *objPtr)
 // e.g. Jim_SetResultFormatted(interp, "Bad option \"%#s\" in proc \"%#s\"", optionObjPtr, procNamePtr);
 //
 // Note: We take advantage of the fact that printf has the same behaviour for both %s and %#s
-__device__ void Jim_SetResultFormatted(Jim_Interp *interp, const char *format, ...)
-{
+__device__ void Jim_SetResultFormatted(Jim_Interp *interp, const char *format, ...) {
 	va_list va; va_start(va, format);
 	// Initial space needed
 	int len = strlen(format);
@@ -12516,8 +12060,7 @@ __device__ void Jim_SetResultFormatted(Jim_Interp *interp, const char *format, .
 // -----------------------------------------------------------------------------
 #pragma region CommandInfo Command *Added*
 
-__device__ int Jim_GetCommandInfoStr(Jim_Interp *interp, const char *name, Jim_CmdInfo *cmdInfo)
-{
+__device__ int Jim_GetCommandInfoStr(Jim_Interp *interp, const char *name, Jim_CmdInfo *cmdInfo) {
 	Jim_Obj *nameObjPtr = Jim_NewStringObj(interp, name, -1);
 	Jim_IncrRefCount(nameObjPtr);
 	int ret = Jim_GetCommandInfo(interp, nameObjPtr, cmdInfo);
@@ -12525,8 +12068,7 @@ __device__ int Jim_GetCommandInfoStr(Jim_Interp *interp, const char *name, Jim_C
 	return ret;
 }
 
-__device__ int Jim_GetCommandInfo(Jim_Interp *interp, Jim_Obj *objPtr, Jim_CmdInfo *cmdInfo)
-{
+__device__ int Jim_GetCommandInfo(Jim_Interp *interp, Jim_Obj *objPtr, Jim_CmdInfo *cmdInfo) {
 	Jim_Cmd *cmdPtr;
 	if ((cmdPtr = Jim_GetCommand(interp, objPtr, JIM_ERRMSG)) == NULL)
 		return 0;
@@ -12540,8 +12082,7 @@ __device__ int Jim_GetCommandInfo(Jim_Interp *interp, Jim_Obj *objPtr, Jim_CmdIn
 	return 1;
 }
 
-__device__ int Jim_SetCommandInfoStr(Jim_Interp *interp, const char *name, Jim_CmdInfo *cmdInfo)
-{
+__device__ int Jim_SetCommandInfoStr(Jim_Interp *interp, const char *name, Jim_CmdInfo *cmdInfo) {
 	Jim_Obj *nameObjPtr = Jim_NewStringObj(interp, name, -1);
 	Jim_IncrRefCount(nameObjPtr);
 	int ret = Jim_SetCommandInfo(interp, nameObjPtr, cmdInfo);
@@ -12549,8 +12090,7 @@ __device__ int Jim_SetCommandInfoStr(Jim_Interp *interp, const char *name, Jim_C
 	return ret;
 }
 
-__device__ int Jim_SetCommandInfo(Jim_Interp *interp, Jim_Obj *objPtr, Jim_CmdInfo *cmdInfo)
-{
+__device__ int Jim_SetCommandInfo(Jim_Interp *interp, Jim_Obj *objPtr, Jim_CmdInfo *cmdInfo) {
 	Jim_Cmd *cmdPtr;
 	if ((cmdPtr = Jim_GetCommand(interp, objPtr, JIM_ERRMSG)) == NULL)
 		return 0;
@@ -12571,8 +12111,7 @@ __device__ int Jim_SetCommandInfo(Jim_Interp *interp, Jim_Obj *objPtr, Jim_CmdIn
 // -----------------------------------------------------------------------------
 #pragma region Variable Command *Added*
 
-__device__ Jim_Obj *Jim_GetVar2(Jim_Interp *interp, const char *name, const char *key, int flags)
-{
+__device__ Jim_Obj *Jim_GetVar2(Jim_Interp *interp, const char *name, const char *key, int flags) {
 	Jim_CallFrame *savedFramePtr;
 	int global = (flags & JIMGLOBAL_);
 	if (global) { savedFramePtr = interp->framePtr; interp->framePtr = interp->topFramePtr; }
@@ -12590,8 +12129,7 @@ __device__ Jim_Obj *Jim_GetVar2(Jim_Interp *interp, const char *name, const char
 	return obj;
 }
 
-__device__ int Jim_SetVar2(Jim_Interp *interp, const char *name, const char *key, const char *val, int flags)
-{
+__device__ int Jim_SetVar2(Jim_Interp *interp, const char *name, const char *key, const char *val, int flags) {
 	Jim_CallFrame *savedFramePtr;
 	int global = (flags & JIMGLOBAL_);
 	if (global) { savedFramePtr = interp->framePtr; interp->framePtr = interp->topFramePtr; }
@@ -12615,28 +12153,24 @@ __device__ int Jim_SetVar2(Jim_Interp *interp, const char *name, const char *key
 
 // stubs
 #ifndef jim_ext_package
-__device__ int Jim_PackageProvide(Jim_Interp *interp, const char *name, const char *ver, int flags)
-{
+__device__ int Jim_PackageProvide(Jim_Interp *interp, const char *name, const char *ver, int flags) {
 	return JIM_OK;
 }
 #endif
 #ifndef jim_ext_aio
-__device__ FILE *Jim_AioFilehandle(Jim_Interp *interp, Jim_Obj *fhObj)
-{
+__device__ FILE *Jim_AioFilehandle(Jim_Interp *interp, Jim_Obj *fhObj) {
 	Jim_SetResultString(interp, "aio not enabled", -1);
 	return NULL;
 }
 
-__device__ int Jim_MakeTempFile(Jim_Interp *interp, const char *template_)
-{
+__device__ int Jim_MakeTempFile(Jim_Interp *interp, const char *template_) {
 	Jim_SetResultString(interp, "platform has no tempfile support", -1);
 	return -1;
 }
 #endif
 
 #include "jim-eventloop.h"
-__device__ int Jim_InitStaticExtensions(Jim_Interp *interp)
-{
+__device__ int Jim_InitStaticExtensions(Jim_Interp *interp) {
 	extern __device__ int Jim_bootstrapInit(Jim_Interp *interp);
 	extern __device__ int Jim_globInit(Jim_Interp *interp);
 	extern __device__ int Jim_stdlibInit(Jim_Interp *interp);

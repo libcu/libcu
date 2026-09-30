@@ -13,8 +13,7 @@
 #include "jim-subcmd.h"
 
 // Implements the common 'commands' subcommand
-static __device__ int subcmd_null(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int subcmd_null(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return JIM_OK; // Nothing to do, since the result has already been created
 }
 
@@ -22,8 +21,7 @@ static __device__ int subcmd_null(Jim_Interp *interp, int argc, Jim_Obj *const *
 __constant__ static const jim_subcmd_type _dummy_subcmd = {
 	"dummy", NULL, subcmd_null, 0, 0, JIM_MODFLAG_HIDDEN
 };
-static __device__ void add_commands(Jim_Interp *interp, const jim_subcmd_type *ct, const char *sep)
-{
+static __device__ void add_commands(Jim_Interp *interp, const jim_subcmd_type *ct, const char *sep) {
 	const char *s = "";
 	for (; ct->cmd; ct++)
 		if (!(ct->flags & JIM_MODFLAG_HIDDEN)) {
@@ -32,22 +30,19 @@ static __device__ void add_commands(Jim_Interp *interp, const jim_subcmd_type *c
 		}
 }
 
-static __device__ void bad_subcmd(Jim_Interp *interp, const jim_subcmd_type *command_table, const char *type, Jim_Obj *cmd, Jim_Obj *subcmd)
-{
+static __device__ void bad_subcmd(Jim_Interp *interp, const jim_subcmd_type *command_table, const char *type, Jim_Obj *cmd, Jim_Obj *subcmd) {
 	Jim_SetResult(interp, Jim_NewEmptyStringObj(interp));
 	Jim_AppendStrings(interp, Jim_GetResult(interp), Jim_String(cmd), ", ", type, " command \"", Jim_String(subcmd), "\": should be ", NULL);
 	add_commands(interp, command_table, ", ");
 }
 
-static __device__ void show_cmd_usage(Jim_Interp *interp, const jim_subcmd_type *command_table, int argc, Jim_Obj *const *argv)
-{
+static __device__ void show_cmd_usage(Jim_Interp *interp, const jim_subcmd_type *command_table, int argc, Jim_Obj *const *argv) {
 	Jim_SetResult(interp, Jim_NewEmptyStringObj(interp));
 	Jim_AppendStrings(interp, Jim_GetResult(interp), "Usage: \"", Jim_String(argv[0]), " command ... \", where command is one of: ", NULL);
 	add_commands(interp, command_table, ", ");
 }
 
-static __device__ void add_cmd_usage(Jim_Interp *interp, const jim_subcmd_type *ct, Jim_Obj *cmd)
-{
+static __device__ void add_cmd_usage(Jim_Interp *interp, const jim_subcmd_type *ct, Jim_Obj *cmd) {
 	if (cmd)
 		Jim_AppendStrings(interp, Jim_GetResult(interp), Jim_String(cmd), " ", NULL);
 	Jim_AppendStrings(interp, Jim_GetResult(interp), ct->cmd, NULL);
@@ -55,15 +50,13 @@ static __device__ void add_cmd_usage(Jim_Interp *interp, const jim_subcmd_type *
 		Jim_AppendStrings(interp, Jim_GetResult(interp), " ", ct->args, NULL);
 }
 
-static __device__ void set_wrong_args(Jim_Interp *interp, const jim_subcmd_type *command_table, Jim_Obj *subcmd)
-{
+static __device__ void set_wrong_args(Jim_Interp *interp, const jim_subcmd_type *command_table, Jim_Obj *subcmd) {
 	Jim_SetResultString(interp, "wrong # args: should be \"", -1);
 	add_cmd_usage(interp, command_table, subcmd);
 	Jim_AppendStrings(interp, Jim_GetResult(interp), "\"", NULL);
 }
 
-__device__ const jim_subcmd_type *Jim_ParseSubCmd(Jim_Interp *interp, const jim_subcmd_type * command_table, int argc, Jim_Obj *const *argv)
-{
+__device__ const jim_subcmd_type *Jim_ParseSubCmd(Jim_Interp *interp, const jim_subcmd_type * command_table, int argc, Jim_Obj *const *argv) {
 	const char *cmdname = Jim_String(argv[0]);
 	if (argc < 2) {
 		Jim_SetResult(interp, Jim_NewEmptyStringObj(interp));
@@ -153,8 +146,7 @@ __device__ const jim_subcmd_type *Jim_ParseSubCmd(Jim_Interp *interp, const jim_
 	return ct;
 }
 
-__device__ int Jim_CallSubCmd(Jim_Interp *interp, const jim_subcmd_type * ct, int argc, Jim_Obj *const *argv)
-{
+__device__ int Jim_CallSubCmd(Jim_Interp *interp, const jim_subcmd_type * ct, int argc, Jim_Obj *const *argv) {
 	int ret = JIM_ERROR;
 	if (ct) {
 		ret = (ct->flags & JIM_MODFLAG_FULLARGV ? ct->function(interp, argc, argv) : ct->function(interp, argc - 2, argv + 2));
@@ -166,8 +158,7 @@ __device__ int Jim_CallSubCmd(Jim_Interp *interp, const jim_subcmd_type * ct, in
 	return ret;
 }
 
-__device__ int Jim_SubCmdProc(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+__device__ int Jim_SubCmdProc(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	const jim_subcmd_type *ct = Jim_ParseSubCmd(interp, (const jim_subcmd_type *)Jim_CmdPrivData(interp), argc, argv);
 	return Jim_CallSubCmd(interp, ct, argc, argv);
 }

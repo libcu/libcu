@@ -14,7 +14,7 @@ extern "C" {
 	/**
 	* If available, returns a short description of the given signal.
 	* e.g. "Terminated", "Interrupted"
-	* 
+	*
 	* Otherwise returns the same as Jim_SignalId()
 	*/
 	__device__ const char *Jim_SignalName(int sig);

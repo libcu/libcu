@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _UNISTDCU_H
 #define _UNISTDCU_H
 #include <crtdefscu.h>
@@ -38,7 +37,7 @@ typedef short uid_t;
 #include <unistd.h>
 #endif
 
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 #undef access
@@ -132,7 +131,7 @@ extern __device__ int dup2_(int fd, int fd2);
 #define dup2 dup2_
 
 /* NULL-terminated array of "NAME=VALUE" environment variables.  */
-extern __device__ char *__environ_[LIBCU_MAXENVIRON];
+extern __device__ char **__environ_;
 #define __environ __environ_
 
 /* Terminate program execution with the low-order 8 bits of STATUS.  */
@@ -161,6 +160,9 @@ __END_DECLS;
 #define usleep(m) 0
 #define chown(f,o,g) 0
 //#define chgrp
+#if __OS_WIN
+#define unlink _unlink
+#endif
 #endif  /* __CUDA_ARCH__ */
 
 #endif  /* _UNISTDCU_H */

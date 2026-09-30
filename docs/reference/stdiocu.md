@@ -11,15 +11,15 @@ Prototype | Description | Tags
 ```#define stdin``` | Standard input stream
 ```#define stdout``` | Standard output stream.
 ```#define stderr``` | Standard error output stream.
-```__device__ int remove(const char *filename);``` | Remove file FILENAME. | #sentinel-isdevicepath
-```__device__ int rename(const char *old, const char *new_);``` | Rename file OLD to NEW. | #sentinel-isdevicepath
+```__device__ int remove(const char *filename);``` | Remove file FILENAME. | #sentinel-ishostpath
+```__device__ int rename(const char *old, const char *new_);``` | Rename file OLD to NEW. | #sentinel-ishostpath
 ```__device__ FILE *tmpfile(void);``` | Create a temporary file and open it read/write.
 ```__device__ int fclose(FILE *stream, bool wait = true);``` | Close STREAM. | #sentinel-isdevicefile
 ```__device__ int fflush(FILE *stream);``` | Flush STREAM, or all streams if STREAM is NULL. | #sentinel-isdevicefile
-```__device__ FILE *freopen(const char *__restrict filename, const char *__restrict modes, FILE *__restrict stream);``` | Open a file, replacing an existing stream with it. | #sentinel-isdevicepath
-```__device__ FILE *fopen(const char *__restrict filename, const char *__restrict modes);``` | Open a file and create a new stream for it. | #sentinel-isdevicepath
-```__device__ FILE *freopen64(const char *__restrict filename, const char *__restrict modes, FILE *__restrict stream)``` | Open a file, replacing an existing stream with it. | #sentinel-isdevicepath #file64
-```__device__ FILE *fopen64(const char *__restrict filename, const char *__restrict modes)``` | Open a file and create a new stream for it. | #sentinel-isdevicepath #file64
+```__device__ FILE *freopen(const char *__restrict filename, const char *__restrict modes, FILE *__restrict stream);``` | Open a file, replacing an existing stream with it. | #sentinel-ishostpath
+```__device__ FILE *fopen(const char *__restrict filename, const char *__restrict modes);``` | Open a file and create a new stream for it. | #sentinel-ishostpath
+```__device__ FILE *freopen64(const char *__restrict filename, const char *__restrict modes, FILE *__restrict stream)``` | Open a file, replacing an existing stream with it. | #sentinel-ishostpath #file64
+```__device__ FILE *fopen64(const char *__restrict filename, const char *__restrict modes)``` | Open a file and create a new stream for it. | #sentinel-ishostpath #file64
 ```__device__ int setvbuf(FILE *__restrict stream, char *__restrict buf, int modes, size_t n);``` | Make STREAM use buffering mode MODE. If BUF is not NULL, use N bytes of it for buffering; else allocate an internal buffer N bytes long. | #sentinel-isdevicefile
 ```__device__ void setbuf(FILE *__restrict stream, char *__restrict buf);``` | If BUF is NULL, make STREAM unbuffered. Else make it use buffer BUF, of size BUFSIZ. | #sentinel-isdevicefile
 ```__device__ int snprintf(char *__restrict s, size_t maxlen, const char *__restrict format, ...);``` | Maximum chars of output to write in MAXLEN. | #stdarg1

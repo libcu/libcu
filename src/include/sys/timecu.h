@@ -23,9 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _SYS_TIMECU_H
-#define	_SYS_TIMECU_H
+#define _SYS_TIMECU_H
 #include <crtdefscu.h>
 
 #if __OS_WIN
@@ -35,7 +34,7 @@ struct timeval { long tv_sec; long tv_usec; };
 #elif __OS_UNIX
 #include <sys/time.h>
 #endif
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 /* Get the current time of day and timezone information, putting it into *TV and *TZ.  If TZ is NULL, *TZ is not filled. Returns 0 on success, -1 on errors. */

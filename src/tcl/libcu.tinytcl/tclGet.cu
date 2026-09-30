@@ -10,15 +10,13 @@
 // express or implied warranty.
 
 #include "tclInt.h"
-
-__device__ int Tcl_GetIndex(Tcl_Interp *interp, const char *string, const char *table[], char *msg, int flags, int *indexPtr, bool insensitive)
-{
+
+__device__ int Tcl_GetIndex(Tcl_Interp *interp, const char *string, const char *table[], char *msg, int flags, int *indexPtr, bool insensitive) {
 	panic("Not Implemented");
 	return TCL_OK;
 }
 
-__device__ int Tcl_GetIndex2(Tcl_Interp *interp, const char *string, const void *structTable[], int offset, char *msg, int flags, int *indexPtr, bool insensitive)
-{
+__device__ int Tcl_GetIndex2(Tcl_Interp *interp, const char *string, const void *structTable[], int offset, char *msg, int flags, int *indexPtr, bool insensitive) {
 	panic("Not Implemented");
 	return TCL_OK;
 }
@@ -38,8 +36,7 @@ __device__ int Tcl_GetIndex2(Tcl_Interp *interp, const char *string, const void 
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_GetInt(Tcl_Interp *interp, const char *string, int *intPtr)
-{
+__device__ int Tcl_GetInt(Tcl_Interp *interp, const char *string, int *intPtr) {
 	char *end;
 	long i = strtol(string, &end, 0);
 	while (*end != '\0' && isspace(*end)) {
@@ -68,8 +65,7 @@ __device__ int Tcl_GetInt(Tcl_Interp *interp, const char *string, int *intPtr)
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_GetWideInt(Tcl_Interp *interp, const char *string, int64_t *intPtr)
-{
+__device__ int Tcl_GetWideInt(Tcl_Interp *interp, const char *string, int64_t *intPtr) {
 	char *end;
 	int64_t i = strtoll(string, &end, 0);
 	while (*end != '\0' && isspace(*end)) {
@@ -82,7 +78,7 @@ __device__ int Tcl_GetWideInt(Tcl_Interp *interp, const char *string, int64_t *i
 	*intPtr = i;
 	return TCL_OK;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -98,8 +94,7 @@ __device__ int Tcl_GetWideInt(Tcl_Interp *interp, const char *string, int64_t *i
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_GetDouble(Tcl_Interp *interp, const char *string, double *doublePtr)
-{
+__device__ int Tcl_GetDouble(Tcl_Interp *interp, const char *string, double *doublePtr) {
 	char *end;
 	double d = strtod(string, &end);
 	while (*end != '\0' && isspace(*end)) {
@@ -112,7 +107,7 @@ __device__ int Tcl_GetDouble(Tcl_Interp *interp, const char *string, double *dou
 	*doublePtr = d;
 	return TCL_OK;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -128,8 +123,7 @@ __device__ int Tcl_GetDouble(Tcl_Interp *interp, const char *string, double *dou
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_GetBoolean(Tcl_Interp *interp, const char *string, bool *boolPtr)
-{
+__device__ int Tcl_GetBoolean(Tcl_Interp *interp, const char *string, bool *boolPtr) {
 	char c, lowerCase[10]; // Convert the input string to all lower-case.
 	int i;
 	for (i = 0; i < 9; i++) {
@@ -148,23 +142,31 @@ __device__ int Tcl_GetBoolean(Tcl_Interp *interp, const char *string, bool *bool
 	c = lowerCase[0];
 	if (c == '0' && lowerCase[1] == '\0') {
 		*boolPtr = false;
-	} else if (c == '1' && lowerCase[1] == '\0') {
+	}
+	else if (c == '1' && lowerCase[1] == '\0') {
 		*boolPtr = true;
-	} else if (c == 'y' && !strncmp(lowerCase, "yes", length)) {
+	}
+	else if (c == 'y' && !strncmp(lowerCase, "yes", length)) {
 		*boolPtr = true;
-	} else if (c == 'n' && !strncmp(lowerCase, "no", length)) {
+	}
+	else if (c == 'n' && !strncmp(lowerCase, "no", length)) {
 		*boolPtr = false;
-	} else if (c == 't' && !strncmp(lowerCase, "true", length)) {
+	}
+	else if (c == 't' && !strncmp(lowerCase, "true", length)) {
 		*boolPtr = true;
-	} else if (c == 'f' && !strncmp(lowerCase, "false", length)) {
+	}
+	else if (c == 'f' && !strncmp(lowerCase, "false", length)) {
 		*boolPtr = false;
-	} else if (c == 'o' && length >= 2) {
+	}
+	else if (c == 'o' && length >= 2) {
 		if (!strncmp(lowerCase, "on", length)) {
 			*boolPtr = true;
-		} else if (!strncmp(lowerCase, "off", length)) {
+		}
+		else if (!strncmp(lowerCase, "off", length)) {
 			*boolPtr = false;
 		}
-	} else {
+	}
+	else {
 		Tcl_AppendResult(interp, "expected boolean value but got \"", string, "\"", (char *)NULL);
 		return TCL_ERROR;
 	}
@@ -186,7 +188,6 @@ __device__ int Tcl_GetBoolean(Tcl_Interp *interp, const char *string, bool *bool
 *
 *----------------------------------------------------------------------
 */
-__device__ char *Tcl_GetByteArray(Tcl_Interp *interp, const char *string, int *arrayLength)
-{
+__device__ char *Tcl_GetByteArray(Tcl_Interp *interp, const char *string, int *arrayLength) {
 	return TCL_OK;
 }

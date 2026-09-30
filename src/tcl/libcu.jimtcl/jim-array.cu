@@ -51,15 +51,13 @@
 
 #include "jim-subcmd.h"
 
-static __device__ int array_cmd_exists(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int array_cmd_exists(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	// Just a regular [info exists]
 	Jim_SetResultInt(interp, Jim_GetVariable(interp, argv[0], 0) != 0);
 	return JIM_OK;
 }
 
-static __device__ int array_cmd_get(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int array_cmd_get(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *objPtr = Jim_GetVariable(interp, argv[0], JIM_NONE);
 	if (!objPtr)
 		return JIM_OK;
@@ -76,16 +74,14 @@ static __device__ int array_cmd_get(Jim_Interp *interp, int argc, Jim_Obj *const
 	return Jim_DictValues(interp, objPtr, patternObj);
 }
 
-static __device__ int array_cmd_names(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int array_cmd_names(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *objPtr = Jim_GetVariable(interp, argv[0], JIM_NONE);
 	if (!objPtr)
 		return JIM_OK;
 	return Jim_DictKeys(interp, objPtr, argc == 1 ? NULL : argv[1]);
 }
 
-static __device__ int array_cmd_unset(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int array_cmd_unset(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc == 1 || Jim_CompareStringImmediate(interp, argv[1], "*")) {
 		// Unset the whole array
 		Jim_UnsetVariable(interp, argv[0], JIM_NONE);
@@ -109,8 +105,7 @@ static __device__ int array_cmd_unset(Jim_Interp *interp, int argc, Jim_Obj *con
 	return JIM_OK;
 }
 
-static __device__ int array_cmd_size(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int array_cmd_size(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	// Not found means zero length
 	int len = 0;
 	Jim_Obj *objPtr = Jim_GetVariable(interp, argv[0], JIM_NONE);
@@ -123,8 +118,7 @@ static __device__ int array_cmd_size(Jim_Interp *interp, int argc, Jim_Obj *cons
 	return JIM_OK;
 }
 
-static __device__ int array_cmd_stat(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int array_cmd_stat(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *objPtr = Jim_GetVariable(interp, argv[0], JIM_NONE);
 	if (objPtr)
 		return Jim_DictInfo(interp, objPtr);
@@ -132,8 +126,7 @@ static __device__ int array_cmd_stat(Jim_Interp *interp, int argc, Jim_Obj *cons
 	return JIM_ERROR;
 }
 
-static __device__ int array_cmd_set(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int array_cmd_set(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *listObj = argv[1];
 	int len = Jim_ListLength(interp, listObj);
 	if (len % 2) {
@@ -169,8 +162,7 @@ __constant__ static const jim_subcmd_type array_command_table[] = {
 	{ NULL }
 };
 
-__device__ int Jim_arrayInit(Jim_Interp *interp)
-{
+__device__ int Jim_arrayInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "array", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 	Jim_CreateCommand(interp, "array", Jim_SubCmdProc, (void *)array_command_table, NULL);

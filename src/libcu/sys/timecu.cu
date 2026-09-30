@@ -1,8 +1,15 @@
-#include <timecu.h>
 #include <sys/timecu.h>
+#ifdef LIBCU_LEAN_AND_MEAN
+#ifdef __CUDA_ARCH__
+__device__ int gettimeofday_(struct timeval *__restrict tv, void *tz) { return 0; }
+#elif defined(_MSC_VER)
+int gettimeofday(struct timeval *tv, void *unused) { return 0; }
+#endif
+#else
+#include <timecu.h>
 
 __BEGIN_DECLS;
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 
 // gettimeofday
 __device__ int gettimeofday_(struct timeval *tp, void *tz) {
@@ -16,8 +23,7 @@ __device__ int gettimeofday_(struct timeval *tp, void *tz) {
 	//return _time(&tp->tv_sec) == (time_t)-1 ? -1 : 0;
 }
 
-#else
-#ifdef _MSC_VER
+#elif defined(_MSC_VER)
 #include <sys/timeb.h>
 int gettimeofday(struct timeval *tv, void *unused) {
 	struct _timeb tb;
@@ -27,5 +33,5 @@ int gettimeofday(struct timeval *tv, void *unused) {
 	return 0;
 }
 #endif
-#endif
 __END_DECLS;
+#endif

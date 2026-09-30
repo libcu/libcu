@@ -59,8 +59,7 @@
 //     Implements the rename TCL command: readdir ?-nocomplain? dirPath
 // Results:
 //      Standard TCL result.
-__device__ int Jim_ReaddirCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+__device__ int Jim_ReaddirCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int nocomplain = 0;
 	if (argc == 3 && Jim_CompareStringImmediate(interp, argv[1], "-nocomplain"))
 		nocomplain = 1;
@@ -94,8 +93,7 @@ __device__ int Jim_ReaddirCmd(ClientData dummy, Jim_Interp *interp, int argc, Ji
 	}
 }
 
-__device__ int Jim_readdirInit(Jim_Interp *interp)
-{
+__device__ int Jim_readdirInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "readdir", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 	Jim_CreateCommand(interp, "readdir", Jim_ReaddirCmd, NULL, NULL);

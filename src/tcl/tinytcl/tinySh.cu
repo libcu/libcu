@@ -82,26 +82,25 @@ static void MainInit(int argc, char *const argv[]) {
 
 	int result;
 	if (argc > 1 && strcmp(argv[1], "-")) {
-		char *filename = (char *)argv[1]+1;
+		char *filename = (char *)argv[1];
 
 		// Before we eval the file, create an args global containing the remaining arguments
 		char *args = Tcl_Merge(argc - 2, (const char **)argv + 2);
-		Tcl_SetVar(interp, "argv", args, TCLGLOBAL__ONLY);
+		Tcl_SetVar(interp, (char *)"argv", args, TCLGLOBAL__ONLY);
 		_freeFast(args);
 
 		result = Tcl_EvalFile(interp, filename);
-		if (result != TCL_OK)
-		{
+		if (result != TCL_OK) {
 			// And make sure we print an informative error if something goes wrong
-			Tcl_AddErrorInfo(interp, "");
-			printf("%s\n", Tcl_GetVar(interp, "errorInfo", TCL_LEAVE_ERR_MSG));
+			Tcl_AddErrorInfo(interp, (char *)"");
+			printf("%s\n", Tcl_GetVar(interp, (char *)"errorInfo", TCL_LEAVE_ERR_MSG));
 			exit(1);
 		}
 		exit(0);
 	}
 	else {
 		// Are we in interactive mode or script from stdin mode?
-		_dataP.noninteractive = (argc > 1);
+		_dataP.noninteractive = argc > 1;
 #ifndef TCL_GENERIC_ONLY
 		if (!_dataP.noninteractive) {
 			result = Tcl_Eval(interp, _initCmd, 0, (char **)NULL);
@@ -120,7 +119,7 @@ static int MainInit(int argc, char *const argv[]) {
 	memset(&h_dataP, 0, sizeof(h_dataP));
 	//cudaErrorCheck(cudaSetDeviceFlags(cudaDeviceMapHost | cudaDeviceLmemResizeToMax));
 	cudaErrorCheck(cudaSetDevice(gpuGetMaxGflopsDevice()));
-	cudaErrorCheck(cudaDeviceSetLimit(cudaLimitStackSize, 1024*5));
+	cudaErrorCheck(cudaDeviceSetLimit(cudaLimitStackSize, 1024 * 5));
 	sentinelServerInitialize();
 	//
 	char **d_argv = cudaDeviceTransferStringArray(argc, argv);

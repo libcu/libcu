@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" >
+  <UsingTask TaskName="GetLibcuArch" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <CudaCompile ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <LibcuArch ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+var itemAsName = "cpu";
+var item = CudaCompile.Select(x=>x.GetMetadata("CodeGeneration")).FirstOrDefault();
+if (item != null) {
+  if (item.IndexOf("compute_10") != -1) itemAsName = "ERR";
+  if (item.IndexOf("compute_11") != -1 || item.IndexOf("compute_12") != -1 || item.IndexOf("compute_13") != -1) itemAsName = "11";
+  if (item.IndexOf("compute_20") != -1 || item.IndexOf("compute_21") != -1) itemAsName = "20";
+  if (item.IndexOf("compute_30") != -1 || item.IndexOf("compute_32") != -1) itemAsName = "30";
+  if (item.IndexOf("compute_35") != -1 || item.IndexOf("compute_37") != -1) itemAsName = "35";
+  if (item.IndexOf("compute_50") != -1) itemAsName = "50";
+  if (item.IndexOf("compute_52") != -1 || item.IndexOf("compute_53") != -1) itemAsName = "52";
+  if (item.IndexOf("compute_60") != -1) itemAsName = "60";
+}
+LibcuArch = itemAsName;
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)lib\$(Platform).$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <CudaCompile>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <Target Name="LibcuLink" BeforeTargets="Link;CudaLink">
+    <GetLibcuArch CudaCompile="@(CudaCompile)">
+      <Output TaskParameter="LibcuArch" PropertyName="LibcuArch" />
+    </GetLibcuArch>
+    <ItemGroup>
+      <Link>
+        <AdditionalDependencies>libcu.$(LibcuArch).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      </Link>
+      <CudaLink>
+        <AdditionalDependencies>libcu.$(LibcuArch).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      </CudaLink>
+    </ItemGroup>
+  </Target>
+</Project>

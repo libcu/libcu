@@ -94,9 +94,6 @@
     <None Include="tests\infoframe.test">
       <Filter>tests</Filter>
     </None>
-    <None Include="tests\jim.test">
-      <Filter>tests</Filter>
-    </None>
     <None Include="tests\linsert.test">
       <Filter>tests</Filter>
     </None>
@@ -227,6 +224,9 @@
       <Filter>tests</Filter>
     </None>
     <None Include="libcu-jimtcl.native.nuspec" />
+    <None Include="tests\test.tcl">
+      <Filter>tests</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="tests">

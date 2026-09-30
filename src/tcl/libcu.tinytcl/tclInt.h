@@ -239,7 +239,7 @@ typedef struct Interp {
 	char *scriptFile;	// NULL means there is no nested source command active;  otherwise this points to the name of the file being sourced (it's not malloc-ed:  it points to an argument to Tcl_EvalFile.
 	int flags;			// Various flag bits.  See below.
 	Trace *tracePtr;	// List of traces for this interpreter.
-	char resultSpace[TCL_RESULT_SIZE+1];
+	char resultSpace[TCL_RESULT_SIZE + 1];
 	// Static space for storing small results.
 } Interp;
 
@@ -262,7 +262,7 @@ typedef struct ParseValue {
 	char *buffer;		// Address of first character in output buffer.
 	char *next;			// Place to store next character in output buffer.
 	char *end;			// Address of the last usable character in the buffer.
-	void (*expandProc)(struct ParseValue *pvPtr, int needed);
+	void(*expandProc)(struct ParseValue *pvPtr, int needed);
 	// Procedure to call when space runs out; it will make more space.
 	ClientData clientData;	// Arbitrary information for use of expandProc.
 } ParseValue;

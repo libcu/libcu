@@ -10,8 +10,7 @@
 #include <utime.h>
 #include <errno.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	int	dirflag;
 	char *srcname;
 	char *destname;
@@ -68,7 +67,7 @@ int main(int argc, char **argv)
 
 typedef	struct	chunk	CHUNK;
 #define	CHUNKINITSIZE	4
-struct	chunk	{
+struct	chunk {
 	CHUNK *next;
 	char data[CHUNKINITSIZE]; // actually of varying length
 };
@@ -76,8 +75,7 @@ struct	chunk	{
 static CHUNK *chunklist;
 
 // Return TRUE if a filename is a directory. Nonexistant files return FALSE.
-BOOL isadir(char *name)
-{
+BOOL isadir(char *name) {
 	struct stat statbuf;
 	if (stat(name, &statbuf) < 0)
 		return FALSE;
@@ -86,8 +84,7 @@ BOOL isadir(char *name)
 
 // Build a path name from the specified directory name and file name. If the directory name is NULL, then the original filename is returned.
 // The built path is in a static area, and is overwritten for each call.
-char *buildname(char *dirname, char *filename)
-{
+char *buildname(char *dirname, char *filename) {
 	char *cp;
 	static char buf[PATHLEN];
 

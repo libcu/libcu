@@ -26,8 +26,7 @@ static int listused;
 static int comma = 0, col = 0, len;
 static char *err_mem = "out of memory\n";
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	char		*cp;
 	char		*name = NULL;
 	int		mult = 0;
@@ -40,12 +39,12 @@ int main(int argc, char **argv)
 	struct	dirent	*dp;
 	char		fullname[PATHLEN];
 	struct	stat	statbuf;
-	static		char *def[2] = {"-ls", "."};
+	static		char *def[2] = { "-ls", "." };
 
 	if (listsize == 0) {
-		list = (char **) malloc(LISTSIZE * sizeof(char *));
+		list = (char **)malloc(LISTSIZE * sizeof(char *));
 		if (list == NULL) {
-			fputs (err_mem, stderr);
+			fputs(err_mem, stderr);
 			return;
 		}
 		listsize = LISTSIZE;
@@ -64,25 +63,25 @@ int main(int argc, char **argv)
 		name = *(++argv);
 		endslash = (*name && (name[strlen(name) - 1] == '/'));
 
-		if (lstat (name, &statbuf) < 0) {
-			perror (name);
+		if (lstat(name, &statbuf) < 0) {
+			perror(name);
 			continue;
 		}
 
-		if (!S_ISDIR (statbuf.st_mode)) {
+		if (!S_ISDIR(statbuf.st_mode)) {
 			if (isdir) {
-				fputs ("\n\n", stdout);
+				fputs("\n\n", stdout);
 				comma = 0;
 				col = 0;
 			}
-			lsfile (name);
+			lsfile(name);
 			isdir = 0;
 			lf_flag = 1;
-                        continue;
-                }
+			continue;
+		}
 
 		if (lf_flag)
-			fputs ("\n\n", stdout);
+			fputs("\n\n", stdout);
 		comma = 0;
 		col = 0;
 		lf_flag = 1;
@@ -91,15 +90,15 @@ int main(int argc, char **argv)
 		/*
 		 * Do all the files in a directory.
 		 */
-		dirp = opendir (name);
+		dirp = opendir(name);
 		if (dirp == NULL) {
-			perror (name);
+			perror(name);
 			continue;
 		}
 
 		if (mult) {
-			fputs (name, stdout);
-			fputs (":\n", stdout);
+			fputs(name, stdout);
+			fputs(":\n", stdout);
 		}
 
 		while ((dp = readdir(dirp)) != NULL) {
@@ -116,7 +115,7 @@ int main(int argc, char **argv)
 				newlist = realloc(list,
 					((sizeof(char **)) * (listsize + LISTSIZE)));
 				if (newlist == NULL) {
-					fputs (err_mem, stderr);
+					fputs(err_mem, stderr);
 					break;
 				}
 				list = newlist;
@@ -126,7 +125,7 @@ int main(int argc, char **argv)
 			list[listused] = strdup(fullname);
 
 			if (list[listused] == NULL) {
-				fputs (err_mem, stderr);
+				fputs(err_mem, stderr);
 				break;
 			}
 
@@ -138,16 +137,16 @@ int main(int argc, char **argv)
 		/*
 		 * Sort the files.
 		 */
-		qsort((char *) list, listused, sizeof(char *), namesort);
+		qsort((char *)list, listused, sizeof(char *), namesort);
 
-		
+
 		/*
 		 * Now finally list the filenames.
 		 */
 		for (i = 0; i < listused; i++) {
 			name = list[i];
 
-			if (lstat (name, &statbuf) < 0) {
+			if (lstat(name, &statbuf) < 0) {
 				perror(name);
 				free(name);
 				continue;
@@ -159,33 +158,32 @@ int main(int argc, char **argv)
 			else
 				cp = name;
 
-			lsfile (cp);
+			lsfile(cp);
 			free(name);
 		}
 
 		listused = 0;
 	}
-	fputs ("\n", stdout);
+	fputs("\n", stdout);
 }
 
 
 /*
  * Do an LS of a particular file name
  */
-void
-lsfile (cp)
-	char *cp;
-{
+void lsfile(char *cp) {
 	if (*cp != '.') {
-		len = strlen (cp);
+		len = strlen(cp);
 		if ((col += len) >= (COLS - 3)) {
-			fputs (",\n", stdout);
+			fputs(",\n", stdout);
 			col = len;
-		} else if (comma) {
-			fputs (", ", stdout);
-			col += 2; 
-		} else comma = 1;
-		fputs (cp, stdout);
+		}
+		else if (comma) {
+			fputs(", ", stdout);
+			col += 2;
+		}
+		else comma = 1;
+		fputs(cp, stdout);
 	}
 }
 
@@ -195,24 +193,20 @@ lsfile (cp)
  * If the directory name is NULL, then the original filename is returned.
  * The built path is in a static area, and is overwritten for each call.
  */
-char *
-buildname(dirname, filename)
-	char	*dirname;
-	char	*filename;
-{
+char *buildname(char *dirname, char *filename) {
 	char		*cp;
 	static	char	buf[PATHLEN];
 
 	if ((dirname == NULL) || (*dirname == '\0'))
 		return filename;
 
-	cp = strrchr (filename, '/');
+	cp = strrchr(filename, '/');
 	if (cp)
 		filename = cp + 1;
 
-	strcpy (buf, dirname);
-	strcat (buf, "/");
-	strcat (buf, filename);
+	strcpy(buf, dirname);
+	strcat(buf, "/");
+	strcat(buf, filename);
 
 	return buf;
 }
@@ -223,8 +217,8 @@ buildname(dirname, filename)
  */
 int
 namesort(pp1, pp2)
-	const void	*pp1;
-	const void	*pp2;
+const void	*pp1;
+const void	*pp2;
 {
 	char **p1 = (char **)pp1;
 	char **p2 = (char **)pp2;

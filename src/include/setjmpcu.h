@@ -23,13 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _SETJMPCU_H
 #define _SETJMPCU_H
 #include <crtdefscu.h>
 
 #include <setjmp.h>
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 //struct __jmp_buf_tag {

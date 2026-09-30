@@ -45,8 +45,7 @@ typedef struct memfile_t {
 
 //__constant__ const int __sizeofMemfile_t = sizeof(memfile_t);
 
-//__host_device__ void memfileOpen(memfile_t *f)
-//{
+//__host_device__ void memfileOpen(memfile_t *f) {
 //	memset(f, 0, sizeof(memfile_t));
 //	f->opened = true;
 //}
@@ -55,10 +54,8 @@ typedef struct memfile_t {
 #define RC_IOERR 10 
 #define RC_IOERR_SHORT_READ (RC_IOERR | (2<<8))
 #define RC_IOERR_NOMEM_BKPT 10
-#define MIN(a, b) ((a)<(b)?(a):(b))
-#define MAX(a, b) ((a)>(b)?(a):(b))
 
-/* Read data from the in-memory journal file.  This is the implementation of the sqlite3_vfs.xRead method. */
+/* Read data from the in-memory journal file.  This is the implementation of the vsys.read method. */
 __host_device__ int memfileRead(vsysfile *p, void *buf, int amount, int64_t offset) {
 	memfile_t *f = (memfile_t *)p;
 #if defined(ENABLE_ATOMIC_WRITE) || defined(ENABLE_BATCH_ATOMIC_WRITE)
@@ -66,11 +63,13 @@ __host_device__ int memfileRead(vsysfile *p, void *buf, int amount, int64_t offs
 		return RC_IOERR_SHORT_READ;
 #endif
 
-	// never try to read past the end of an in-memory file
 	fileChunk_t *chunk;
 	assert(amount + offset <= f->endpoint.offset);
 	assert(!f->readpoint.offset || f->readpoint.chunk);
-	if (f->readpoint.offset != offset || !offset) { int64_t off = 0; for (chunk = f->first; ALWAYS_(chunk) && (off + f->chunkSize) <= offset; chunk = chunk->next) off += f->chunkSize; }
+	if (f->readpoint.offset != offset || !offset) {
+		int64_t off = 0;
+		for (chunk = f->first; ALWAYS_(chunk) && (off + f->chunkSize) <= offset; chunk = chunk->next) off += f->chunkSize;
+	}
 	else { chunk = f->readpoint.chunk; assert(chunk); }
 
 	int chunkOffset = (int)(offset % f->chunkSize);
@@ -78,7 +77,7 @@ __host_device__ int memfileRead(vsysfile *p, void *buf, int amount, int64_t offs
 	int read = amount;
 	do {
 		int space = f->chunkSize - chunkOffset;
-		int copy = MIN(read, (f->chunkSize - chunkOffset));
+		int copy = MIN_(read, (f->chunkSize - chunkOffset));
 		memcpy(out, chunk->chunk + chunkOffset, copy);
 		out += copy;
 		read -= space;
@@ -108,7 +107,7 @@ static __host_device__ int memfileCreateFile(memfile_t *f) {
 		int64_t off = 0;
 		for (fileChunk_t *p = copy.first; p; p = p->next) {
 			if (off + chunkSize > copy.endpoint.offset)
-				chunkSize = copy.endpoint.offset - off;
+				chunkSize = (int)(copy.endpoint.offset - off);
 			rc = __extsystem.vsys_write((vsysfile *)f, (uint8_t *)p->chunk, chunkSize, off);
 			if (rc) break;
 			off += chunkSize;
@@ -128,6 +127,7 @@ static __host_device__ int memfileCreateFile(memfile_t *f) {
 /* Write data to the file. */
 __host_device__ int memfileWrite(vsysfile *p, const void *buf, int amount, int64_t offset) {
 	memfile_t *f = (memfile_t *)p;
+	fileChunk_t *chunk;
 	// If the file should be created now, create it and write the new data into the file on disk.
 	if (f->spill > 0 && amount + offset > f->spill) {
 		int rc = memfileCreateFile(f);
@@ -136,6 +136,7 @@ __host_device__ int memfileWrite(vsysfile *p, const void *buf, int amount, int64
 	}
 	// If the contents of this write should be stored in memory
 	else {
+#if 0
 		// An in-memory journal file should only ever be appended to. Random access writes are not required. The only exception to this is when
 		// the in-memory journal is being used by a connection using the atomic-write optimization. In this case the first 28 bytes of the
 		// journal file may be written as part of committing the transaction.
@@ -149,13 +150,23 @@ __host_device__ int memfileWrite(vsysfile *p, const void *buf, int amount, int64
 #else
 		assert(offset > 0 || !f->first);
 #endif
+#else
+		// libcu - deviation
+		if (offset > 0 || !f->first) {
+			int64_t off = offset - f->endpoint.offset;
+			if (off) {
+				panic("Not Implemented: file write midstream");
+				for (off = 0, chunk = f->first; ALWAYS_(chunk) && (off + f->chunkSize) <= offset; chunk = chunk->next) off += f->chunkSize;
+			}
+		}
+#endif
 		{
 			int write = amount;
 			uint8_t *b = (uint8_t *)buf;
 			while (write > 0) {
-				fileChunk_t *chunk = f->endpoint.chunk;
+				chunk = f->endpoint.chunk;
 				int chunkOffset = (int)(f->endpoint.offset % f->chunkSize);
-				int space = MIN(write, f->chunkSize - chunkOffset);
+				int space = MIN_(write, f->chunkSize - chunkOffset);
 
 				if (!chunkOffset) {
 					// New chunk is required to extend the file
@@ -168,12 +179,12 @@ __host_device__ int memfileWrite(vsysfile *p, const void *buf, int amount, int64
 					f->endpoint.chunk = newChunk;
 				}
 
-				memcpy(&f->endpoint.chunk->chunk[chunkOffset], b, space);
+				memcpy(f->endpoint.chunk->chunk + chunkOffset, b, space);
 				b += space;
 				write -= space;
 				f->endpoint.offset += space;
 			}
-			f->size = amount + offset;
+			f->size = (int)(amount + offset);
 		}
 	}
 	return RC_OK;
@@ -305,6 +316,5 @@ struct vsystem_partial {
 	int sizeOsFile;			// Size of subclassed vsysfile
 };
 __host_device__ int memfileSize(vsystem *p) {
-	return !p ? (int)sizeof(memfile_t) :
-		MAX(((struct vsystem_partial *)p)->sizeOsFile, (int)sizeof(memfile_t));
+	return !p ? (int)sizeof(memfile_t) : MAX_(((struct vsystem_partial *)p)->sizeOsFile, (int)sizeof(memfile_t));
 }

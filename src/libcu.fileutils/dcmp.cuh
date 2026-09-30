@@ -1,10 +1,10 @@
+#include <ext/pipeline.h>
 #include <sys/statcu.h>
 #include <stdiocu.h>
 #include <stringcu.h>
 
 __device__ int d_dcmp_rc;
-__global__ void g_dcmp(char *str, char *str2)
-{
+__global__ void g_dcmp(pipelineRedir redir, char *str, char *str2) {
 	struct stat statbuf1;
 	if (stat(str, &statbuf1) < 0) {
 		perror(str);
@@ -48,12 +48,12 @@ __global__ void g_dcmp(char *str, char *str2)
 	char *bp2;
 	while (true) {
 		size_t cc1 = fread(buf1, 1, sizeof(buf1), f1);
-		if (cc1 < 0) {
+		if (cc1 == (size_t)-1) {
 			perror(str);
 			goto eof;
 		}
 		size_t cc2 = fread(buf2, 1, sizeof(buf2), f2);
-		if (cc2 < 0) {
+		if (cc2 == (size_t)-1) {
 			perror(str2);
 			goto differ;
 		}
@@ -97,18 +97,25 @@ differ:
 	d_dcmp_rc = 1;
 	return;
 }
-int dcmp(char *str, char *str2)
-{
-	size_t strLength = strlen(str) + 1;
-	size_t str2Length = strlen(str2) + 1;
+int dcmp(pipelineRedir redir, char *str, char *str2) {
+	pipelineOpen(redir);
 	char *d_str;
 	char *d_str2;
-	cudaMalloc(&d_str, strLength);
-	cudaMalloc(&d_str2, strLength);
-	cudaMemcpy(d_str, str, strLength, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_str2, str2, str2Length, cudaMemcpyHostToDevice);
-	g_dcmp<<<1,1>>>(d_str, d_str2);
-	cudaFree(d_str);
-	cudaFree(d_str2);
+	if (str) {
+		size_t strLength = strlen(str) + 1;
+		cudaMalloc(&d_str, strLength);
+		cudaMemcpy(d_str, str, strLength, cudaMemcpyHostToDevice);
+	}
+	else d_str = 0;
+	if (str2) {
+		size_t str2Length = strlen(str2) + 1;
+		cudaMalloc(&d_str2, str2Length);
+		cudaMemcpy(d_str2, str2, str2Length, cudaMemcpyHostToDevice);
+	}
+	else d_str2 = 0;
+	g_dcmp<<<1, 1>>>(redir, d_str, d_str2);
+	if (d_str) cudaFree(d_str);
+	if (d_str2) cudaFree(d_str2);
+	pipelineClose(redir);
 	int rc; cudaMemcpyFromSymbol(&rc, d_dcmp_rc, sizeof(rc), 0, cudaMemcpyDeviceToHost); return rc;
 }

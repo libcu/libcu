@@ -25,7 +25,7 @@ typedef void *ClientData;
 // Note:  any change to the Tcl_Interp definition below must be mirrored in the "real" definition in tclInt.h.
 typedef struct Tcl_Interp {
 	char *result;		// Points to result string returned by last command.
-	void (*freeProc)(char *blockPtr);
+	void(*freeProc)(char *blockPtr);
 	// Zero means result is statically allocated. If non-zero, gives address of procedure to invoke to free the result.  Must be freed by Tcl_Eval before executing next command.
 	int errorLine;		// When TCL_ERROR is returned, this gives the line number within the command where the error occurred (1 means first line).
 } Tcl_Interp;
@@ -121,11 +121,11 @@ extern __device__ int Tcl_SetCommandInfo(Tcl_Interp *interp, const char *cmdName
 
 // The following declarations either map _allocFast and _freeFast to malloc and free, or they map them to procedures with all sorts of debugging hooks defined in tclCkalloc.c.
 #ifdef TCL_MEM_DEBUG
-extern __device__ char *Tcl_MemAlloc(unsigned int size, char *file, int line);
-extern __device__ int Tcl_MemFree(char *ptr, char *file, int line);
-extern __device__ char *Tcl_MemRealloc(char *ptr, unsigned int size, char *file, int line);
+extern __device__ char *Tcl_MemAlloc(unsigned int size, const char *file, int line);
+extern __device__ int Tcl_MemFree(char *ptr, const char *file, int line);
+extern __device__ char *Tcl_MemRealloc(char *ptr, unsigned int size, const char *file, int line);
 extern __device__ int Tcl_DumpActiveMemory(char *fileName);
-extern __device__ void Tcl_ValidateAllMemory(char *file, int line);
+extern __device__ void Tcl_ValidateAllMemory(const char *file, int line);
 #define _allocFast(x) Tcl_MemAlloc((x), __FILE__, __LINE__)
 #define _freeFast(x) Tcl_MemFree((x), __FILE__, __LINE__)
 #define _reallocFast(x,y) Tcl_MemRealloc((x), (y), __FILE__, __LINE__)
@@ -158,7 +158,7 @@ extern __device__ int Tcl_CommandComplete(char *cmd);
 extern __device__ char *Tcl_Concat(int argc, const char *args[]);
 extern __device__ int Tcl_ConvertElement(const char *src, char *dst, int flags);
 extern __device__ Tcl_CmdBuf Tcl_CreateCmdBuf();
-extern __device__ void Tcl_CreateCommand(Tcl_Interp *interp, char *cmdName, Tcl_CmdProc *proc, ClientData clientData, Tcl_CmdDeleteProc *deleteProc);
+extern __device__ void Tcl_CreateCommand(Tcl_Interp *interp, const char *cmdName, Tcl_CmdProc *proc, ClientData clientData, Tcl_CmdDeleteProc *deleteProc);
 extern __device__ Tcl_Interp *Tcl_CreateInterp();
 
 extern __device__ int Tcl_CreatePipeline(Tcl_Interp *interp, int argc, const char *args[], int **pidArrayPtr, int *inPipePtr, int *outPipePtr, int *errFilePtr);

@@ -5,6 +5,13 @@
 #include <unistdcu.h>
 #include <assert.h>
 
+#ifndef HostDir
+#define HostDir "C:\\T_\\"
+#endif
+#ifndef DeviceDir
+#define DeviceDir ":\\"
+#endif
+
 static __device__ void testReading(DIR *d) {
 	//// READDIR, REWINDDIR ////
 	//extern __device__ struct dirent *readdir_(DIR *dirp);
@@ -17,8 +24,6 @@ static __device__ void testReading(DIR *d) {
 	struct dirent *e0 = readdir(d); assert(e0); bool e1 = !strcmp(e0->d_name, "."); assert(e1);
 }
 
-#define HostDir "C:\\T_\\"
-#define DeviceDir ":\\"
 static __global__ void g_dirent_test1() {
 	printf("dirent_test1\n");
 
@@ -32,7 +37,7 @@ static __global__ void g_dirent_test1() {
 	DIR *a1a = opendir(HostDir"test"); testReading(a1a); int a1b = closedir(a1a); assert(a1a && !a1b);
 
 	//* Device Absolute */
-	DIR *b0a = opendir(DeviceDir":\\missing"); int b0b = closedir(b0a); assert(!b0a && b0b == -1);
+	DIR *b0a = opendir(DeviceDir"missing"); int b0b = closedir(b0a); assert(!b0a && b0b == -1);
 	mkdir(DeviceDir"test", 0); mkdir(DeviceDir"test\\dir0", 0);
 	DIR *b1a = opendir(DeviceDir"test"); testReading(b1a); int b1b = closedir(b1a); assert(b1a && !b1b);
 

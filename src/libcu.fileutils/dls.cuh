@@ -1,3 +1,4 @@
+#include <ext/pipeline.h>
 #include <sys/types.h>
 #include <sys/statcu.h>
 #include <stdiocu.h>
@@ -30,8 +31,7 @@ __device__ char _fmt[10] = "%s";
 
 // Return the standard ls-like mode string from a file mode. This is static and so is overwritten on each call.
 static __device__ char _modeString_buf[12];
-__device__ char *modeString(int mode)
-{
+__device__ char *modeString(int mode) {
 	strcpy(_modeString_buf, "----------");
 
 	// Fill in the file type.
@@ -68,25 +68,29 @@ __device__ char *modeString(int mode)
 // Get the time to be used for a file. This is down to the minute for new files, but only the date for old files.
 // The string is returned from a static buffer, and so is overwritten for each call.
 static __device__ char _timeString_buf[26];
-__device__ char *timeString(time_t t)
-{
+__device__ char *timeString(time_t t) {
+#ifndef LIBCU_LEAN_AND_MEAN
 	time_t now = time(nullptr);
 	char *str = ctime(&t);
 	strcpy(_timeString_buf, &str[4]);
 	_timeString_buf[12] = '\0';
-	if (t > now || t < now - 365*24*60*60L) {
+	if (t > now || t < now - 365 * 24 * 60 * 60L) {
 		strcpy(&_timeString_buf[7], &str[20]);
 		_timeString_buf[11] = '\0';
 	}
 	return _timeString_buf;
+#else
+	return (char *)"time";
+#endif
 }
 
 // Do an LS of a particular file name according to the flags.
-static __device__ void lsFile(char *fullName, char *name, struct stat *statbuf, int flags)
-{
+static __device__ void lsFile(pipelineRedir *redir, char *fullName, char *name, struct stat *statbuf, int flags) {
 	char *cp;
+#ifndef LIBCU_LEAN_AND_MEAN
 	struct passwd *pwd;
 	struct group *grp;
+#endif
 	char buf[PATHLEN];
 	static char userName[12];
 	static int userId;
@@ -112,11 +116,15 @@ static __device__ void lsFile(char *fullName, char *name, struct stat *statbuf, 
 		cp += strlen(cp);
 
 		if (!userIdKnown || (statbuf->st_uid != userId)) {
+#ifndef LIBCU_LEAN_AND_MEAN
 			pwd = (struct passwd *)getpwuid(statbuf->st_uid);
 			if (pwd)
 				strcpy(userName, pwd->pw_name);
 			else
 				sprintf(userName, "%d", statbuf->st_uid);
+#else
+			strcpy(userName, "pwd");
+#endif
 			userId = statbuf->st_uid;
 			userIdKnown = true;
 		}
@@ -125,11 +133,15 @@ static __device__ void lsFile(char *fullName, char *name, struct stat *statbuf, 
 		cp += strlen(cp);
 
 		if (!groupIdKnown || statbuf->st_gid != groupId) {
+#ifndef LIBCU_LEAN_AND_MEAN
 			grp = (struct group *)getgrgid(statbuf->st_gid);
 			if (grp)
 				strcpy(groupName, grp->gr_name);
 			else
 				sprintf(groupName, "%d", statbuf->st_gid);
+#else
+			strcpy(userName, "grp");
+#endif
 			groupId = statbuf->st_gid;
 			groupIdKnown = true;
 		}
@@ -146,7 +158,7 @@ static __device__ void lsFile(char *fullName, char *name, struct stat *statbuf, 
 
 		sprintf(cp, " %-12s ", timeString(statbuf->st_mtime));
 	}
-	fputs(buf, stdout);
+	fputs(buf, redir->out);
 
 	class_ = name + strlen(name);
 	*class_ = 0;
@@ -172,7 +184,7 @@ static __device__ void lsFile(char *fullName, char *name, struct stat *statbuf, 
 	}
 #endif
 	if (flags & LSF_LONG || ++_col == _cols) {
-		fputc('\n', stdout);
+		fputc('\n', redir->out);
 		_col = 0;
 	}
 }
@@ -180,8 +192,7 @@ static __device__ void lsFile(char *fullName, char *name, struct stat *statbuf, 
 // Build a path name from the specified directory name and file name. If the directory name is NULL, then the original filename is returned.
 // The built path is in a static area, and is overwritten for each call.
 //static __device__ char _buildName_buf[PATHLEN];
-//__device__ char *buildName(char *dirName, char *fileName)
-//{
+//__device__ char *buildName(char *dirName, char *fileName) {
 //	if (!dirName || (*dirName == '\0'))
 //		return fileName;
 //	char *cp = strrchr(fileName, '/');
@@ -194,16 +205,14 @@ static __device__ void lsFile(char *fullName, char *name, struct stat *statbuf, 
 //}
 
 // Sort routine for list of filenames.
-__device__ int nameSort(const void *pp1, const void *pp2)
-{
+__device__ int nameSort(const void *pp1, const void *pp2) {
 	char **p1 = (char **)pp1;
 	char **p2 = (char **)pp2;
 	return strcmp(*p1, *p2);
 }
 
 __device__ int d_dls_rc;
-__global__ void g_dls(char *name, int flags, bool endSlash)
-{
+__global__ void g_dls(pipelineRedir redir, char *name, int flags, bool endSlash) {
 	if (!name) {
 		// alloc list
 		if (_listSize == 0) {
@@ -215,32 +224,36 @@ __global__ void g_dls(char *name, int flags, bool endSlash)
 			_listSize = LISTSIZE;
 		}
 		_listUsed = 0;
+		d_dls_rc = -1;
+		return;
 	}
 
 	struct stat statbuf;
 	if (LSTAT(name, &statbuf) < 0) {
-		perror(name);
+		fperror(redir.out, name);
 		d_dls_rc = -1;
 		return;
 	}
 
+	printf("c: %s %x %x\n", name, flags, statbuf.st_mode);
 	if ((flags & LSF_DIR) || !S_ISDIR(statbuf.st_mode)) {
-		lsFile(NULL, name, &statbuf, flags);
-		if (~flags & LSF_LONG) 
-			fputc('\n', stdout);
+		lsFile(&redir, NULL, name, &statbuf, flags);
+		if (~flags & LSF_LONG)
+			fputc('\n', redir.out);
 		d_dls_rc = -1;
 		return;
 	}
 
+	printf("d: \n");
 	// Do all the files in a directory.
 	DIR *dirp = opendir(name);
 	if (dirp == NULL) {
-		perror(name);
+		fperror(redir.out, name);
 		d_dls_rc = -1;
 		return;
 	}
 	if (flags & LSF_MULT)
-		printf("\n%s:\n", name);
+		fprintf(redir.out, "\n%s:\n", name);
 	struct dirent *dp;
 	char fullName[PATHLEN];
 	while (dp = readdir(dirp)) {
@@ -296,7 +309,7 @@ __global__ void g_dls(char *name, int flags, bool endSlash)
 	for (num = i = 0; i < _listUsed; i++) {
 		name = _list[i];
 		if (LSTAT(name, &statbuf) < 0) {
-			perror(name);
+			fperror(redir.out, name);
 			free(name);
 			continue;
 		}
@@ -304,23 +317,27 @@ __global__ void g_dls(char *name, int flags, bool endSlash)
 		if (cp) cp++;
 		else cp = name;
 		if (flags & LSF_ALL || *cp != '.') {
-			lsFile(name, cp, &statbuf, flags);
+			lsFile(&redir, name, cp, &statbuf, flags);
 			num++;
 		}
 		free(name);
 	}
 	if ((~flags & LSF_LONG) && (num % _cols))
-		fputc('\n', stdout);
+		fputc('\n', redir.out);
 	_listUsed = 0;
 	d_dls_rc = 0;
 }
-int dls(char *str, int flags, bool endSlash)
-{
-	size_t strLength = strlen(str) + 1;
+int dls(pipelineRedir redir, char *str, int flags, bool endSlash) {
+	pipelineOpen(redir);
 	char *d_str;
-	cudaMalloc(&d_str, strLength);
-	cudaMemcpy(d_str, str, strLength, cudaMemcpyHostToDevice);
-	g_dls<<<1,1>>>(d_str, flags, endSlash);
-	cudaFree(d_str);
+	if (str) {
+		size_t strLength = strlen(str) + 1;
+		cudaMalloc(&d_str, strLength);
+		cudaMemcpy(d_str, str, strLength, cudaMemcpyHostToDevice);
+	}
+	else d_str = 0;
+	g_dls<<<1, 1>>>(redir, d_str, flags, endSlash);
+	if (d_str) cudaFree(d_str);
+	pipelineClose(redir);
 	int rc; cudaMemcpyFromSymbol(&rc, d_dls_rc, sizeof(rc), 0, cudaMemcpyDeviceToHost); return rc;
 }

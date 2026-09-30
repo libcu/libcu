@@ -29,8 +29,7 @@ static long getnum();
 
 char localbuf[8192];
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	char *str;
 	char *cp;
 	PARAM *par;
@@ -241,9 +240,8 @@ cleanup:
 
 // Read a number with a possible multiplier.
 // Returns -1 if the number format is illegal.
-static long getnum(char	*cp)
-{
-	long	value;
+static long getnum(char	*cp) {
+	long value;
 
 	if (!isdecimal(*cp))
 		return -1;

@@ -189,12 +189,12 @@ extern "C" {
 	} Jim_HashEntry;
 
 	typedef struct Jim_HashTableType {
-		unsigned int (*hashFunction)(const void *key);
+		unsigned int(*hashFunction)(const void *key);
 		void *(*keyDup)(void *privdata, const void *key);
 		void *(*valDup)(void *privdata, const void *obj);
-		int (*keyCompare)(void *privdata, const void *key1, const void *key2);
-		void (*keyDestructor)(void *privdata, void *key);
-		void (*valDestructor)(void *privdata, void *obj);
+		int(*keyCompare)(void *privdata, const void *key1, const void *key2);
+		void(*keyDestructor)(void *privdata, void *key);
+		void(*valDestructor)(void *privdata, void *obj);
 	} Jim_HashTableType;
 
 	typedef struct Jim_HashTable {
@@ -398,7 +398,7 @@ extern "C" {
 		long id;					// Hold unique id for various purposes
 		int signal_level;			// A nesting level of catch -signal
 		jim_wide sigmask;			// Bit mask of caught signals, or 0 if none
-		int (*signal_set_result)(struct Jim_Interp *interp, jim_wide sigmask); // Set a result for the sigmask
+		int(*signal_set_result)(struct Jim_Interp *interp, jim_wide sigmask); // Set a result for the sigmask
 		Jim_CallFrame *framePtr;	// Pointer to the current call frame
 		Jim_CallFrame *topFramePtr;	// toplevel/global frame pointer
 		struct Jim_HashTable commands; // Commands hash table
@@ -454,7 +454,7 @@ extern "C" {
 	typedef struct Jim_Reference {
 		Jim_Obj *objPtr;
 		Jim_Obj *finalizerCmdNamePtr;
-		char tag[JIM_REFERENCE_TAGLEN+1];
+		char tag[JIM_REFERENCE_TAGLEN + 1];
 	} Jim_Reference;
 
 	/* -----------------------------------------------------------------------------
@@ -501,7 +501,7 @@ extern "C" {
 	JIM_EXPORT __device__ void Jim_StackPush(Jim_Stack *stack, void *element);
 	JIM_EXPORT __device__ void *Jim_StackPop(Jim_Stack *stack);
 	JIM_EXPORT __device__ void *Jim_StackPeek(Jim_Stack *stack);
-	JIM_EXPORT __device__ void Jim_FreeStackElements(Jim_Stack *stack, void (*freeFunc)(void *ptr));
+	JIM_EXPORT __device__ void Jim_FreeStackElements(Jim_Stack *stack, void(*freeFunc)(void *ptr));
 
 	// hash table
 	JIM_EXPORT __device__ int Jim_InitHashTable(Jim_HashTable *ht, const Jim_HashTableType *type, void *privdata);
@@ -511,7 +511,7 @@ extern "C" {
 	JIM_EXPORT __device__ int Jim_DeleteHashEntry(Jim_HashTable *ht, const void *key);
 	JIM_EXPORT __device__ int Jim_FreeHashTable(Jim_HashTable *ht);
 	JIM_EXPORT __device__ Jim_HashEntry *Jim_FindHashEntry(Jim_HashTable *ht, const void *key);
-	JIM_EXPORT __device__ void Jim_ResizeHashTable (Jim_HashTable *ht);
+	JIM_EXPORT __device__ void Jim_ResizeHashTable(Jim_HashTable *ht);
 	JIM_EXPORT __device__ Jim_HashTableIterator *Jim_GetHashTableIterator(Jim_HashTable *ht);
 	JIM_EXPORT __device__ Jim_HashEntry *Jim_NextHashEntry(Jim_HashTableIterator *iter);
 
@@ -533,9 +533,9 @@ extern "C" {
 	JIM_EXPORT __device__ void Jim_AppendStrings(Jim_Interp *interp, Jim_Obj *objPtr, ...);
 	JIM_EXPORT __device__ int Jim_StringEqObj(Jim_Obj *aObjPtr, Jim_Obj *bObjPtr);
 	JIM_EXPORT __device__ int Jim_StringMatchObj(Jim_Interp *interp, Jim_Obj *patternObjPtr, Jim_Obj *objPtr, int nocase);
-	JIM_EXPORT __device__ Jim_Obj *Jim_StringRangeObj (Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr);
-	JIM_EXPORT __device__ Jim_Obj *Jim_FormatString (Jim_Interp *interp, Jim_Obj *fmtObjPtr, int objc, Jim_Obj *const *objv);
-	JIM_EXPORT __device__ Jim_Obj *Jim_ScanString (Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *fmtObjPtr, int flags);
+	JIM_EXPORT __device__ Jim_Obj *Jim_StringRangeObj(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *firstObjPtr, Jim_Obj *lastObjPtr);
+	JIM_EXPORT __device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int objc, Jim_Obj *const *objv);
+	JIM_EXPORT __device__ Jim_Obj *Jim_ScanString(Jim_Interp *interp, Jim_Obj *strObjPtr, Jim_Obj *fmtObjPtr, int flags);
 	JIM_EXPORT __device__ int Jim_CompareStringImmediate(Jim_Interp *interp, Jim_Obj *objPtr, const char *str);
 	JIM_EXPORT __device__ int Jim_StringCompareObj(Jim_Interp *interp, Jim_Obj *firstObjPtr, Jim_Obj *secondObjPtr, int nocase);
 	JIM_EXPORT __device__ int Jim_StringCompareLenObj(Jim_Interp *interp, Jim_Obj *firstObjPtr, Jim_Obj *secondObjPtr, int nocase);

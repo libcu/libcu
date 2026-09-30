@@ -1,9 +1,10 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <assert.h>
+#include <ext/pipeline.cpp>
 
 #define ROUND8_(x) (((x)+7)&~7)
-#define panic(fmt, ...) { printf(fmt, __VA_ARGS__); asm("trap;"); }
+// #define panic(fmt, ...) { printf(fmt, __VA_ARGS__); asm("trap;"); }
 
 #ifdef	__cplusplus
 #define __BEGIN_DECLS extern "C" {
@@ -22,8 +23,7 @@ __BEGIN_DECLS;
 #endif
 __device__ void *malloc_(size_t size) {
 	assert(size > 0);
-	size = ROUND8_(size);
-	MALLOCSIZETYPE *p = (MALLOCSIZETYPE *)malloc(sizeof(MALLOCSIZETYPE) + size);
+	MALLOCSIZETYPE *p = (MALLOCSIZETYPE *)malloc(ROUND8_(sizeof(MALLOCSIZETYPE) + size));
 	if (p)
 		p[0] = size;
 	else panic("failed to allocate %u bytes of memory", size);
@@ -38,8 +38,7 @@ __device__ void free_(void *ptr) {
 
 __device__ void *realloc_(void *ptr, size_t size) {
 	assert(size > 0);
-	size = ROUND8_(size);
-	MALLOCSIZETYPE *p = (MALLOCSIZETYPE *)malloc(sizeof(MALLOCSIZETYPE) + size);
+	MALLOCSIZETYPE *p = (MALLOCSIZETYPE *)malloc(ROUND8_(sizeof(MALLOCSIZETYPE) + size));
 	if (p)
 		p[0] = size;
 	else panic("failed to allocate %u bytes of memory", size);

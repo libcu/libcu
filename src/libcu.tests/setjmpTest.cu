@@ -1,3 +1,6 @@
+#ifdef LIBCU_LEAN_AND_MEAN
+cudaError_t setjmp_test1() { return cudaSuccess; }
+#else
 #include <stdiocu.h>
 #include <setjmpcu.h>
 #include <assert.h>
@@ -19,3 +22,5 @@ static __global__ void g_setjmp_test1() {
 
 }
 cudaError_t setjmp_test1() { g_setjmp_test1<<<1, 1>>>(); return cudaDeviceSynchronize(); }
+
+#endif

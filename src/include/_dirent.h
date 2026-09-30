@@ -145,6 +145,21 @@
 #   define S_IXOTH 0
 #endif
 
+/* Read, write, execute/search by owner */
+#if !defined(S_IRWXU)
+#   define S_IRWXU (S_IRUSR|S_IWUSR|S_IXUSR)
+#endif
+
+/* Read, write, execute/search by groupr */
+#if !defined(S_IRWXG)
+#   define S_IRWXG (S_IRGRP|S_IWGRP|S_IXGRP)
+#endif
+
+/* Read, write, execute/search by others */
+#if !defined(S_IRWXO)
+#   define S_IRWXO (S_IROTH|S_IWOTH|S_IXOTH)
+#endif
+
 /* Maximum length of file name */
 #if !defined(PATH_MAX)
 #   define PATH_MAX MAX_PATH

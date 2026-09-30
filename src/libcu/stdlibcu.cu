@@ -1,12 +1,17 @@
+#include <limits.h>
 #include <stdlibcu.h>
 #include <stdiocu.h>
 #include <sentinel-stdlibmsg.h>
+#include <sys/statcu.h>
 #include <bits/libcu_fpmax.h>
 #include <ext/hash.h>
 #include <ctypecu.h>
 #include <errnocu.h>
 #include <fcntlcu.h>
 #include <assert.h>
+#ifndef LIBCU_LEAN_AND_MEAN
+#include "locale/xlocale_private.h"
+#endif
 
 __BEGIN_DECLS;
 
@@ -687,47 +692,101 @@ __device__ hash_t __env_dir = HASHINIT;
 
 /* Return the value of envariable NAME, or NULL if it doesn't exist.  */
 __device__ char *getenv_(const char *name) {
-	if (ISHOSTENV(name)) { stdlib_getenv msg(name); return msg.RC; }
-	//if (!strcmp(name, "HOME") || !strcmp(name, "PATH")) return "gpu:\\";
-	return (char *)hashFind(&__env_dir, name);
+	if (ISHOSTENV(name)) { stdlib_getenv msg(name); return msg.rc; }
+	char *r = (char *)hashFind(&__env_dir, name);
+	//if (!r && (!strcmp(name, ":HOME") || !strcmp(name, ":PATH"))) r = (char *)":\\";
+	return r;
 }
 
 /* Set NAME to VALUE in the environment. If REPLACE is nonzero, overwrite an existing value.  */
 __device__ int setenv_(const char *name, const char *value, int replace) {
-	if (ISHOSTENV(name)) { stdlib_setenv msg(name, value, replace); return msg.RC; }
+	if (ISHOSTENV(name)) { stdlib_setenv msg(name, value, replace); return msg.rc; }
 	if (!replace && hashFind(&__env_dir, name)) return 0;
-	if (hashInsert(&__env_dir, name, (void *)value))
-		panic("removed environment");
+	hashInsert(&__env_dir, name, (void *)value);
 	return 0;
 }
 
 /* Remove the variable NAME from the environment.  */
 __device__ int unsetenv_(const char *name) {
-	if (ISHOSTENV(name)) { stdlib_unsetenv msg(name); return msg.RC; }
-	if (hashInsert(&__env_dir, name, nullptr))
-		panic("removed environment");
+	if (ISHOSTENV(name)) { stdlib_unsetenv msg(name); return msg.rc; }
+	hashInsert(&__env_dir, name, nullptr);
 	return 0;
 }
 
+#ifndef LIBCU_LEAN_FSYSTEM
+static __device__ int __maketemp(char *template_, register int *fd) {
+	int rnd = rand_();
+	register char *start, *c;
+	for (c = template_; *c; ++c) {}
+	while (*--c == 'X') { *c = (rnd % 10) + '0'; rnd /= 10; }
+	dirEnt_t *ent; int r;
+	for (start = c + 1;; --c) {
+		if (c <= template_) break;
+		if (*c == '/') {
+			*c = '\0';
+			if (!(ent = fsystemAccess(template_, 0, &r))) return 0;
+			if (!fsystemIsDir(ent)) { errno = ENOTDIR; return 0; }
+			*c = '/';
+			break;
+		}
+	}
+	while (true) {
+		if (fd) {
+			if ((*fd = open(template_, O_CREAT | O_EXCL | O_RDWR, 0600)) >= 0) return 1;
+			if (errno != EEXIST) return 0;
+		}
+		else if (!fsystemAccess(template_, 0, &r)) return errno == ENOENT ? 1 : 0;
+		for (c = start;;) {
+			if (!*c) return 0;
+			if (*c == 'z') *c++ = 'a';
+			else {
+				if (isdigit(*c)) *c = 'a';
+				else ++*c;
+				break;
+			}
+		}
+	}
+}
+#endif
+
 /* Generate a unique temporary file name from TEMPLATE. */
 __device__ char *mktemp_(char *template_) {
-	panic("Not Implemented");
-	return nullptr;
+	if (ISHOSTPATH(template_)) { stdlib_mktemp msg(template_); strcpy(template_, msg.rc); return msg.rc; }
+#ifdef LIBCU_LEAN_FSYSTEM
+	return (char *)panic_no_fsystem();
+#else
+	return __maketemp(template_, nullptr) ? template_ : nullptr;
+#endif
 }
 
 /* Generate a unique temporary file name from TEMPLATE. */
 __device__ int mkstemp_(char *template_) {
-	return open(mktemp_(template_), 0);
+	if (ISHOSTPATH(template_)) { stdlib_mkstemp msg(template_); strcpy(template_, (const char *)msg.ptr); return msg.rc; }
+#ifdef LIBCU_LEAN_FSYSTEM
+	return panic_no_fsystem();
+#else
+	int fd; return __maketemp(template_, &fd) ? fd : -1;
+#endif
 }
 
 /* Execute the given line as a shell command.  */
 __device__ int system_(const char *command) {
-	stdlib_system msg(command); return msg.RC;
+	stdlib_system msg(command); return msg.rc;
 }
 
 /* Do a binary search for KEY in BASE, which consists of NMEMB elements of SIZE bytes each, using COMPAR to perform the comparisons.  */
 __device__ void *bsearch_(const void *key, const void *base, size_t nmemb, size_t size, __compar_fn_t compar) {
-	panic("Not Implemented");
+	const char *base0 = (const char *)base;
+	for (size_t lim = nmemb; lim != 0; lim >>= 1) {
+		const void *p = base0 + (lim >> 1) * size;
+		int cmp = (*compar)(key, p);
+		if (!cmp)
+			return (void *)p;
+		if (cmp > 0) { // key > p: move right
+			base = (char *)p + size;
+			lim--;
+		} // else move left
+	}
 	return nullptr;
 }
 
@@ -874,41 +933,83 @@ __device__ lldiv_t lldiv_(long long int numer, long long int denom) {
 }
 #endif
 
+#ifndef LIBCU_LEAN_AND_MEAN
+
 /* Return the length of the multibyte character in S, which is no longer than N.  */
-__device__ int mblen_(const char *s, size_t n) {
-	panic("Not Implemented");
-	return 0;
+__device__ int mblen_l_(const char *s, size_t n, localecu_t loc) {
+	static const mbstate_t initial = {};
+	NORMALIZE_LOCALE(loc);
+	if (!s) {
+		loc->__mbs_mblen = initial; // No support for state dependent encodings.
+		return 0;
+	}
+	size_t rval = loc->__ctype->__mbrtowc(nullptr, s, n, &loc->__mbs_mblen, loc);
+	if (rval == (size_t)-1 || rval == (size_t)-2)
+		return -1;
+	return (int)rval;
 }
+__device__ int mblen_(const char *s, size_t n) { return mblen_l_(s, n, __current_locale()); }
+
 /* Return the length of the given multibyte character, putting its `wchar_t' representation in *PWC.  */
-__device__ int mbtowc_(wchar_t *__restrict __pwc, const char *__restrict s, size_t n) {
-	panic("Not Implemented");
-	return 0;
+__device__ int mbtowc_l_(wchar_t *__restrict pwc, const char *__restrict s, size_t n, localecu_t loc) {
+	static const mbstate_t initial = {};
+	NORMALIZE_LOCALE(loc);
+	if (!s) {
+		loc->__mbs_mbtowc = initial; // No support for state dependent encodings.
+		return 0;
+	}
+	size_t rval = loc->__ctype->__mbrtowc(pwc, s, n, &loc->__mbs_mbtowc, loc);
+	if (rval == (size_t)-1 || rval == (size_t)-2)
+		return -1;
+	return (int)rval;
 }
+__device__ int mbtowc_(wchar_t *__restrict pwc, const char *__restrict s, size_t n) { return mbtowc_l_(pwc, s, n, __current_locale()); }
+
 /* Put the multibyte character represented by WCHAR in S, returning its length.  */
-__device__ int wctomb_(char *s, wchar_t wchar) {
-	panic("Not Implemented");
-	return 0;
+__device__ int wctomb_l_(char *s, wchar_t wchar, localecu_t loc) {
+	static const mbstate_t initial = {};
+	NORMALIZE_LOCALE(loc);
+	if (!s) {
+		loc->__mbs_wctomb = initial; // No support for state dependent encodings.
+		return 0;
+	}
+	size_t rval;
+	if ((rval = loc->__ctype->__wcrtomb(s, wchar, &loc->__mbs_wctomb, loc)) == (size_t)-1)
+		return -1;
+	return (int)rval;
 }
+__device__ int wctomb_(char *s, wchar_t wchar) { return wctomb_l_(s, wchar, __current_locale()); }
 
 /* Convert a multibyte string to a wide char string.  */
-__device__ size_t mbstowcs_(wchar_t *__restrict pwcs, const char *__restrict s, size_t n) {
-	panic("Not Implemented");
-	return 0;
+__device__ size_t mbstowcs_l_(wchar_t *__restrict pwcs, const char *__restrict s, size_t n, localecu_t loc) {
+	static const mbstate_t initial = {};
+	NORMALIZE_LOCALE(loc);
+	mbstate_t mbs = initial;
+	const char *sp = s;
+	return loc->__ctype->__mbsnrtowcs(pwcs, &sp, SIZE_MAX, n, &mbs, loc);
 }
+__device__ size_t mbstowcs_(wchar_t *__restrict pwcs, const char *__restrict s, size_t n) { return mbstowcs_l_(pwcs, s, n, __current_locale()); }
+
 /* Convert a wide char string to multibyte string.  */
-__device__ size_t wcstombs_(char *__restrict s, const wchar_t *__restrict pwcs, size_t n) {
-	panic("Not Implemented");
-	return 0;
+__device__ size_t wcstombs_l_(char *__restrict s, const wchar_t *__restrict pwcs, size_t n, localecu_t loc) {
+	static const mbstate_t initial = {};
+	NORMALIZE_LOCALE(loc);
+	mbstate_t mbs = initial;
+	const wchar_t *pwcsp = pwcs;
+	return loc->__ctype->__wcsnrtombs(s, &pwcsp, SIZE_MAX, n, &mbs, loc);
 }
+__device__ size_t wcstombs_(char *__restrict s, const wchar_t *__restrict pwcs, size_t n) { return wcstombs_l_(s, pwcs, n, __current_locale()); }
+
+#endif
 
 #if defined(__GNUC__)
-__device__ uint16_t __builtin_bswap16_(uint16_t x) { char *p = (char *)x; return p[0] << 8 | p[1]; }
-__device__ uint32_t __builtin_bswap32_(uint32_t x) { char *p = (char *)x; return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3]; }
-__device__ uint64_t __builtin_bswap64_(uint64_t x) { char *p = (char *)x; return p[0] << 56 | p[1] << 48 | p[2] << 40 | p[3] << 32 | p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3]; }
+__device__ uint16_t __builtin_bswap16_(uint16_t x) { char *p = (char *)x; return (uint16_t)p[0] << 8 | (uint16_t)p[1]; }
+__device__ uint32_t __builtin_bswap32_(uint32_t x) { char *p = (char *)x; return (uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | (uint32_t)p[3]; }
+__device__ uint64_t __builtin_bswap64_(uint64_t x) { char *p = (char *)x; return (uint64_t)p[0] << 56 | (uint64_t)p[1] << 48 | (uint64_t)p[2] << 40 | (uint64_t)p[3] << 32 | (uint64_t)p[0] << 24 | (uint64_t)p[1] << 16 | (uint64_t)p[2] << 8 | (uint64_t)p[3]; }
 #elif defined(_MSC_VER)
-__device__ unsigned short _byteswap_ushort_(unsigned short x) { char *p = (char *)x; return p[0] << 8 | p[1]; }
-__device__ unsigned long _byteswap_ulong_(unsigned long x) { char *p = (char *)x; return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3]; }
-__device__ unsigned __int64 _byteswap_uint64_(unsigned __int64 x) { char *p = (char *)x; return p[0] << 56 | p[1] << 48 | p[2] << 40 | p[3] << 32 | p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3]; }
+__device__ unsigned short _byteswap_ushort_(unsigned short x) { char *p = (char *)x; return (unsigned short)p[0] << 8 | (unsigned short)p[1]; }
+__device__ unsigned long _byteswap_ulong_(unsigned long x) { char *p = (char *)x; return (unsigned long)p[0] << 24 | (unsigned long)p[1] << 16 | (unsigned long)p[2] << 8 | (unsigned long)p[3]; }
+__device__ unsigned __int64 _byteswap_uint64_(unsigned __int64 x) { char *p = (char *)x; return (unsigned __int64)p[0] << 56 | (unsigned __int64)p[1] << 48 | (unsigned __int64)p[2] << 40 | (unsigned __int64)p[3] << 32 | (unsigned __int64)p[0] << 24 | (unsigned __int64)p[1] << 16 | (unsigned __int64)p[2] << 8 | (unsigned __int64)p[3]; }
 #endif
 
 __END_DECLS;

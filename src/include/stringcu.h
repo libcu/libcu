@@ -23,14 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _STRINGCU_H
 #define _STRINGCU_H
 #include <crtdefscu.h>
 
 #include <string.h>
-#if defined(__CUDA_ARCH__)
 #include <stdarg.h>
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 __BEGIN_NAMESPACE_STD;
@@ -169,9 +168,9 @@ typedef struct strbld_t {
 	void *tag;			// Optional database for lookaside.  Can be NULL //: db
 	char *base;			// A base allocation.  Not from malloc. //: zBase
 	char *text;			// The string collected so far //: zText
-	int index;			// Length of the string so far //: nChar
+	size_t index;		// Length of the string so far //: nChar
 	size_t size;		// Amount of space allocated in zText //: nAlloc
-	int maxSize;		// Maximum allowed string length //: mxAlloc
+	size_t maxSize;		// Maximum allowed string length //: mxAlloc
 	unsigned char error; // Becomes true if any memory allocation fails //: accError
 	unsigned char flags; // SQLITE_PRINTF flags below //: printfFlags
 } strbld_t;

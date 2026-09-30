@@ -23,13 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _ERRNOCU_H
 #define _ERRNOCU_H
 #include <crtdefscu.h>
 
 #include <errno.h>
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 #undef errno
@@ -49,18 +48,18 @@ __END_DECLS;
 #endif
 #endif  /* __CUDA_ARCH__ */
 
-// PORTABILITY
-#pragma region PORTABILITY 
-__BEGIN_DECLS;
-
-#if __OS_WIN
-extern int __Errno();
-#elif __OS_UNIX
-#define __Errno() errno
-#endif
-extern const char *__Strerror();
-
-__END_DECLS;
-#pragma endregion
+//// PORTABILITY
+//#pragma region PORTABILITY 
+//__BEGIN_DECLS;
+//
+//#if __OS_WIN
+//extern int __Errno();
+//#elif __OS_UNIX
+//#define __Errno() errno
+//#endif
+//extern const char *__Strerror();
+//
+//__END_DECLS;
+//#pragma endregion
 
 #endif  /* _ERRNOCU_H */

@@ -15,7 +15,7 @@
 #define MAKEAFILE
 static __device__ void makeAFile(char *file) {
 	FILE *fp = fopen(file, "w");
-	fprintf_(fp, "test");
+	fprintf(fp, "test");
 	fclose(fp);
 }
 #endif
@@ -23,7 +23,7 @@ static __device__ void makeAFile(char *file) {
 extern __constant__ cuFILE __iob_streams[LIBCU_MAXFILESTREAM + 3];
 static __global__ void g_stdio_test1() {
 	printf("stdio_test1\n");
-	goto here;
+	//goto here;
 
 	//// STDIN/STDOUT/STDERR ////
 	//#define stdin  ((FILE*)&__iob_streams[0]) /* Standard input stream.  */
@@ -39,9 +39,11 @@ static __global__ void g_stdio_test1() {
 	int a1a = remove(HostDir"test.txt"); assert(!a1a);
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	int b0a = remove(DeviceDir"missing.txt"); assert(b0a < 0);
 	makeAFile(DeviceDir"test.txt");
 	int b1a = remove(DeviceDir"test.txt"); assert(!b1a);
+#endif
 
 	/* Host Relative */
 	chdir(HostDir);
@@ -50,10 +52,12 @@ static __global__ void g_stdio_test1() {
 	int c1a = remove("test.txt"); assert(!c1a);
 
 	/* Device Relative */
+#ifndef LIBCU_LEAN_FSYSTEM
 	chdir(DeviceDir);
 	int d0a = remove("missing.txt"); assert(d0a < 0);
 	makeAFile("test.txt");
 	int d1a = remove("test.txt"); assert(!d1a);
+#endif
 
 	//// RENAME FILE ////
 	//extern __device__ int rename_(const char *old, const char *new_); #sentinel-branch
@@ -69,6 +73,7 @@ static __global__ void g_stdio_test1() {
 	rmdir(HostDir"_dir");
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	int f0a = rename(DeviceDir"missing.txt", "missing2.txt"); assert(f0a < 0);
 	makeAFile(DeviceDir"test.txt");
 	int f1a = rename(DeviceDir"test.txt", "test2.txt"); int f1b = remove(DeviceDir"test2.txt"); assert(!f1a && !f1b);
@@ -78,6 +83,7 @@ static __global__ void g_stdio_test1() {
 	mkdir(DeviceDir"_dir", 0);
 	int f3a = rename(DeviceDir"test.txt", "_dir\\test2.txt"); int f3b = remove(DeviceDir"_dir\\test2.txt"); assert(!f3a && !f3b);
 	rmdir(DeviceDir"_dir");
+#endif
 
 	/* Host Relative */
 	chdir(HostDir);
@@ -86,17 +92,19 @@ static __global__ void g_stdio_test1() {
 	int g1a = rename("test.txt", "test2.txt"); int g1b = remove("test2.txt"); assert(!g1a && !g1b);
 
 	/* Device Relative */
+#ifndef LIBCU_LEAN_FSYSTEM
 	chdir(DeviceDir);
 	int h0a = rename("missing.txt", "missing2.txt"); assert(h0a < 0);
 	makeAFile("test.txt");
 	int h1a = rename("test.txt", "test2.txt"); int h1b = remove("test2.txt"); assert(!h1a && !h1b);
+#endif
 
 	//// TMPFILE ////
 	//extern __device__ FILE *tmpfile_(void);
 	FILE *i0a = tmpfile();
 	fclose(i0a);
 
-here:
+//here:
 	//// FCLOSE, FFLUSH, FREOPEN, FOPEN, FPRINTF ////
 	//extern __device__ int fclose_(FILE *stream, bool wait = true); #sentinel-branch
 	//extern __device__ int fflush_(FILE *stream); #sentinel-branch
@@ -108,37 +116,43 @@ here:
 	FILE *j0a = fopen(HostDir"missing.txt", "r"); assert(!j0a);
 	makeAFile(HostDir"test.txt");
 	FILE *j1a = fopen(HostDir"test.txt", "r"); int j1b = fread(buf, 1, 4, j1a); FILE *j1c = freopen(HostDir"test.txt", "r", j1a); int j1d = fread(buf, 1, 4, j1c); int j1e = fclose(j1c); assert(j1a && j1b == 4 && j1c && j1d == 4 && !j1e);
-	FILE *j2a = fopen(HostDir"test.txt", "w"); int j2b = fprintf_(j2a, "test"); FILE *j2c = freopen(HostDir"test.txt", "w", j2a); int j2d = fprintf_(j2c, "test"); int j2e = fflush(j2c); int j2f = fclose(j2c); assert(j2a && j2b == 4 && j2c && j2d == 4 && !j2e && !j2f);
-	FILE *j3a = fopen(HostDir"test.txt", "w"); int j3b = fprintf_(j3a, "%03000d", 1234); FILE *j3c = freopen(HostDir"test.txt", "w", j3a); int j3d = fprintf_(j3c, "%03000d", 1234); int j3e = fflush(j3c); int j3f = fclose(j3c); assert(j3a && j3b == 3000 && j3c && j3d == 3000 && !j3e && !j3f);
+	FILE *j2a = fopen(HostDir"test.txt", "w"); int j2b = fprintf(j2a, "test"); FILE *j2c = freopen(HostDir"test.txt", "w", j2a); int j2d = fprintf(j2c, "test"); int j2e = fflush(j2c); int j2f = fclose(j2c); assert(j2a && j2b == 4 && j2c && j2d == 4 && !j2e && !j2f);
+	FILE *j3a = fopen(HostDir"test.txt", "w"); int j3b = fprintf(j3a, "%03000d", 1234); FILE *j3c = freopen(HostDir"test.txt", "w", j3a); int j3d = fprintf(j3c, "%03000d", 1234); int j3e = fflush(j3c); int j3f = fclose(j3c); assert(j3a && j3b == 3000 && j3c && j3d == 3000 && !j3e && !j3f);
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	FILE *k0a = fopen(DeviceDir"missing.txt", "r"); assert(!k0a);
 	makeAFile(DeviceDir"test.txt");
 	FILE *k1a = fopen(DeviceDir"test.txt", "r"); int k1b = fread(buf, 1, 4, k1a); FILE *k1c = freopen(DeviceDir"test.txt", "r", k1a); int k1d = fread(buf, 1, 4, k1c); int k1e = fclose(k1c); assert(k1a && k1b == 4 && k1c && k1d == 4 && !k1e);
-	FILE *k2a = fopen(DeviceDir"test.txt", "w"); int k2b = fprintf_(k2a, "test"); FILE *k2c = freopen(DeviceDir"test.txt", "w", k2a); int k2d = fprintf_(k2c, "test"); int k2e = fflush(k2c); int k2f = fclose(k2c); assert(k2a && k2b == 4 && k2c && k2d == 4 && !k2e && !k2f);
-	FILE *k3a = fopen(DeviceDir"test.txt", "w"); int k3b = fprintf_(k3a, "%03000d", 1234); FILE *k3c = freopen(DeviceDir"test.txt", "w", k3a); int k3d = fprintf_(k3c, "%03000d", 1234); int k3e = fflush(k3c); int k3f = fclose(k3c); assert(k3a && k3b == 3000 && k3c && k3d == 3000 && !k3e && !k3f);
+	FILE *k2a = fopen(DeviceDir"test.txt", "w"); int k2b = fprintf(k2a, "test"); FILE *k2c = freopen(DeviceDir"test.txt", "w", k2a); int k2d = fprintf(k2c, "test"); int k2e = fflush(k2c); int k2f = fclose(k2c); assert(k2a && k2b == 4 && k2c && k2d == 4 && !k2e && !k2f);
+	FILE *k3a = fopen(DeviceDir"test.txt", "w"); int k3b = fprintf(k3a, "%03000d", 1234); FILE *k3c = freopen(DeviceDir"test.txt", "w", k3a); int k3d = fprintf(k3c, "%03000d", 1234); int k3e = fflush(k3c); int k3f = fclose(k3c); assert(k3a && k3b == 3000 && k3c && k3d == 3000 && !k3e && !k3f);
+#endif
 
 	/* Host Relative */
 	chdir(HostDir);
 	FILE *l0a = fopen("missing.txt", "r"); assert(!l0a);
 	makeAFile("test.txt");
 	FILE *l1a = fopen("test.txt", "r"); int l1b = fread(buf, 4, 1, l1a); FILE *l1c = freopen("test.txt", "r", l1a); int l1d = fread(buf, 4, 1, l1c); int l1e = fclose(l1c); assert(l1a);
-	FILE *l2a = fopen("test.txt", "w"); int l2b = fprintf_(l2a, "test"); FILE *l2c = freopen("test.txt", "w", l2a); int l2d = fprintf_(l2c, "test"); int l2e = fflush(l2c); int l2f = fclose(l2c); assert(l2a);
+	FILE *l2a = fopen("test.txt", "w"); int l2b = fprintf(l2a, "test"); FILE *l2c = freopen("test.txt", "w", l2a); int l2d = fprintf(l2c, "test"); int l2e = fflush(l2c); int l2f = fclose(l2c); assert(l2a);
 
 	/* Device Relative */
+#ifndef LIBCU_LEAN_FSYSTEM
 	chdir(DeviceDir);
 	FILE *m0a = fopen("missing.txt", "r"); assert(!m0a);
 	makeAFile("test.txt");
 	FILE *m1a = fopen("test.txt", "r"); int m1b = fread(buf, 4, 1, m1a); FILE *m1c = freopen("test.txt", "r", m1a); int m1d = fread(buf, 4, 1, m1c); int m1e = fclose(m1c); assert(m1a);
-	FILE *m2a = fopen("test.txt", "w"); int m2b = fprintf_(m2a, "test"); FILE *m2c = freopen("test.txt", "w", m2a); int m2d = fprintf_(m2c, "test"); int m2e = fflush(m2c); int m2f = fclose(m2c); assert(m2a);
+	FILE *m2a = fopen("test.txt", "w"); int m2b = fprintf(m2a, "test"); FILE *m2c = freopen("test.txt", "w", m2a); int m2d = fprintf(m2c, "test"); int m2e = fflush(m2c); int m2f = fclose(m2c); assert(m2a);
+#endif
 
 	//// SETVBUF, SETBUF ////
 	//extern __device__ int setvbuf_(FILE *__restrict stream, char *__restrict buf, int modes, size_t n); #sentinel-branch
 	//extern __device__ void setbuf_(FILE *__restrict stream, char *__restrict buf); #sentinel-branch
 	FILE *n0a = fopen(HostDir"test.txt", "w"); int n0b = setvbuf(n0a, nullptr, 0, 10); int n0c = fclose(n0a); assert(n0a && n0b && n0c);
 	FILE *n1a = fopen(HostDir"test.txt", "w"); setbuf(n1a, nullptr); int n1b = fclose(n0a); assert(n1a && n1b);
+#ifndef LIBCU_LEAN_FSYSTEM
 	FILE *n2a = fopen(DeviceDir"test.txt", "w"); int n2b = setvbuf(n2a, nullptr, 0, 10); int n2c = fclose(n2a); assert(n2a && n2b && n2c);
 	FILE *n3a = fopen(DeviceDir"test.txt", "w"); setbuf(n3a, nullptr); int n3b = fclose(n3a); assert(n3a && n3b);
+#endif
 
 	//// SNPRINTF, PRINTF, SPRINTF ////
 	//#define sprintf(s, format, ...) snprintf_(s, 0xffffffff, format, __VA_ARGS__)
@@ -150,13 +164,17 @@ here:
 	int o1a = sprintf(buf, "%d", 1); bool o1b = !strcmp(buf, "1"); assert(o1a && o1b);
 
 	//// FSCANF, SCANF, SSCANF ////
+#ifndef LIBCU_LEAN_AND_MEAN
 	//moved: extern __device__ int fscanf(FILE *__restrict stream, const char *__restrict format, ...); //extern __device__ int vfscanf_(FILE *__restrict s, const char *__restrict format, va_list va, bool wait = true);
 	//moved: extern __device__ int scanf(const char *__restrict format, ...); //__forceinline__ __device__ int vscanf_(const char *__restrict format, va_list va);
 	//moved: extern __device__ int sscanf(const char *__restrict s, const char *__restrict format, ...); //extern __device__ int vsscanf_(const char *__restrict s, const char *__restrict format, va_list va);
 	FILE *p0a = fopen(HostDir"test.txt", "r"); int p0b = fscanf(p0a, "%s", buf); int p0c = fclose(p0a); bool p0d = !strcmp(buf, "1"); assert(p0a && p0b && p0c && p0d);
+#ifndef LIBCU_LEAN_FSYSTEM
 	FILE *p1a = fopen(DeviceDir"test.txt", "r"); int p1b = fscanf(p1a, "%s", buf); int p1c = fclose(p1a); bool p1d = !strcmp(buf, "1"); assert(p1a && p1b && p1c && p1d);
+#endif
 	//skipped: scanf("%s", buf);
 	int p2a = sscanf("test", "%s", buf); bool p2b = !strcmp(buf, "1"); assert(p2a && p2b);
+#endif
 
 	//// FGETC, GETCHAR, GETC, FPUTC, PUTCHAR, PUTC, UNGETC ////
 	//extern __device__ int fgetc_(FILE *stream); #sentinel-branch
@@ -174,8 +192,10 @@ here:
 	//?? ungetc
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	FILE *r0a = fopen(DeviceDir"test.txt", "w"); int r0b = fputc('a', r0a); int r0c = fputc('b', r0a); int r0d = fputc('c', r0a); fclose(r0a); assert(r0b && r0c && r0d);
 	FILE *r1a = fopen(DeviceDir"test.txt", "r"); int r1b = fgetc(r1a); int r1c = fgetc(r1a); int r1d = fgetc(r1a); fclose(r1a); assert(r1b == 'a' && r1c == 'b' && r1d == 'c');
+#endif
 	//?? ungetc
 
 	//// FGETS, FPUTS, PUTS ////
@@ -188,8 +208,10 @@ here:
 	FILE *s1a = fopen(HostDir"test.txt", "r"); char *s1b = fgets(buf, 3, s1a); fclose(q1a); assert(!strncmp(s1b, "abc", 3));
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	FILE *t0a = fopen(DeviceDir"test.txt", "w"); int t0b = fputs("abc", t0a); fclose(t0a); assert(t0b);
 	FILE *t1a = fopen(DeviceDir"test.txt", "r"); char *t1b = fgets(buf, 3, t1a); fclose(t1a); assert(!strncmp(t1b, "abc", 3));
+#endif
 
 	//extern __device__ size_t fread_(void *__restrict ptr, size_t size, size_t n, FILE *__restrict stream, bool wait = true); #sentinel-branch
 	//extern __device__ size_t fwrite_(const void *__restrict ptr, size_t size, size_t n, FILE *__restrict stream, bool wait = true); #sentinel-branch
@@ -198,8 +220,10 @@ here:
 	FILE *u2a = fopen(HostDir"test.txt", "r"); int u2b = fread(buf, 4, 1, u2a); fclose(u2a); assert(u2b == 4 && !strncmp(buf, "test", 4));
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	FILE *v1a = fopen(DeviceDir"test.txt", "w"); int v1b = fwrite("test", 4, 1, v1a); fclose(v1a); assert(v1b == 4);
 	FILE *v2a = fopen(DeviceDir"test.txt", "r"); int v2b = fread(buf, 4, 1, v2a); fclose(v2a); assert(v2b == 4 && !strncmp(buf, "test", 4));
+#endif
 
 	//// FSEEK, FTELL, REWING, FSEEKO, FGETPOS, FSETPOS ///
 	//extern __device__ int fseek_(FILE *stream, long int off, int whence); #sentinel-branch
@@ -222,9 +246,11 @@ here:
 	// TODO: skipped
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	makeAFile(DeviceDir"test.txt");
 	FILE *x0a = fopen(DeviceDir"test.txt", "r"); long int x0b = ftell(x0a); int x0c = fseek(x0a, 2, 0); long int x0d = ftell(x0a); rewind(x0a); long int x0e = ftell(x0a); fclose(x0a); assert(x0b == 0 && x0c && x0d == 2 && x0e == 0);
 	FILE *x1a = fopen(DeviceDir"test.txt", "r"); fpos_t x1b; int x1c = fgetpos(x1a, &x1b); fseek(x1a, 2, 0); fpos_t x1d; fgetpos(x1a, &x1d); int x1e = fsetpos(x1a, &x1d); fpos_t x1f; int x1g = fgetpos(x1a, &x1f); fclose(x1a); assert(x1b == 0 && x1c && x1d == 2 && x1e && x1g == 2 && x1g);
+#endif
 
 #if defined(__USE_LARGEFILE)
 #endif
@@ -238,7 +264,9 @@ here:
 	FILE *y0a = fopen(HostDir"test.txt", "r"); int y0b = ferror(y0a); clearerr(y0a); int y0c = ferror(y0a); fclose(y0a); assert(y0b == 0 && y0c == 0);
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	FILE *z0a = fopen(DeviceDir"test.txt", "r"); int z0b = ferror(z0a); clearerr(z0a); int z0c = ferror(z0a); fclose(z0a); assert(z0b == 0 && z0c == 0);
+#endif
 
 	//// FEOF, FILENO ////
 	//extern __device__ int feof_(FILE *stream); #sentinel-branch
@@ -248,8 +276,10 @@ here:
 	FILE *A1a = fopen(HostDir"test.txt", "r"); int A1b = fileno(A0a); fclose(A1a); assert(A1b);
 
 	/* Device Absolute */
+#ifndef LIBCU_LEAN_FSYSTEM
 	FILE *B0a = fopen(DeviceDir"test.txt", "r"); int B0b = feof(B0a); fseek(B0a, 4, 0); int B0c = feof(B0a); fclose(B0a); assert(!B0b && B0c);
 	FILE *B1a = fopen(DeviceDir"test.txt", "r"); int B1b = fileno(B0a); fclose(B1a); assert(B1b);
+#endif
 }
 cudaError_t stdio_test1() { g_stdio_test1<<<1, 1>>>(); return cudaDeviceSynchronize(); }
 

@@ -1,3 +1,6 @@
+#ifdef LIBCU_LEAN_AND_MEAN
+cudaError_t time_test1() { return cudaSuccess; }
+#else
 #include <stdiocu.h>
 #include <timecu.h>
 #include <assert.h>
@@ -32,3 +35,5 @@ static __global__ void g_time_test1() {
 	char *d1a = ctime(&rawtime); assert(d1a);
 }
 cudaError_t time_test1() { g_time_test1<<<1, 1>>>(); return cudaDeviceSynchronize(); }
+
+#endif

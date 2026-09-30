@@ -7,6 +7,5 @@
 
 #include "tcl.h"
 
-__device__ void Tcl_InitExtensions(Tcl_Interp *interp)
-{
+__device__ void Tcl_InitExtensions(Tcl_Interp *interp) {
 }

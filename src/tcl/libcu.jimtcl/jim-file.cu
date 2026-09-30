@@ -84,8 +84,7 @@
 // Side effects:
 //  None.
 //
-static __device__ const char *JimGetFileType(int mode)
-{
+static __device__ const char *JimGetFileType(int mode) {
 	if (S_ISREG(mode)) return "file";
 	else if (S_ISDIR(mode)) return "directory";
 #ifdef S_ISCHR
@@ -115,14 +114,12 @@ static __device__ const char *JimGetFileType(int mode)
 //
 // Side effects:
 //  Elements of the associative array given by "varName" are modified.
-static __device__ void AppendStatElement(Jim_Interp *interp, Jim_Obj *listObj, const char *key, jim_wide value)
-{
+static __device__ void AppendStatElement(Jim_Interp *interp, Jim_Obj *listObj, const char *key, jim_wide value) {
 	Jim_ListAppendElement(interp, listObj, Jim_NewStringObj(interp, key, -1));
 	Jim_ListAppendElement(interp, listObj, Jim_NewIntObj(interp, value));
 }
 
-static __device__ int StoreStatData(Jim_Interp *interp, Jim_Obj *varName, const struct stat *sb)
-{
+static __device__ int StoreStatData(Jim_Interp *interp, Jim_Obj *varName, const struct stat *sb) {
 	// Just use a list to store the data
 	Jim_Obj *listObj = Jim_NewListObj(interp, NULL, 0);
 #if !__CUDACC__
@@ -167,8 +164,7 @@ static __device__ int StoreStatData(Jim_Interp *interp, Jim_Obj *varName, const 
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_dirname(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_dirname(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	const char *path = Jim_String(argv[0]);
 	const char *p = strrchr((char *)path, '/');
 	if (!p && path[0] == '.' && path[1] == '.' && path[2] == '\0') Jim_SetResultString(interp, "..", -1);
@@ -179,8 +175,7 @@ static __device__ int file_cmd_dirname(Jim_Interp *interp, int argc, Jim_Obj *co
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_rootname(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_rootname(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	const char *path = Jim_String(argv[0]);
 	const char *lastSlash = strrchr((char *)path, '/');
 	const char *p = strrchr((char *)path, '.');
@@ -191,8 +186,7 @@ static __device__ int file_cmd_rootname(Jim_Interp *interp, int argc, Jim_Obj *c
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_extension(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_extension(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	const char *path = Jim_String(argv[0]);
 	const char *lastSlash = strrchr((char *)path, '/');
 	const char *p = strrchr((char *)path, '.');
@@ -202,8 +196,7 @@ static __device__ int file_cmd_extension(Jim_Interp *interp, int argc, Jim_Obj *
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_tail(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_tail(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	const char *path = Jim_String(argv[0]);
 	const char *lastSlash = strrchr((char *)path, '/');
 	if (lastSlash)
@@ -213,8 +206,7 @@ static __device__ int file_cmd_tail(Jim_Interp *interp, int argc, Jim_Obj *const
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_normalize(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_normalize(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 #ifdef HAVE_REALPATH
 	const char *path = Jim_String(argv[0]);
 	char *newname = Jim_Alloc(MAXPATHLEN + 1);
@@ -233,8 +225,7 @@ static __device__ int file_cmd_normalize(Jim_Interp *interp, int argc, Jim_Obj *
 #endif
 }
 
-static __device__ int file_cmd_join(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_join(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	char *newname = (char *)Jim_Alloc(MAXPATHLEN + 1);
 	char *last = newname;
 	*newname = 0;
@@ -276,24 +267,20 @@ static __device__ int file_cmd_join(Jim_Interp *interp, int argc, Jim_Obj *const
 	return JIM_OK;
 }
 
-static __device__ int file_access(Jim_Interp *interp, Jim_Obj *filename, int mode)
-{
+static __device__ int file_access(Jim_Interp *interp, Jim_Obj *filename, int mode) {
 	Jim_SetResultBool(interp, access(Jim_String(filename), mode) != -1);
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_readable(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_readable(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return file_access(interp, argv[0], R_OK);
 }
 
-static __device__ int file_cmd_writable(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_writable(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return file_access(interp, argv[0], W_OK);
 }
 
-static __device__ int file_cmd_executable(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_executable(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 #ifdef X_OK
 	return file_access(interp, argv[0], X_OK);
 #else
@@ -303,13 +290,11 @@ static __device__ int file_cmd_executable(Jim_Interp *interp, int argc, Jim_Obj 
 #endif
 }
 
-static __device__ int file_cmd_exists(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_exists(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return file_access(interp, argv[0], F_OK);
 }
 
-static __device__ int file_cmd_delete(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_delete(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int force = Jim_CompareStringImmediate(interp, argv[0], "-force");
 	if (force || Jim_CompareStringImmediate(interp, argv[0], "--")) {
 		argc++;
@@ -338,8 +323,7 @@ static __device__ int file_cmd_delete(Jim_Interp *interp, int argc, Jim_Obj *con
 // Create directory, creating all intermediate paths if necessary.
 // Returns 0 if OK or -1 on failure (and sets errno)
 // Note: The path may be modified.
-static __device__ int mkdir_all(char *path)
-{
+static __device__ int mkdir_all(char *path) {
 	int ok = 1;
 	// First time just try to make the dir
 	goto first;
@@ -354,7 +338,7 @@ static __device__ int mkdir_all(char *path)
 				*slash = '/';
 			}
 		}
-first:
+	first:
 		if (MKDIR_DEFAULT(path) == 0)
 			return 0;
 		if (errno == ENOENT)
@@ -373,8 +357,7 @@ first:
 	return -1;
 }
 
-static __device__ int file_cmd_mkdir(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_mkdir(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	while (argc--) {
 		char *path = Jim_StrDup(Jim_String(argv[0]));
 		int rc = mkdir_all(path);
@@ -388,8 +371,7 @@ static __device__ int file_cmd_mkdir(Jim_Interp *interp, int argc, Jim_Obj *cons
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_tempfile(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_tempfile(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int fd = Jim_MakeTempFile(interp, (argc >= 1) ? Jim_String(argv[0]) : NULL);
 	if (fd < 0)
 		return JIM_ERROR;
@@ -397,8 +379,7 @@ static __device__ int file_cmd_tempfile(Jim_Interp *interp, int argc, Jim_Obj *c
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_rename(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_rename(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int force = 0;
 	if (argc == 3) {
 		if (!Jim_CompareStringImmediate(interp, argv[0], "-force"))
@@ -422,8 +403,7 @@ static __device__ int file_cmd_rename(Jim_Interp *interp, int argc, Jim_Obj *con
 
 #if defined(HAVE_LINK) && defined(HAVE_SYMLINK)
 static const char * const _link_options[] = { "-hard", "-symbolic", NULL };
-static __device__ int file_cmd_link(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_link(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	enum { OPT_HARD, OPT_SYMBOLIC, };
 	int option = OPT_HARD;
 	if (argc == 3) {
@@ -443,8 +423,7 @@ static __device__ int file_cmd_link(Jim_Interp *interp, int argc, Jim_Obj *const
 }
 #endif
 
-static __device__ int file_stat(Jim_Interp *interp, Jim_Obj *filename, struct stat *sb)
-{
+static __device__ int file_stat(Jim_Interp *interp, Jim_Obj *filename, struct stat *sb) {
 	const char *path = Jim_String(filename);
 	if (stat(path, sb) == -1) {
 		Jim_SetResultFormatted(interp, "could not read \"%#s\": %s", filename, strerror(errno));
@@ -454,8 +433,7 @@ static __device__ int file_stat(Jim_Interp *interp, Jim_Obj *filename, struct st
 }
 
 #ifdef HAVE_LSTAT
-static __device__ int file_lstat(Jim_Interp *interp, Jim_Obj *filename, struct _stat *sb)
-{
+static __device__ int file_lstat(Jim_Interp *interp, Jim_Obj *filename, struct _stat *sb) {
 	const char *path = Jim_String(filename);
 	if (_lstat(path, sb) == -1) {
 		Jim_SetResultFormatted(interp, "could not read \"%#s\": %s", filename, strerror(errno));
@@ -467,8 +445,7 @@ static __device__ int file_lstat(Jim_Interp *interp, Jim_Obj *filename, struct _
 #define file_lstat file_stat
 #endif
 
-static __device__ int file_cmd_atime(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_atime(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct stat sb;
 	if (file_stat(interp, argv[0], &sb) != JIM_OK)
 		return JIM_ERROR;
@@ -476,8 +453,7 @@ static __device__ int file_cmd_atime(Jim_Interp *interp, int argc, Jim_Obj *cons
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_mtime(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_mtime(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc == 2) {
 #ifdef HAVE_UTIMES
 		jim_wide newtime;
@@ -502,13 +478,11 @@ static __device__ int file_cmd_mtime(Jim_Interp *interp, int argc, Jim_Obj *cons
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_copy(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_copy(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return Jim_EvalPrefix(interp, "file copy", argc, argv);
 }
 
-static __device__ int file_cmd_size(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_size(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct stat sb;
 	if (file_stat(interp, argv[0], &sb) != JIM_OK)
 		return JIM_ERROR;
@@ -516,8 +490,7 @@ static __device__ int file_cmd_size(Jim_Interp *interp, int argc, Jim_Obj *const
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_isdirectory(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_isdirectory(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct stat sb;
 	int ret = 0;
 	if (file_stat(interp, argv[0], &sb) == JIM_OK)
@@ -526,8 +499,7 @@ static __device__ int file_cmd_isdirectory(Jim_Interp *interp, int argc, Jim_Obj
 	return JIM_OK;
 }
 
-static __device__ int file_cmd_isfile(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_isfile(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct stat sb;
 	int ret = 0;
 	if (file_stat(interp, argv[0], &sb) == JIM_OK)
@@ -537,8 +509,7 @@ static __device__ int file_cmd_isfile(Jim_Interp *interp, int argc, Jim_Obj *con
 }
 
 #ifdef HAVE_GETEUID
-static __device__ int file_cmd_owned(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_owned(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct _stat sb;
 	int ret = 0;
 	if (file_stat(interp, argv[0], &sb) == JIM_OK)
@@ -549,8 +520,7 @@ static __device__ int file_cmd_owned(Jim_Interp *interp, int argc, Jim_Obj *cons
 #endif
 
 #if defined(HAVE_READLINK)
-static __device__ int file_cmd_readlink(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_readlink(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	const char *path = Jim_String(argv[0]);
 	char *linkValue = Jim_Alloc(MAXPATHLEN + 1);
 	int linkLength = readlink(path, linkValue, MAXPATHLEN);
@@ -565,8 +535,7 @@ static __device__ int file_cmd_readlink(Jim_Interp *interp, int argc, Jim_Obj *c
 }
 #endif
 
-static __device__ int file_cmd_type(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_type(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct stat sb;
 	if (file_lstat(interp, argv[0], &sb) != JIM_OK)
 		return JIM_ERROR;
@@ -575,8 +544,7 @@ static __device__ int file_cmd_type(Jim_Interp *interp, int argc, Jim_Obj *const
 }
 
 #ifdef HAVE_LSTAT
-static __device__ int file_cmd_lstat(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_lstat(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct _stat sb;
 	if (file_lstat(interp, argv[0], &sb) != JIM_OK)
 		return JIM_ERROR;
@@ -586,8 +554,7 @@ static __device__ int file_cmd_lstat(Jim_Interp *interp, int argc, Jim_Obj *cons
 #define file_cmd_lstat file_cmd_stat
 #endif
 
-static __device__ int file_cmd_stat(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int file_cmd_stat(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct stat sb;
 	if (file_stat(interp, argv[0], &sb) != JIM_OK)
 		return JIM_ERROR;
@@ -630,8 +597,7 @@ __constant__ static const jim_subcmd_type _file_command_table[] = {
 	{ NULL }
 };
 
-static __device__ int Jim_CdCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_CdCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "dirname");
 		return JIM_ERROR;
@@ -644,8 +610,7 @@ static __device__ int Jim_CdCmd(ClientData dummy, Jim_Interp *interp, int argc, 
 	return JIM_OK;
 }
 
-static __device__ int Jim_PwdCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_PwdCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	char *cwd = (char *)Jim_Alloc(MAXPATHLEN);
 	if (getcwd(cwd, MAXPATHLEN) == NULL) {
 		Jim_SetResultString(interp, "Failed to get pwd", -1);
@@ -663,8 +628,7 @@ static __device__ int Jim_PwdCmd(ClientData dummy, Jim_Interp *interp, int argc,
 	return JIM_OK;
 }
 
-__device__ int Jim_fileInit(Jim_Interp *interp)
-{
+__device__ int Jim_fileInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "file", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 	Jim_CreateCommand(interp, "file", Jim_SubCmdProc, (void *)_file_command_table, NULL);

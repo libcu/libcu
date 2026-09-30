@@ -30,22 +30,17 @@ static struct {
 /* Make sure to do this as a wide, not int */
 #define sig_to_bit(SIG) ((jim_wide)1 << (SIG))
 
-static void signal_handler(int sig)
-{
-	/* We just remember which signals occurred. Jim_Eval() will
-	* notice this as soon as it can and throw an error
-	*/
+static void signal_handler(int sig) {
+	/* We just remember which signals occurred. Jim_Eval() will notice this as soon as it can and throw an error */
 	*sigloc |= sig_to_bit(sig);
 }
 
-static void signal_ignorer(int sig)
-{
+static void signal_ignorer(int sig) {
 	/* We just remember which signals occurred */
 	sigsblocked |= sig_to_bit(sig);
 }
 
-static void signal_init_names(void)
-{
+static void signal_init_names(void) {
 #define SET_SIG_NAME(SIG) siginfo[SIG].name = #SIG
 
 	SET_SIG_NAME(SIGABRT);
@@ -116,9 +111,8 @@ static void signal_init_names(void)
 *
 *----------------------------------------------------------------------
 */
-const char *Jim_SignalId(int sig)
-{
-	if (sig >=0 && sig < MAX_SIGNALS) {
+const char *Jim_SignalId(int sig) {
+	if (sig >= 0 && sig < MAX_SIGNALS) {
 		if (siginfo[sig].name) {
 			return siginfo[sig].name;
 		}
@@ -126,8 +120,7 @@ const char *Jim_SignalId(int sig)
 	return "unknown signal";
 }
 
-const char *Jim_SignalName(int sig)
-{
+const char *Jim_SignalName(int sig) {
 #ifdef HAVE_SYS_SIGLIST
 	if (sig >= 0 && sig < NSIG) {
 		return sys_siglist[sig];
@@ -142,8 +135,7 @@ const char *Jim_SignalName(int sig)
 * We accept -SIGINT, SIGINT, INT or any lowercase version or a number,
 * either positive or negative.
 */
-static int find_signal_by_name(Jim_Interp *interp, const char *name)
-{
+static int find_signal_by_name(Jim_Interp *interp, const char *name) {
 	int i;
 	const char *pt = name;
 
@@ -179,8 +171,7 @@ static int find_signal_by_name(Jim_Interp *interp, const char *name)
 #define SIGNAL_ACTION_IGNORE -1
 #define SIGNAL_ACTION_DEFAULT 0
 
-static int do_signal_cmd(Jim_Interp *interp, int action, int argc, Jim_Obj *const *argv)
-{
+static int do_signal_cmd(Jim_Interp *interp, int action, int argc, Jim_Obj *const *argv) {
 	struct sigaction sa;
 	int i;
 
@@ -244,23 +235,19 @@ static int do_signal_cmd(Jim_Interp *interp, int action, int argc, Jim_Obj *cons
 	return JIM_OK;
 }
 
-static int signal_cmd_handle(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int signal_cmd_handle(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return do_signal_cmd(interp, SIGNAL_ACTION_HANDLE, argc, argv);
 }
 
-static int signal_cmd_ignore(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int signal_cmd_ignore(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return do_signal_cmd(interp, SIGNAL_ACTION_IGNORE, argc, argv);
 }
 
-static int signal_cmd_default(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int signal_cmd_default(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	return do_signal_cmd(interp, SIGNAL_ACTION_DEFAULT, argc, argv);
 }
 
-static int signal_set_sigmask_result(Jim_Interp *interp, jim_wide sigmask)
-{
+static int signal_set_sigmask_result(Jim_Interp *interp, jim_wide sigmask) {
 	int i;
 	Jim_Obj *listObj = Jim_NewListObj(interp, NULL, 0);
 
@@ -273,8 +260,7 @@ static int signal_set_sigmask_result(Jim_Interp *interp, jim_wide sigmask)
 	return JIM_OK;
 }
 
-static int signal_cmd_check(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int signal_cmd_check(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int clear = 0;
 	jim_wide mask = 0;
 	jim_wide blocked;
@@ -314,8 +300,7 @@ static int signal_cmd_check(ClientData dummy, Jim_Interp *interp, int argc, Jim_
 	return JIM_OK;
 }
 
-static int signal_cmd_throw(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int signal_cmd_throw(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int sig = SIGINT;
 
 	if (argc == 1) {
@@ -402,8 +387,7 @@ static const jim_subcmd_type signal_command_table[] = {
 	{ NULL }
 };
 
-static int Jim_AlarmCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_AlarmCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int ret;
 
 	if (argc != 2) {
@@ -436,8 +420,7 @@ static int Jim_AlarmCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj 
 	return ret;
 }
 
-static int Jim_SleepCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_SleepCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int ret;
 
 	if (argc != 2) {
@@ -459,8 +442,7 @@ static int Jim_SleepCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj 
 	return ret;
 }
 
-static int Jim_KillCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_KillCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int sig;
 	long pid;
 	Jim_Obj *pidObj;
@@ -503,8 +485,7 @@ static int Jim_KillCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *
 	return JIM_ERROR;
 }
 
-int Jim_signalInit(Jim_Interp *interp)
-{
+int Jim_signalInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "signal", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 

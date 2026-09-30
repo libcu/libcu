@@ -53,8 +53,7 @@
 #include "regexcu.h"
 #include "jim.h"
 
-static __device__ void FreeRegexpInternalRep(Jim_Interp *interp, Jim_Obj *objPtr)
-{
+static __device__ void FreeRegexpInternalRep(Jim_Interp *interp, Jim_Obj *objPtr) {
 	regfree((regex_t *)objPtr->internalRep.regexpValue.compre);
 	Jim_Free(objPtr->internalRep.regexpValue.compre);
 }
@@ -67,8 +66,7 @@ __constant__ static const Jim_ObjType _regexpObjType = {
 	JIM_TYPE_NONE
 };
 
-static __device__ regex_t *SetRegexpFromAny(Jim_Interp *interp, Jim_Obj *objPtr, unsigned flags)
-{
+static __device__ regex_t *SetRegexpFromAny(Jim_Interp *interp, Jim_Obj *objPtr, unsigned flags) {
 	// Check if the object is already an uptodate variable
 	if (objPtr->typePtr == &_regexpObjType && objPtr->internalRep.regexpValue.compre && objPtr->internalRep.regexpValue.flags == flags)
 		return (regex_t *)objPtr->internalRep.regexpValue.compre; // nothing to do
@@ -95,8 +93,7 @@ static __device__ regex_t *SetRegexpFromAny(Jim_Interp *interp, Jim_Obj *objPtr,
 __constant__ static const char * const _regexp_options[] = {
 	"-indices", "-nocase", "-line", "-all", "-inline", "-start", "--", NULL
 };
-__device__ int Jim_RegexpCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+__device__ int Jim_RegexpCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int opt_indices = 0;
 	int opt_all = 0;
 	int opt_inline = 0;
@@ -109,10 +106,10 @@ __device__ int Jim_RegexpCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim
 	int eflags = 0;
 	int option;
 	enum {
-		OPT_INDICES,  OPT_NOCASE, OPT_LINE, OPT_ALL, OPT_INLINE, OPT_START, OPT_END
+		OPT_INDICES, OPT_NOCASE, OPT_LINE, OPT_ALL, OPT_INLINE, OPT_START, OPT_END
 	};
 	if (argc < 3) {
-wrongNumArgs:
+	wrongNumArgs:
 		Jim_WrongNumArgs(interp, 1, argv, "?switches? exp string ?matchVar? ?subMatchVar subMatchVar ...?");
 		return JIM_ERROR;
 	}
@@ -167,7 +164,7 @@ wrongNumArgs:
 		}
 		num_vars = regex->re_nsub + 1;
 	}
-	regmatch_t *pmatch = (regmatch_t *)Jim_Alloc((num_vars + 1) * sizeof(*pmatch));
+	regmatch_t *pmatch; pmatch = (regmatch_t *)Jim_Alloc((num_vars + 1) * sizeof(*pmatch));
 	// If an offset has been specified, adjust for that now. If it points past the end of the string, point to the terminating null
 	if (offset) {
 		if (offset < 0)
@@ -258,8 +255,7 @@ done:
 __constant__ static const char *const _regsub_options[] = {
 	"-nocase", "-line", "-all", "-start", "--", NULL
 };
-__device__ int Jim_RegsubCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+__device__ int Jim_RegsubCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int regcomp_flags = 0;
 	int regexec_flags = 0;
 	int opt_all = 0;
@@ -271,12 +267,11 @@ __device__ int Jim_RegsubCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim
 
 	int i, j, n;
 
-
 	enum {
 		OPT_NOCASE, OPT_LINE, OPT_ALL, OPT_START, OPT_END
 	};
 	if (argc < 4) {
-wrongNumArgs:
+	wrongNumArgs:
 		Jim_WrongNumArgs(interp, 1, argv, "?switches? exp string subSpec ?varName?");
 		return JIM_ERROR;
 	}
@@ -415,8 +410,7 @@ wrongNumArgs:
 	return result;
 }
 
-__device__ int Jim_regexpInit(Jim_Interp *interp)
-{
+__device__ int Jim_regexpInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "regexp", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 	Jim_CreateCommand(interp, "regexp", Jim_RegexpCmd, NULL, NULL);

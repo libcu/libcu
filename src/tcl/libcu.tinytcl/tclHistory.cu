@@ -64,7 +64,7 @@ static __device__ void MakeSpace(HistoryEvent *hPtr, int size);
 static __device__ void RevCommand(Interp *iPtr, char *string);
 static __device__ void RevResult(Interp *iPtr, char *string);
 static __device__ int SubsAndEval(Interp *iPtr, char *cmd, char *old, char *new_);
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -79,8 +79,7 @@ static __device__ int SubsAndEval(Interp *iPtr, char *cmd, char *old, char *new_
 *
 *----------------------------------------------------------------------
 */
-static __device__ void InitHistory(register Interp *iPtr)
-{
+static __device__ void InitHistory(register Interp *iPtr) {
 	if (iPtr->numEvents != 0) {
 		return;
 	}
@@ -94,7 +93,7 @@ static __device__ void InitHistory(register Interp *iPtr)
 	iPtr->curEvent = 0;
 	iPtr->curEventNum = 0;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -111,8 +110,7 @@ static __device__ void InitHistory(register Interp *iPtr)
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_RecordAndEval(Tcl_Interp *interp, char *cmd, int flags)
-{
+__device__ int Tcl_RecordAndEval(Tcl_Interp *interp, char *cmd, int flags) {
 	register Interp *iPtr = (Interp *)interp;
 	if (iPtr->numEvents == 0) {
 		InitHistory(iPtr);
@@ -136,7 +134,7 @@ __device__ int Tcl_RecordAndEval(Tcl_Interp *interp, char *cmd, int flags)
 
 	// Chop off trailing newlines before recording the command.
 	int length = strlen(cmd);
-	while (cmd[length-1] == '\n') {
+	while (cmd[length - 1] == '\n') {
 		length--;
 	}
 	MakeSpace(eventPtr, length + 1);
@@ -154,7 +152,7 @@ __device__ int Tcl_RecordAndEval(Tcl_Interp *interp, char *cmd, int flags)
 	iPtr->revDisables = 1;
 	return result;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -169,8 +167,7 @@ __device__ int Tcl_RecordAndEval(Tcl_Interp *interp, char *cmd, int flags)
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_HistoryCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[])
-{
+__device__ int Tcl_HistoryCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[]) {
 	register Interp *iPtr = (Interp *)interp;
 	register HistoryEvent *eventPtr;
 	if (iPtr->numEvents == 0) {
@@ -180,8 +177,8 @@ __device__ int Tcl_HistoryCmd(ClientData dummy, Tcl_Interp *interp, int argc, co
 	if (argc == 1) {
 		goto infoCmd;
 	}
-	int c = args[1][0];
-	int length = strlen(args[1]);
+	int c; c = args[1][0];
+	int length; length = strlen(args[1]);
 	if (c == 'a' && !strncmp(args[1], "add", length)) {
 		if (argc != 3 && argc != 4) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " add event ?exec?\"", (char *)NULL);
@@ -195,7 +192,8 @@ __device__ int Tcl_HistoryCmd(ClientData dummy, Tcl_Interp *interp, int argc, co
 			return Tcl_RecordAndEval(interp, (char *)args[2], 0);
 		}
 		return Tcl_RecordAndEval(interp, (char *)args[2], TCL_NO_EVAL);
-	} else if (c == 'c' && !strncmp(args[1], "change", length)) {
+	}
+	else if (c == 'c' && !strncmp(args[1], "change", length)) {
 		if (argc != 3 && argc != 4) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " change newValue ?event?\"", (char *)NULL);
 			return TCL_ERROR;
@@ -209,7 +207,8 @@ __device__ int Tcl_HistoryCmd(ClientData dummy, Tcl_Interp *interp, int argc, co
 				_freeFast((char *)iPtr->revPtr);
 				iPtr->revPtr = nextPtr;
 			}
-		} else {
+		}
+		else {
 			eventPtr = GetEvent(iPtr, (char *)args[3]);
 			if (eventPtr == NULL) {
 				return TCL_ERROR;
@@ -218,24 +217,26 @@ __device__ int Tcl_HistoryCmd(ClientData dummy, Tcl_Interp *interp, int argc, co
 		MakeSpace(eventPtr, (int)strlen(args[2]) + 1);
 		strcpy(eventPtr->command, args[2]);
 		return TCL_OK;
-	} else if (c == 'e' && !strncmp(args[1], "event", length)) {
+	}
+	else if (c == 'e' && !strncmp(args[1], "event", length)) {
 		if (argc > 3) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " event ?event?\"", (char *)NULL);
 			return TCL_ERROR;
 		}
-		eventPtr = GetEvent(iPtr, (char *)(argc==2 ? "-1" : args[2]));
+		eventPtr = GetEvent(iPtr, (char *)(argc == 2 ? "-1" : args[2]));
 		if (eventPtr == NULL) {
 			return TCL_ERROR;
 		}
 		RevResult(iPtr, eventPtr->command);
 		Tcl_SetResult(interp, eventPtr->command, TCL_VOLATILE);
 		return TCL_OK;
-	} else if (c == 'i' && !strncmp(args[1], "info", length)) {
+	}
+	else if (c == 'i' && !strncmp(args[1], "info", length)) {
 		if (argc != 2 && argc != 3) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " info ?count?\"", (char *)NULL);
 			return TCL_ERROR;
 		}
-infoCmd:
+	infoCmd:
 		int count;
 		if (argc == 3) {
 			if (Tcl_GetInt(interp, args[2], &count) != TCL_OK) {
@@ -244,10 +245,11 @@ infoCmd:
 			if (count > iPtr->numEvents) {
 				count = iPtr->numEvents;
 			}
-		} else {
+		}
+		else {
 			count = iPtr->numEvents;
 		}
-		char *newline = "";
+		char *newline = (char *)"";
 		int indx, i;
 		for (i = 0, indx = iPtr->curEvent + 1 + iPtr->numEvents - count; i < count; i++, indx++) {
 			if (indx >= iPtr->numEvents) {
@@ -260,7 +262,7 @@ infoCmd:
 			char serial[20];
 			sprintf(serial, "%6d  ", iPtr->curEventNum + 1 - (count - i));
 			Tcl_AppendResult(interp, newline, serial, (char *)NULL);
-			newline = "\n";
+			newline = (char *)"\n";
 			// Tricky formatting here:  for multi-line commands, indent the continuation lines.
 			while (true) {
 				char *next = (char *)strchr(cur, '\n');
@@ -277,7 +279,8 @@ infoCmd:
 			Tcl_AppendResult(interp, cur, (char *)NULL);
 		}
 		return TCL_OK;
-	} else if (c == 'k' && !strncmp(args[1], "keep", length)) {
+	}
+	else if (c == 'k' && !strncmp(args[1], "keep", length)) {
 		if (argc != 3) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " keep number\"", (char *)NULL);
 			return TCL_ERROR;
@@ -298,7 +301,8 @@ infoCmd:
 			if (src < 0) {
 				src += iPtr->numEvents;
 			}
-		} else {
+		}
+		else {
 			src = iPtr->curEvent + 1;
 		}
 		int i;
@@ -309,7 +313,8 @@ infoCmd:
 			if (i < iPtr->numEvents) {
 				events[i] = iPtr->events[src];
 				iPtr->events[src].command = NULL;
-			} else {
+			}
+			else {
 				events[i].command = (char *)_allocFast(INITIAL_CMD_SIZE);
 				events[i].command[0] = 0;
 				events[i].bytesAvl = INITIAL_CMD_SIZE;
@@ -324,20 +329,23 @@ infoCmd:
 		_freeFast((char *)iPtr->events);
 		iPtr->events = events;
 		if (count < iPtr->numEvents) {
-			iPtr->curEvent = count-1;
-		} else {
-			iPtr->curEvent = iPtr->numEvents-1;
+			iPtr->curEvent = count - 1;
+		}
+		else {
+			iPtr->curEvent = iPtr->numEvents - 1;
 		}
 		iPtr->numEvents = count;
 		return TCL_OK;
-	} else if (c == 'n' && !strncmp(args[1], "nextid", length)) {
+	}
+	else if (c == 'n' && !strncmp(args[1], "nextid", length)) {
 		if (argc != 2) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " nextid\"", (char *)NULL);
 			return TCL_ERROR;
 		}
-		sprintf(iPtr->result, "%d", iPtr->curEventNum+1);
+		sprintf(iPtr->result, "%d", iPtr->curEventNum + 1);
 		return TCL_OK;
-	} else if (c == 'r' && !strncmp(args[1], "redo", length)) {
+	}
+	else if (c == 'r' && !strncmp(args[1], "redo", length)) {
 		if (argc > 3) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " redo ?event?\"", (char *)NULL);
 			return TCL_ERROR;
@@ -348,7 +356,8 @@ infoCmd:
 		}
 		RevCommand(iPtr, eventPtr->command);
 		return Tcl_Eval(interp, eventPtr->command, 0, 0);
-	} else if (c == 's' && !strncmp(args[1], "substitute", length)) {
+	}
+	else if (c == 's' && !strncmp(args[1], "substitute", length)) {
 		if (argc > 5 || argc < 4) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " substitute old new ?event?\"", (char *)NULL);
 			return TCL_ERROR;
@@ -358,7 +367,8 @@ infoCmd:
 			return TCL_ERROR;
 		}
 		return SubsAndEval(iPtr, eventPtr->command, (char *)args[2], (char *)args[3]);
-	} else if (c == 'w' && !strncmp(args[1], "words", length)) {
+	}
+	else if (c == 'w' && !strncmp(args[1], "words", length)) {
 		if (argc != 3 && argc != 4) {
 			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " words num-num/pat ?event?\"", (char *)NULL);
 			return TCL_ERROR;
@@ -379,7 +389,7 @@ infoCmd:
 	Tcl_AppendResult(interp, "bad option \"", args[1], "\": must be add, change, event, info, keep, nextid, ", "redo, substitute, or words", (char *)NULL);
 	return TCL_ERROR;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -394,15 +404,14 @@ infoCmd:
 *
 *----------------------------------------------------------------------
 */
-static __device__ void MakeSpace(HistoryEvent *hPtr, int size)
-{
+static __device__ void MakeSpace(HistoryEvent *hPtr, int size) {
 	if (hPtr->bytesAvl < size) {
 		_freeFast(hPtr->command);
-		hPtr->command = (char *)_allocFast((unsigned) size);
+		hPtr->command = (char *)_allocFast((unsigned)size);
 		hPtr->bytesAvl = size;
 	}
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -418,8 +427,7 @@ static __device__ void MakeSpace(HistoryEvent *hPtr, int size)
 *
 *----------------------------------------------------------------------
 */
-static __device__ void InsertRev(Interp *iPtr, register HistoryRev *revPtr)
-{
+static __device__ void InsertRev(Interp *iPtr, register HistoryRev *revPtr) {
 	register HistoryRev *curPtr, *prevPtr;
 	for (curPtr = iPtr->revPtr, prevPtr = NULL; curPtr != NULL; prevPtr = curPtr, curPtr = curPtr->nextPtr) {
 		// If this revision includes the new one (or vice versa) then just eliminate the one that is a subset of the other.
@@ -445,12 +453,13 @@ static __device__ void InsertRev(Interp *iPtr, register HistoryRev *revPtr)
 	if (prevPtr == NULL) {
 		revPtr->nextPtr = iPtr->revPtr;
 		iPtr->revPtr = revPtr;
-	} else {
+	}
+	else {
 		revPtr->nextPtr = prevPtr->nextPtr;
 		prevPtr->nextPtr = revPtr;
 	}
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -466,8 +475,7 @@ static __device__ void InsertRev(Interp *iPtr, register HistoryRev *revPtr)
 *
 *----------------------------------------------------------------------
 */
-static __device__ void RevCommand(register Interp *iPtr, char *string)
-{
+static __device__ void RevCommand(register Interp *iPtr, char *string) {
 	if (iPtr->evalFirst == NULL || iPtr->revDisables > 0) {
 		return;
 	}
@@ -475,11 +483,11 @@ static __device__ void RevCommand(register Interp *iPtr, char *string)
 	revPtr->firstIndex = (int)(iPtr->evalFirst - iPtr->historyFirst);
 	revPtr->lastIndex = (int)(iPtr->evalLast - iPtr->historyFirst);
 	revPtr->newSize = strlen(string);
-	revPtr->newBytes = (char *)_allocFast((unsigned)(revPtr->newSize+1));
+	revPtr->newBytes = (char *)_allocFast((unsigned)(revPtr->newSize + 1));
 	strcpy(revPtr->newBytes, string);
 	InsertRev(iPtr, revPtr);
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -495,8 +503,7 @@ static __device__ void RevCommand(register Interp *iPtr, char *string)
 *
 *----------------------------------------------------------------------
 */
-static __device__ void RevResult(register Interp *iPtr, char *string)
-{
+static __device__ void RevResult(register Interp *iPtr, char *string) {
 	if (iPtr->evalFirst == NULL || iPtr->revDisables > 0) {
 		return;
 	}
@@ -529,7 +536,7 @@ static __device__ void RevResult(register Interp *iPtr, char *string)
 	revPtr->newSize = strlen(revPtr->newBytes);
 	InsertRev(iPtr, revPtr);
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -544,8 +551,7 @@ static __device__ void RevResult(register Interp *iPtr, char *string)
 *
 *----------------------------------------------------------------------
 */
-static __device__ void DoRevs(register Interp *iPtr)
-{
+static __device__ void DoRevs(register Interp *iPtr) {
 	if (iPtr->revPtr == NULL) {
 		return;
 	}
@@ -571,9 +577,9 @@ static __device__ void DoRevs(register Interp *iPtr)
 		}
 		strncpy(p, revPtr->newBytes, (size_t)revPtr->newSize);
 		p += revPtr->newSize;
-		bytesSeen = revPtr->lastIndex+1;
+		bytesSeen = revPtr->lastIndex + 1;
 		_freeFast(revPtr->newBytes);
-		_freeFast((char *) revPtr);
+		_freeFast((char *)revPtr);
 		revPtr = nextPtr;
 	}
 	strcpy(p, eventPtr->command + bytesSeen);
@@ -584,7 +590,7 @@ static __device__ void DoRevs(register Interp *iPtr)
 	eventPtr->bytesAvl = size;
 	iPtr->revPtr = NULL;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -599,8 +605,7 @@ static __device__ void DoRevs(register Interp *iPtr)
 *
 *----------------------------------------------------------------------
 */
-static __device__ HistoryEvent *GetEvent(register Interp *iPtr, char *string)
-{
+static __device__ HistoryEvent *GetEvent(register Interp *iPtr, char *string) {
 	// First check for a numeric specification of an event.
 	int index;
 	if (isdigit(*string) || *string == '-') {
@@ -615,7 +620,7 @@ static __device__ HistoryEvent *GetEvent(register Interp *iPtr, char *string)
 			Tcl_AppendResult((Tcl_Interp *)iPtr, "event \"", string, "\" hasn't occurred yet", (char *)NULL);
 			return NULL;
 		}
-		if (eventNum <= iPtr->curEventNum-iPtr->numEvents || eventNum <= 0) {
+		if (eventNum <= iPtr->curEventNum - iPtr->numEvents || eventNum <= 0) {
 			Tcl_AppendResult((Tcl_Interp *)iPtr, "event \"", string, "\" is too far in the past", (char *)NULL);
 			return NULL;
 		}
@@ -643,7 +648,7 @@ static __device__ HistoryEvent *GetEvent(register Interp *iPtr, char *string)
 	Tcl_AppendResult((Tcl_Interp *)iPtr, "no event matches \"", string, "\"", (char *)NULL);
 	return NULL;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -659,8 +664,7 @@ static __device__ HistoryEvent *GetEvent(register Interp *iPtr, char *string)
 *
 *----------------------------------------------------------------------
 */
-static __device__ int SubsAndEval(register Interp *iPtr, char *cmd, char *old, char *new_)
-{
+static __device__ int SubsAndEval(register Interp *iPtr, char *cmd, char *old, char *new_) {
 	// Figure out how much space it will take to hold the substituted command (and complain if the old string doesn't appear in the original command).
 	int oldLength = strlen(old);
 	int newLength = strlen(new_);
@@ -678,7 +682,7 @@ static __device__ int SubsAndEval(register Interp *iPtr, char *cmd, char *old, c
 		Tcl_AppendResult((Tcl_Interp *)iPtr, "\"", old, "\" doesn't appear in event", (char *)NULL);
 		return TCL_ERROR;
 	}
-	int length = strlen(cmd) + count*(newLength - oldLength);
+	int length = strlen(cmd) + count * (newLength - oldLength);
 
 	// Generate a substituted command.
 	char *newCmd = (char *)_allocFast((unsigned)(length + 1));
@@ -689,8 +693,8 @@ static __device__ int SubsAndEval(register Interp *iPtr, char *cmd, char *old, c
 			strcpy(dst, cmd);
 			break;
 		}
-		strncpy(dst, cmd, (size_t)(src-cmd));
-		dst += src-cmd;
+		strncpy(dst, cmd, (size_t)(src - cmd));
+		dst += src - cmd;
 		strcpy(dst, new_);
 		dst += newLength;
 		cmd = src + oldLength;
@@ -701,7 +705,7 @@ static __device__ int SubsAndEval(register Interp *iPtr, char *cmd, char *old, c
 	_freeFast(newCmd);
 	return result;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -717,8 +721,7 @@ static __device__ int SubsAndEval(register Interp *iPtr, char *cmd, char *old, c
 *
 *----------------------------------------------------------------------
 */
-static __device__ char *GetWords(register Interp *iPtr, char *command, char *words)
-{
+static __device__ char *GetWords(register Interp *iPtr, char *command, char *words) {
 	// Figure out whether we're looking for a numerical range or for a pattern.
 	char *pattern = NULL;
 	int first = 0; // First word desired. -1 means last word only.
@@ -729,17 +732,21 @@ static __device__ char *GetWords(register Interp *iPtr, char *command, char *wor
 			goto error;
 		}
 		first = -1;
-	} else if (isdigit(*words)) {
+	}
+	else if (isdigit(*words)) {
 		first = strtoul(words, &start, 0);
 		if (*start == 0) {
 			last = first;
-		} else if (*start == '-') {
+		}
+		else if (*start == '-') {
 			start++;
 			if (*start == '$') {
 				start++;
-			} else if (isdigit(*start)) {
+			}
+			else if (isdigit(*start)) {
 				last = strtoul(start, &start, 0);
-			} else {
+			}
+			else {
 				goto error;
 			}
 			if (*start != 0) {
@@ -749,22 +756,23 @@ static __device__ char *GetWords(register Interp *iPtr, char *command, char *wor
 		if (first > last && last != -1) {
 			goto error;
 		}
-	} else {
+	}
+	else {
 		pattern = words;
 	}
 
 	// Scan through the words one at a time, copying those that are relevant into the result string.  Allocate a result area large enough to hold all the words if necessary.
 	int index; // Index of current word.
 	register char *next;
-	char *result = (char *)_allocFast((unsigned)(strlen(command) + 1));
-	char *dst = result;
-	for (next = command; isspace(*next); next++) { } // Empty loop body:  just find start of first word.
+	char *result; result = (char *)_allocFast((unsigned)(strlen(command) + 1));
+	char *dst; dst = result;
+	for (next = command; isspace(*next); next++) {} // Empty loop body:  just find start of first word.
 	for (index = 0; *next != 0; index++) {
 		start = next;
 		char *end = TclWordEnd(next, 0);
 		if (*end != 0) {
 			end++;
-			for (next = end; isspace(*next); next++) { } // Empty loop body:  just find start of next word.
+			for (next = end; isspace(*next); next++) {} // Empty loop body:  just find start of next word.
 		}
 		if (first > index || (first == -1 && *next != 0)) {
 			continue;
@@ -785,8 +793,8 @@ static __device__ char *GetWords(register Interp *iPtr, char *command, char *wor
 			*dst = ' ';
 			dst++;
 		}
-		strncpy(dst, start, (size_t)(end-start));
-		dst += end-start;
+		strncpy(dst, start, (size_t)(end - start));
+		dst += end - start;
 	}
 	*dst = 0;
 

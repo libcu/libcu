@@ -38,17 +38,13 @@
 
 #include <jim.h>
 
-static void JimSqliteDelProc(Jim_Interp *interp, void *privData)
-{
+static void JimSqliteDelProc(Jim_Interp *interp, void *privData) {
 	sqlite3 *db = privData;
-
 	JIM_NOTUSED(interp);
-
 	sqlite3_close(db);
 }
 
-static char *JimSqliteQuoteString(const char *str, int len, int *newLenPtr)
-{
+static char *JimSqliteQuoteString(const char *str, int len, int *newLenPtr) {
 	int i, newLen, c = 0;
 	const char *s;
 	char *d, *buf;
@@ -68,9 +64,7 @@ static char *JimSqliteQuoteString(const char *str, int len, int *newLenPtr)
 	return buf;
 }
 
-static Jim_Obj *JimSqliteFormatQuery(Jim_Interp *interp, Jim_Obj *fmtObjPtr,
-									 int objc, Jim_Obj *const *objv)
-{
+static Jim_Obj *JimSqliteFormatQuery(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int objc, Jim_Obj *const *objv) {
 	const char *fmt;
 	int fmtLen;
 	Jim_Obj *resObjPtr;
@@ -102,18 +96,18 @@ static Jim_Obj *JimSqliteFormatQuery(Jim_Interp *interp, Jim_Obj *fmtObjPtr,
 		}
 		switch (*fmt) {
 		case 's':
-			{
-				const char *str;
-				char *quoted;
-				int len, newLen;
+		{
+			const char *str;
+			char *quoted;
+			int len, newLen;
 
-				str = Jim_GetString(objv[0], &len);
-				quoted = JimSqliteQuoteString(str, len, &newLen);
-				Jim_AppendString(interp, resObjPtr, quoted, newLen);
-				Jim_Free(quoted);
-			}
-			objv++;
-			break;
+			str = Jim_GetString(objv[0], &len);
+			quoted = JimSqliteQuoteString(str, len, &newLen);
+			Jim_AppendString(interp, resObjPtr, quoted, newLen);
+			Jim_Free(quoted);
+		}
+		objv++;
+		break;
 		case '%':
 			Jim_AppendString(interp, resObjPtr, "%", 1);
 			break;
@@ -133,15 +127,16 @@ static Jim_Obj *JimSqliteFormatQuery(Jim_Interp *interp, Jim_Obj *fmtObjPtr,
 
 /* Calls to [sqlite.open] create commands that are implemented by this
 * C command. */
-static int JimSqliteHandlerCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int JimSqliteHandlerCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	sqlite3 *db = Jim_CmdPrivData(interp);
 	int option;
 	static const char * const options[] = {
 		"close", "query", "lastid", "changes", NULL
 	};
 	enum
-	{ OPT_CLOSE, OPT_QUERY, OPT_LASTID, OPT_CHANGES };
+	{
+		OPT_CLOSE, OPT_QUERY, OPT_LASTID, OPT_CHANGES
+	};
 
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "method ?args ...?");
@@ -237,7 +232,7 @@ static int JimSqliteHandlerCommand(ClientData dummy, Jim_Interp *interp, int arg
 			retcode = JIM_OK;
 		}
 		Jim_DecrRefCount(interp, rowsListPtr);
-err:
+	err:
 		Jim_DecrRefCount(interp, nullStrObj);
 
 		return retcode;
@@ -261,8 +256,7 @@ err:
 	return JIM_OK;
 }
 
-static int JimSqliteOpenCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int JimSqliteOpenCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	sqlite3 *db;
 	char buf[60];
 	int r;
@@ -286,8 +280,7 @@ static int JimSqliteOpenCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 	return JIM_OK;
 }
 
-int Jim_sqlite3Init(Jim_Interp *interp)
-{
+int Jim_sqlite3Init(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "sqlite3", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 

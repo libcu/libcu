@@ -23,15 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _SYS_STATCU_H
-#define	_SYS_STATCU_H
+#define _SYS_STATCU_H
 #include <crtdefscu.h>
 
 #include <sys/stat.h>
 #if __OS_WIN
 //#include <corecrt_io.h>
-//#include <bits/libcu_stat.h>
 typedef int mode_t;
 #endif
 
@@ -69,12 +67,12 @@ typedef int mode_t;
 ///* Read, write, and execute by others.  */
 //#define	S_IRWXO	(S_IRWXG >> 3)
 
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 #ifndef __USE_FILE_OFFSET64
 /* Get file attributes about FILE and put them in BUF. If FILE is a symbolic link, do not follow it.  */
-extern __device__ int stat_(const char *__restrict file, struct stat *__restrict buf, bool lstat = false);
+extern __device__ int stat_(const char *__restrict file, struct stat *__restrict buf, bool lstat_ = false);
 #define stat(file, buf) stat_(file, buf, false)
 #define lstat(file, buf) stat_(file, buf, true)
 /* Get file attributes for the file, device, pipe, or socket that file descriptor FD is open on and put them in BUF.  */
@@ -86,7 +84,7 @@ extern __device__ int fstat_(int fd, struct stat *buf);
 #define fstat(fd, buf) fstat64_(fd, buf)
 #endif
 #ifdef __USE_LARGEFILE64
-extern __device__ int stat64_(const char *__restrict file, struct stat64 *__restrict buf, bool lstat = false);
+extern __device__ int stat64_(const char *__restrict file, struct stat64 *__restrict buf, bool lstat_ = false);
 #define stat64(file, buf) stat64_(file, buf, false)
 #define lstat64(file, buf) stat64_(file, buf, true)
 extern __device__ int fstat64_(int fd, struct stat64 *buf);

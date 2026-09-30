@@ -1,3 +1,6 @@
+#ifdef LIBCU_LEAN_AND_MEAN
+cudaError_t grp_test1() { return cudaSuccess; }
+#else
 #include <stdiocu.h>
 #include <stringcu.h>
 #include <grpcu.h>
@@ -18,3 +21,5 @@ static __global__ void g_grp_test1() {
 	struct group *d0a = getgrent(); setgrent(); struct group *d0b = getgrent(); endgrent(); struct group *d0c = getgrent(); assert(!d0a && d0b && d0c);
 }
 cudaError_t grp_test1() { g_grp_test1<<<1, 1>>>(); return cudaDeviceSynchronize(); }
+
+#endif

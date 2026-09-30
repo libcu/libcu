@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #ifndef _EXT_HASH_H
 #define _EXT_HASH_H
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -63,7 +63,7 @@ extern "C" {
 
 #define HASHINIT { 0, 0, nullptr, nullptr }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif  /* _EXT_HASH_H */

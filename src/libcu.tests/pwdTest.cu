@@ -1,3 +1,6 @@
+#ifdef LIBCU_LEAN_AND_MEAN
+cudaError_t pwd_test1() { return cudaSuccess; }
+#else
 #include <stdiocu.h>
 #include <stringcu.h>
 #include <pwdcu.h>
@@ -18,3 +21,5 @@ static __global__ void g_pwd_test1() {
 	struct passwd *d0a = getpwent(); setpwent(); struct passwd *d0b = getpwent(); endpwent(); struct passwd *d0c = getpwent(); assert(!d0a && d0b && d0c);
 }
 cudaError_t pwd_test1() { g_pwd_test1<<<1, 1>>>(); return cudaDeviceSynchronize(); }
+
+#endif

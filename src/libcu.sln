@@ -38,6 +38,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcu.fileutils", "libcu.fi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tcl", "tcl", "{270E7DA7-571A-47F5-A243-ED65B68A9702}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcu.jimtcl.78", "tcl\libcu.jimtcl.78\libcu.jimtcl.78.vcxproj", "{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -100,6 +102,14 @@ Global
 		{581AA62E-3557-4671-93EB-099186B0E7B4}.Release|Win32.Build.0 = Release|Win32
 		{581AA62E-3557-4671-93EB-099186B0E7B4}.Release|x64.ActiveCfg = Release|x64
 		{581AA62E-3557-4671-93EB-099186B0E7B4}.Release|x64.Build.0 = Release|x64
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}.Debug|Win32.Build.0 = Debug|Win32
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}.Debug|x64.ActiveCfg = Debug|x64
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}.Debug|x64.Build.0 = Debug|x64
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}.Release|Win32.ActiveCfg = Release|Win32
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}.Release|Win32.Build.0 = Release|Win32
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}.Release|x64.ActiveCfg = Release|x64
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +119,7 @@ Global
 		{9E735B14-3DDD-4703-A408-1FD099B4CA92} = {270E7DA7-571A-47F5-A243-ED65B68A9702}
 		{AA115325-8577-4544-A6C1-17747A1634C2} = {270E7DA7-571A-47F5-A243-ED65B68A9702}
 		{2FEB679D-8B0A-4F09-8459-ECA1D429DA1C} = {270E7DA7-571A-47F5-A243-ED65B68A9702}
+		{35A3CE06-F4C1-46F8-8EDF-03BDFB3D6CEE} = {270E7DA7-571A-47F5-A243-ED65B68A9702}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DF084A3F-78DB-44D3-8488-C225E0014ADC}

@@ -4,7 +4,6 @@
 
 static __global__ void g_ctype_test1() {
 	printf("ctype_test1\n");
-	//fprintf_(stdout, "ctype_test1\n");
 
 	//// ISCTYPE ////
 	//extern __forceinline__ __device__ int isctype_(int c, int type);

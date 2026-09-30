@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _STDLIBCU_H
 #define _STDLIBCU_H
 #include <crtdefscu.h>
@@ -35,7 +34,10 @@ typedef int(*__compar_fn_t)(const void *, const void *);
 #endif
 
 #include <stdlib.h>
-#if defined(__CUDA_ARCH__)
+#if __OS_UNIX
+#include <unistd.h>
+#endif
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 extern __device__ unsigned long __strtol(register const char *__restrict str, char **__restrict endptr, int base, int sflag);
@@ -285,7 +287,7 @@ __BEGIN_NAMESPACE_STD;
 extern __device__ int mblen_(const char *s, size_t n);
 #define mblen mblen_
 /* Return the length of the given multibyte character, putting its `wchar_t' representation in *PWC.  */
-extern __device__ int mbtowc_(wchar_t *__restrict __pwc, const char *__restrict s, size_t n);
+extern __device__ int mbtowc_(wchar_t *__restrict pwc, const char *__restrict s, size_t n);
 #define mbtowc mbtowc_
 /* Put the multibyte character represented by WCHAR in S, returning its length.  */
 extern __device__ int wctomb_(char *s, wchar_t wchar);
@@ -326,10 +328,18 @@ __END_DECLS;
 #define strtoull(s,e,b) 0
 #define setenv(n,v,r) 0
 #define unsetenv(n) 0
+//#define mktemp(t) 0
 #define mkstemp(t) 0
+#ifdef _MSC_VER
 #include <malloc.h>
-#ifndef _MSC_VER
+#else
+#ifdef __APPLE__
+#include <malloc/malloc.h>
+#define _msize(p) malloc_size(p)
+#else
+#include <malloc.h>
 #define _msize(p) malloc_usable_size(p)
+#endif
 #endif
 #endif  /* _STDLIBCU_H */
 __BEGIN_DECLS;
@@ -340,6 +350,8 @@ __BEGIN_DECLS;
 typedef long long int quad_t;
 /* Returned by `strtouq'.  */
 typedef unsigned long long int u_quad_t;
+//#else
+//#include <sys/types.h>
 #endif
 /* Convert a string to a quadword integer.  */
 __forceinline__ __device__ quad_t strtoq_(const char *__restrict nptr, char **__restrict endptr, int base) { return (quad_t)strtol(nptr, endptr, base); }

@@ -59,9 +59,8 @@ static const char * const priorities[] = {
 /**
 * Deletes the syslog command.
 */
-static void Jim_SyslogCmdDelete(Jim_Interp *interp, void *privData)
-{
-	SyslogInfo *info = (SyslogInfo *) privData;
+static void Jim_SyslogCmdDelete(Jim_Interp *interp, void *privData) {
+	SyslogInfo *info = (SyslogInfo *)privData;
 
 	if (info->logOpened) {
 		closelog();
@@ -75,14 +74,13 @@ static void Jim_SyslogCmdDelete(Jim_Interp *interp, void *privData)
 *
 * syslog ?-facility cron|daemon|...? ?-ident string? ?-options int? ?debug|info|...? text
 */
-int Jim_SyslogCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+int Jim_SyslogCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int priority = LOG_INFO;
 	int i = 1;
 	SyslogInfo *info = Jim_CmdPrivData(interp);
 
 	if (argc <= 1) {
-wrongargs:
+	wrongargs:
 		Jim_WrongNumArgs(interp, 1, argv,
 			"?-facility cron|daemon|...? ?-ident string? ?-options int? ?debug|info|...? message");
 		return JIM_ERROR;
@@ -91,7 +89,7 @@ wrongargs:
 		if (Jim_CompareStringImmediate(interp, argv[i], "-facility")) {
 			int entry =
 				Jim_FindByName(Jim_String(argv[i + 1]), facilities,
-				sizeof(facilities) / sizeof(*facilities));
+					sizeof(facilities) / sizeof(*facilities));
 			if (entry < 0) {
 				Jim_SetResultString(interp, "Unknown facility", -1);
 				return JIM_ERROR;
@@ -139,7 +137,7 @@ wrongargs:
 	if (i < argc - 1) {
 		priority =
 			Jim_FindByName(Jim_String(argv[i]), priorities,
-			sizeof(priorities) / sizeof(*priorities));
+				sizeof(priorities) / sizeof(*priorities));
 		if (priority < 0) {
 			Jim_SetResultString(interp, "Unknown priority", -1);
 			return JIM_ERROR;
@@ -170,8 +168,7 @@ wrongargs:
 	return JIM_OK;
 }
 
-int Jim_syslogInit(Jim_Interp *interp)
-{
+int Jim_syslogInit(Jim_Interp *interp) {
 	SyslogInfo *info;
 
 	if (Jim_PackageProvide(interp, "syslog", "1.0", JIM_ERRMSG))

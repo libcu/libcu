@@ -13,7 +13,7 @@ static __device__ EnvInterp *_firstInterpPtr;
 
 // Declarations for local procedures defined in this file:
 static __device__ char *EnvTraceProc(ClientData clientData, Tcl_Interp *interp, char *name1, char *name2, int flags);
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -30,8 +30,7 @@ static __device__ char *EnvTraceProc(ClientData clientData, Tcl_Interp *interp, 
 *
 *----------------------------------------------------------------------
 */
-__device__ void TclSetupEnv(Tcl_Interp *interp)
-{
+__device__ void TclSetupEnv(Tcl_Interp *interp) {
 	// Next, add the interpreter to the list of those that we manage.
 	EnvInterp *eiPtr = (EnvInterp *)_allocFast(sizeof(EnvInterp));
 	eiPtr->interp = interp;
@@ -39,21 +38,22 @@ __device__ void TclSetupEnv(Tcl_Interp *interp)
 	_firstInterpPtr = eiPtr;
 
 	// Store the environment variable values into the interpreter's "env" array, and arrange for us to be notified on future writes and unsets to that array.
-	Tcl_UnsetVar2(interp, "env", (char *)NULL, TCLGLOBAL__ONLY);
-	for (int i = 0; ; i++) {
-		char *p = __environ[i];
-		if (!p || !*p ) {
-			break;
+	Tcl_UnsetVar2(interp, (char *)"env", (char *)NULL, TCLGLOBAL__ONLY);
+	if (__environ)
+		for (int i = 0; ; i++) {
+			char *p = __environ[i];
+			if (!p || !*p) {
+				break;
+			}
+			char *p2;
+			for (p2 = p; *p2 != '='; p2++) {}
+			*p2 = 0;
+			Tcl_SetVar2(interp, (char *)"env", p, p2 + 1, TCLGLOBAL__ONLY);
+			*p2 = '=';
 		}
-		char *p2;
-		for (p2 = p; *p2 != '='; p2++) { }
-		*p2 = 0;
-		Tcl_SetVar2(interp, "env", p, p2+1, TCLGLOBAL__ONLY);
-		*p2 = '=';
-	}
-	Tcl_TraceVar2(interp, "env", (char *)NULL, TCLGLOBAL__ONLY | TCL_TRACE_WRITES | TCL_TRACE_UNSETS, EnvTraceProc, (ClientData)NULL);
+	Tcl_TraceVar2(interp, (char *)"env", (char *)NULL, TCLGLOBAL__ONLY | TCL_TRACE_WRITES | TCL_TRACE_UNSETS, EnvTraceProc, (ClientData)NULL);
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -70,17 +70,17 @@ __device__ void TclSetupEnv(Tcl_Interp *interp)
 *
 *----------------------------------------------------------------------
 */
-static __device__ char *EnvTraceProc(ClientData clientData, Tcl_Interp *interp, char *name1, char *name2, int flags)
-{
+static __device__ char *EnvTraceProc(ClientData clientData, Tcl_Interp *interp, char *name1, char *name2, int flags) {
 	// First see if the whole "env" variable is being deleted.  If so, just forget about this interpreter.
 	if (name2 == NULL) {
-		if ((flags & (TCL_TRACE_UNSETS|TCL_TRACE_DESTROYED)) != (TCL_TRACE_UNSETS|TCL_TRACE_DESTROYED)) {
+		if ((flags & (TCL_TRACE_UNSETS | TCL_TRACE_DESTROYED)) != (TCL_TRACE_UNSETS | TCL_TRACE_DESTROYED)) {
 			panic("EnvTraceProc called with confusing arguments");
 		}
 		register EnvInterp *eiPtr = _firstInterpPtr;
 		if (eiPtr->interp == interp) {
 			_firstInterpPtr = eiPtr->nextPtr;
-		} else {
+		}
+		else {
 			register EnvInterp *prevPtr;
 			for (prevPtr = eiPtr, eiPtr = eiPtr->nextPtr; ; prevPtr = eiPtr, eiPtr = eiPtr->nextPtr) {
 				if (eiPtr == NULL) {
@@ -97,7 +97,7 @@ static __device__ char *EnvTraceProc(ClientData clientData, Tcl_Interp *interp, 
 	}
 	// If a value is being set, call setenv to do all of the work.
 	if (flags & TCL_TRACE_WRITES) {
-		setenv(name2, Tcl_GetVar2(interp, "env", name2, TCLGLOBAL__ONLY), true);
+		setenv(name2, Tcl_GetVar2(interp, (char *)"env", name2, TCLGLOBAL__ONLY), true);
 	}
 	if (flags & TCL_TRACE_UNSETS) {
 		unsetenv(name2);

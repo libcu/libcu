@@ -1,8 +1,7 @@
 #include <unistd.h>
 #include <string.h>
 
-int main ()
-{
+int main() {
 	sync();
 	exit(0);
 }

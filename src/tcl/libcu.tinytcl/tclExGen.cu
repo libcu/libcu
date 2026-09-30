@@ -15,8 +15,8 @@
 #include "tclExInt.h"
 
 // These globals must be set by main for the information to be defined.
-__device__ char *tclxVersion    = "?";   // Extended Tcl version number.
-__device__ int tclxPatchlevel   = 0;     // Extended Tcl patch level.
+__device__ char *tclxVersion = (char *)"?";   // Extended Tcl version number.
+__device__ int tclxPatchlevel = 0;     // Extended Tcl patch level.
 
 __device__ char *tclAppName = NULL;		// Application name
 __device__ char *tclAppLongname = NULL;		// Long, natural language application name
@@ -31,34 +31,38 @@ __device__ char *tclAppVersion = NULL;		// Version number of the application
 *
 *-----------------------------------------------------------------------------
 */
-__device__ int Tcl_InfoxCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char *args[])
-{
+__device__ int Tcl_InfoxCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char *args[]) {
 	if (argc != 2) {
 		Tcl_AppendResult(interp, "bad # args: ", args[0], " option", (char *)NULL);
 		return TCL_ERROR;
 	}
 	if (STREQU("version", args[1])) {
 		Tcl_SetResult(interp, tclxVersion, TCL_STATIC);
-	} else if (STREQU("patchlevel", args[1])) {
+	}
+	else if (STREQU("patchlevel", args[1])) {
 		char numBuf[32];
 		sprintf(numBuf, "%d", tclxPatchlevel);
 		Tcl_SetResult(interp, numBuf, TCL_VOLATILE);
-	} else if (STREQU("appname", args[1])) {
+	}
+	else if (STREQU("appname", args[1])) {
 		if (tclAppName != NULL)
 			Tcl_SetResult(interp, tclAppName, TCL_STATIC);
-	} else if (STREQU ("applongname", args[1])) {
+	}
+	else if (STREQU("applongname", args[1])) {
 		if (tclAppLongname != NULL)
 			Tcl_SetResult(interp, tclAppLongname, TCL_STATIC);
-	} else if (STREQU("appversion", args[1])) {
+	}
+	else if (STREQU("appversion", args[1])) {
 		if (tclAppVersion != NULL)
 			Tcl_SetResult(interp, tclAppVersion, TCL_STATIC);
-	} else {
+	}
+	else {
 		Tcl_AppendResult(interp, "illegal option \"", args[1], "\" expect one of: version, patchlevel, appname, ", "applongname, or appversion", (char *)NULL);
 		return TCL_ERROR;
 	}
 	return TCL_OK;
 }
-
+
 /*
 *-----------------------------------------------------------------------------
 *
@@ -68,8 +72,7 @@ __device__ int Tcl_InfoxCmd(ClientData clientData, Tcl_Interp *interp, int argc,
 *
 *-----------------------------------------------------------------------------
 */
-__device__ int Tcl_SleepCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char *args[])
-{
+__device__ int Tcl_SleepCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char *args[]) {
 	if (argc != 2) {
 		Tcl_AppendResult(interp, "bad # args: ", args[0], " seconds", (char *)NULL);
 		return TCL_ERROR;
@@ -77,7 +80,7 @@ __device__ int Tcl_SleepCmd(ClientData clientData, Tcl_Interp *interp, int argc,
 	sleep(atoi(args[1]));
 	return TCL_OK;
 }
-
+
 /*
 *-----------------------------------------------------------------------------
 *
@@ -90,8 +93,7 @@ __device__ int Tcl_SleepCmd(ClientData clientData, Tcl_Interp *interp, int argc,
 *
 *-----------------------------------------------------------------------------
 */
-__device__ int Tcl_LoopCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[])
-{
+__device__ int Tcl_LoopCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[]) {
 	if (argc < 5 || argc > 6) {
 		Tcl_AppendResult(interp, "bad # args: ", args[0], " var first limit [incr] command", (char *)NULL);
 		return TCL_ERROR;
@@ -122,15 +124,18 @@ __device__ int Tcl_LoopCmd(ClientData dummy, Tcl_Interp *interp, int argc, const
 		if (result != TCL_OK) {
 			if (result == TCL_CONTINUE) {
 				result = TCL_OK;
-			} else if (result == TCL_BREAK) {
+			}
+			else if (result == TCL_BREAK) {
 				result = TCL_OK;
 				break;
-			} else if (result == TCL_ERROR) {
+			}
+			else if (result == TCL_ERROR) {
 				char buf[64];
 				sprintf(buf, "\n    (\"loop\" body line %d)", interp->errorLine);
 				Tcl_AddErrorInfo(interp, buf);
 				break;
-			} else {
+			}
+			else {
 				break;
 			}
 		}
@@ -141,21 +146,19 @@ __device__ int Tcl_LoopCmd(ClientData dummy, Tcl_Interp *interp, int argc, const
 		return TCL_ERROR;
 	return result;
 }
-
+
 #if NOTSUP
 
 #define MAX_SIGNALS 32
 static __device__ int *sigloc;
-static __device__ unsigned long sigsblocked; 
+static __device__ unsigned long sigsblocked;
 
-static __device__ void signal_handler(int sig)
-{
+static __device__ void signal_handler(int sig) {
 	// We just remember which signal occurred. Tcl_Eval() will notice this as soon as it can and throw an error
 	*sigloc = sig;
 }
 
-static __device__ void signal_ignorer(int sig)
-{
+static __device__ void signal_ignorer(int sig) {
 	// We just remember which signals occurred
 	sigsblocked |= (1 << sig);
 }
@@ -163,8 +166,7 @@ static __device__ void signal_ignorer(int sig)
 /**
 * Given the name of a signal, returns the signal value if found, or returns -1 if not found. We accept -SIGINT, SIGINT, INT or any lowercase version
 */
-static __device__ int find_signal_by_name(const char *name)
-{
+static __device__ int find_signal_by_name(const char *name) {
 	int i;
 	// Remove optional - and SIG from the front of the name
 	if (*name == '-') {
@@ -205,8 +207,7 @@ static __device__ int find_signal_by_name(const char *name)
 *
 *-----------------------------------------------------------------------------
 */
-__device__ int Tcl_SignalCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[])
-{
+__device__ int Tcl_SignalCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[]) {
 #if NOTSUP
 #define ACTION_HANDLE 1
 #define ACTION_IGNORE -1
@@ -271,7 +272,7 @@ __device__ int Tcl_SignalCmd(ClientData dummy, Tcl_Interp *interp, int argc, con
 	for (i = 2; i < argc; i++) {
 		int sig = find_signal_by_name(args[i]);
 		if (sig < 0) {
-			Tcl_AppendResult (interp, args[0], " unknown signal ", args[i], (char *)NULL);
+			Tcl_AppendResult(interp, args[0], " unknown signal ", args[i], (char *)NULL);
 			return TCL_ERROR;
 		}
 		static struct sigaction sa_old[MAX_SIGNALS];
@@ -282,7 +283,8 @@ __device__ int Tcl_SignalCmd(ClientData dummy, Tcl_Interp *interp, int argc, con
 			case ACTION_IGNORE:
 				if (handling[sig] == ACTION_DEFAULT) {
 					sigaction(sig, &sa, &sa_old[sig]);
-				} else {
+				}
+				else {
 					sigaction(sig, &sa, 0);
 				}
 				break;
@@ -309,8 +311,7 @@ __device__ int Tcl_SignalCmd(ClientData dummy, Tcl_Interp *interp, int argc, con
 *
 *-----------------------------------------------------------------------------
 */
-__device__ int Tcl_KillCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[])
-{
+__device__ int Tcl_KillCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[]) {
 #if NOTSUP
 	if (argc != 3) {
 		Tcl_AppendResult(interp, "bad # args: ", args[0], " SIG pid", (char *)NULL);
@@ -329,8 +330,7 @@ __device__ int Tcl_KillCmd(ClientData dummy, Tcl_Interp *interp, int argc, const
 	return TCL_ERROR;
 }
 
-__device__ void TclEx_InitGeneral(Tcl_Interp *interp)
-{
+__device__ void TclEx_InitGeneral(Tcl_Interp *interp) {
 	Tcl_CreateCommand(interp, "infox", Tcl_InfoxCmd, (ClientData)NULL, NULL);
 	Tcl_CreateCommand(interp, "loop", Tcl_LoopCmd, (ClientData)NULL, NULL);
 	Tcl_CreateCommand(interp, "signal", Tcl_SignalCmd, (ClientData)NULL, NULL);

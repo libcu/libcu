@@ -66,10 +66,10 @@ typedef struct Tcl_HashSearch {
 
 // Exported procedures:
 extern __device__ void Tcl_DeleteHashEntry(Tcl_HashEntry *entryPtr);
-extern __device__ void Tcl_DeleteHashTable( Tcl_HashTable *tablePtr);
+extern __device__ void Tcl_DeleteHashTable(Tcl_HashTable *tablePtr);
 extern __device__ Tcl_HashEntry *Tcl_FirstHashEntry(Tcl_HashTable *tablePtr, Tcl_HashSearch *searchPtr);
 extern __device__ char *Tcl_HashStats(Tcl_HashTable *tablePtr);
 extern __device__ void Tcl_InitHashTable(Tcl_HashTable *tablePtr, int keyType);
-extern __device__ Tcl_HashEntry *Tcl_NextHashEntry( Tcl_HashSearch *searchPtr);
+extern __device__ Tcl_HashEntry *Tcl_NextHashEntry(Tcl_HashSearch *searchPtr);
 
 #endif /* __TCL_HASH_H__ */

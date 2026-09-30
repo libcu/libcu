@@ -30,12 +30,15 @@
     <ClInclude Include="..\include\cuda_runtimecu.h" />
     <ClInclude Include="..\include\ext\hash.h" />
     <ClInclude Include="..\include\ext\memfile.h" />
+    <ClInclude Include="..\include\ext\mutex.h" />
     <ClInclude Include="..\include\ext\pipeline.h" />
+    <ClInclude Include="..\include\ext\station.h" />
     <ClInclude Include="..\include\fcntlcu.h" />
     <ClInclude Include="..\include\grpcu.h" />
     <ClInclude Include="..\include\pwdcu.h" />
     <ClInclude Include="..\include\sentinel-direntmsg.h" />
     <ClInclude Include="..\include\sentinel-fcntlmsg.h" />
+    <ClInclude Include="..\include\sentinel-hostmsg.h" />
     <ClInclude Include="..\include\sentinel-timemsg.h" />
     <ClInclude Include="..\include\setjmpcu.h" />
     <ClInclude Include="..\include\sys\timecu.h" />
@@ -57,34 +60,45 @@
     <ClInclude Include="..\include\_unistd.h" />
     <ClInclude Include="..\include\unistdcu.h" />
     <ClInclude Include="fsystem.h" />
+    <ClInclude Include="locale\mblocal.h" />
+    <ClInclude Include="locale\xlocale_private.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\include\sentinel-client.cpp" />
+    <None Include="..\include\ext\pipeline.cpp" />
+    <None Include="..\include\ext\station.cpp" />
     <ClCompile Include="sentinel-msg.cpp" />
     <ClCompile Include="sentinel.cpp" />
-    <ClCompile Include="sentinel-host.cpp" />
     <ClCompile Include="cuda_runtime.cpp" />
     <None Include="sys\timecu.cu" />
+    <None Include="sys\statcu.cu" />
     <None Include="pwdcu.cu" />
     <None Include="ext\hash.cu" />
-    <CudaCompile Include="ext\pipeline.cu" />
     <None Include="ext\memfile.cu" />
     <None Include="fsystem.cu" />
     <None Include="fcntlcu.cu" />
     <None Include="grpcu.cu" />
     <None Include="crtdefscu.cu" />
+    <None Include="locale\ascii.cu" />
+    <None Include="locale\none.cu" />
+    <None Include="locale\utf8.cu" />
+    <None Include="locale\xlocale.cu" />
+    <None Include="ext\mutex.cu">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\include\ext\station-gpu.cu">
+      <FileType>Document</FileType>
+    </None>
     <CudaCompile Include="program.cu" />
     <CudaCompile Include="libcu.cu" />
     <CudaCompile Include="libcu.stdlib.cu" />
     <None Include="ctypecu.cu" />
     <None Include="sentinel-gpu.cu" />
-    <None Include="sys\statcu.cu" />
     <None Include="direntcu.cu" />
     <None Include="errnocu.cu" />
     <None Include="regexcu.cu" />
     <None Include="setjmpcu.cu" />
-    <None Include="stdiocu.cu">
-      <FileType>Document</FileType>
-    </None>
+    <None Include="stdiocu.cu" />
     <None Include="stdlibcu.cu" />
     <CudaCompile Include="stringcu.cu" />
     <None Include="timecu.cu" />
@@ -130,7 +144,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.2.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 10.0.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -173,7 +187,7 @@
       <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-host.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
+      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <Include>$(SolutionDir)include;%(Include)</Include>
@@ -196,7 +210,7 @@
       <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-host.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
+      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <Include>$(SolutionDir)include;%(Include)</Include>
@@ -224,7 +238,7 @@
       <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-host.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
+      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=32 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <Include>$(SolutionDir)include;%(Include)</Include>
@@ -251,7 +265,7 @@
       <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-host.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
+      <Command>"$(CudaToolkitBinDir)\nvcc.exe" -m=64 -arch=sm_$(CUARCH) -lib "$(IntDir)stringcu.cu.obj" "$(IntDir)libcu.cu.obj" "$(IntDir)libcu.stdlib.cu.obj" "$(IntDir)cuda_runtime.obj" "$(IntDir)sentinel.obj" "$(IntDir)sentinel-msg.obj" -o "$(OutDir)libcu.$(CUARCH).lib"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <Include>$(SolutionDir)include;%(Include)</Include>
@@ -262,6 +276,6 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 9.2.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 10.0.targets" />
   </ImportGroup>
 </Project>

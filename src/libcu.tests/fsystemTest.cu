@@ -1,3 +1,6 @@
+#ifdef LIBCU_LEAN_FSYSTEM
+cudaError_t fsystem_test1() { return cudaSuccess; }
+#else
 #include <stdiocu.h>
 #include <stringcu.h>
 #include "../libcu/fsystem.h"
@@ -67,3 +70,4 @@ static __global__ void g_fsystem_test1() {
 	fsystemReset();
 }
 cudaError_t fsystem_test1() { g_fsystem_test1<<<1, 1>>>(); return cudaDeviceSynchronize(); }
+#endif

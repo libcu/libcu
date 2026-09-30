@@ -33,12 +33,15 @@ THE SOFTWARE.
 #include <string.h>
 
 enum {
-	FILEUTILS_DCAT = 0,
+	FILEUTILS_DCAT = 10,
 	FILEUTILS_DCHGRP,
+	FILEUTILS_GETGRNAM, // DCHGRP
 	FILEUTILS_DCHMOD,
 	FILEUTILS_DCHOWN,
+	FILEUTILS_GETPWNAM, // DCHOWN
 	FILEUTILS_DCMP,
 	FILEUTILS_DCP,
+	FILEUTILS_ISADIR, // DCP
 	FILEUTILS_DGREP,
 	FILEUTILS_DLS,
 	FILEUTILS_DMKDIR,
@@ -51,256 +54,206 @@ enum {
 };
 
 struct fileutils_dcat {
-	static __forceinline__ char *Prepare(fileutils_dcat *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str;
-	fileutils_dcat(char *str) : Base(true, FILEUTILS_DCAT, 1024, SENTINELPREPARE(Prepare)), Str(str) { sentinelClientSend(&Base, sizeof(fileutils_dcat)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str;
+	fileutils_dcat(pipelineRedir redir, char *str) : base(redir, FILEUTILS_DCAT, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelClientSend(&base.base, sizeof(fileutils_dcat), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dchgrp {
-	static __forceinline__ char *Prepare(fileutils_dchgrp *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; int Gid;
-	fileutils_dchgrp(char *str, int gid) : Base(true, FILEUTILS_DCHGRP, 1024, SENTINELPREPARE(Prepare)), Str(str), Gid(gid) { sentinelClientSend(&Base, sizeof(fileutils_dchgrp)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; int gid;
+	fileutils_dchgrp(pipelineRedir redir, char *str, int gid) : base(redir, FILEUTILS_DCHGRP, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), gid(gid) { sentinelClientSend(&base.base, sizeof(fileutils_dchgrp), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
+};
+
+struct fileutils_getgrnam {
+	sentinelClientMessage base;
+	char *str;
+	fileutils_getgrnam(pipelineRedir redir, char *str) : base(redir, FILEUTILS_GETGRNAM, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelClientSend(&base.base, sizeof(fileutils_getgrnam), ptrsIn); }
+	struct group *rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dchmod {
-	static __forceinline__ char *Prepare(fileutils_dchmod *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; int Mode;
-	fileutils_dchmod(char *str, int mode) : Base(true, FILEUTILS_DCHMOD, 1024, SENTINELPREPARE(Prepare)), Str(str), Mode(mode) { sentinelClientSend(&Base, sizeof(fileutils_dchmod)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; int mode;
+	fileutils_dchmod(pipelineRedir redir, char *str, int mode) : base(redir, FILEUTILS_DCHMOD, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), mode(mode) { sentinelClientSend(&base.base, sizeof(fileutils_dchmod), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dchown {
-	static __forceinline__ char *Prepare(fileutils_dchown *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; int Uid;
-	fileutils_dchown(char *str, int uid) : Base(true, FILEUTILS_DCHOWN, 1024, SENTINELPREPARE(Prepare)), Str(str), Uid(uid) { sentinelClientSend(&Base, sizeof(fileutils_dchown)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; int uid;
+	fileutils_dchown(pipelineRedir redir, char *str, int uid) : base(redir, FILEUTILS_DCHOWN, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), uid(uid) { sentinelClientSend(&base.base, sizeof(fileutils_dchown), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
+};
+
+struct fileutils_getpwnam {
+	sentinelClientMessage base;
+	char *str;
+	fileutils_getpwnam(pipelineRedir redir, char *str) : base(redir, FILEUTILS_GETPWNAM, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelClientSend(&base.base, sizeof(fileutils_getpwnam), ptrsIn); }
+	struct passwd *rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dcmp {
-	static __forceinline__ char *Prepare(fileutils_dcmp *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		int str2Length = (t->Str2 ? (int)strlen(t->Str2) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *str2 = (char *)(data += strLength);
-		char *end = (char *)(data += str2Length);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		memcpy(str2, t->Str2, str2Length);
-		t->Str = str + offset;
-		t->Str2 = str2 + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; char *Str2;
-	fileutils_dcmp(char *str, char *str2) : Base(true, FILEUTILS_DCMP, 1024, SENTINELPREPARE(Prepare)), Str(str), Str2(str2) { sentinelClientSend(&Base, sizeof(fileutils_dcmp)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; char *str2;
+	fileutils_dcmp(pipelineRedir redir, char *str, char *str2) : base(redir, FILEUTILS_DCMP, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), str2(str2) { sentinelClientSend(&base.base, sizeof(fileutils_dcmp), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[3] = {
+		{ &str, -1 },
+		{ &str2, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dcp {
-	static __forceinline__ char *Prepare(fileutils_dcp *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		int str2Length = (t->Str2 ? (int)strlen(t->Str2) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *str2 = (char *)(data += strLength);
-		char *end = (char *)(data += str2Length);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		memcpy(str2, t->Str2, str2Length);
-		t->Str = str + offset;
-		t->Str2 = str2 + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; char *Str2; bool SetModes;
-	fileutils_dcp(char *str, char *str2, bool setModes) : Base(true, FILEUTILS_DCP, 1024, SENTINELPREPARE(Prepare)), Str(str), Str2(str2), SetModes(setModes) { sentinelClientSend(&Base, sizeof(fileutils_dcp)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; char *str2; bool setModes;
+	fileutils_dcp(pipelineRedir redir, char *str, char *str2, bool setModes) : base(redir, FILEUTILS_DCP, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), str2(str2), setModes(setModes) { sentinelClientSend(&base.base, sizeof(fileutils_dcp), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
+};
+
+struct fileutils_isadir {
+	sentinelClientMessage base;
+	char *str;
+	fileutils_isadir(pipelineRedir redir, char *str) : base(redir, FILEUTILS_ISADIR, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelClientSend(&base.base, sizeof(fileutils_isadir), ptrsIn); }
+	bool rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dgrep {
-	static __forceinline__ char *Prepare(fileutils_dgrep *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		int str2Length = (t->Str2 ? (int)strlen(t->Str2) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *str2 = (char *)(data += strLength);
-		char *end = (char *)(data += str2Length);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		memcpy(str2, t->Str2, str2Length);
-		t->Str = str + offset;
-		t->Str2 = str2 + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; char *Str2; bool IgnoreCase; bool TellName; bool TellLine;
-	fileutils_dgrep(char *str, char *str2, bool ignoreCase, bool tellName, bool tellLine) : Base(true, FILEUTILS_DGREP, 1024, SENTINELPREPARE(Prepare)), Str(str), Str2(str2), IgnoreCase(ignoreCase), TellName(tellName), TellLine(tellLine) { sentinelClientSend(&Base, sizeof(fileutils_dgrep)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; char *str2; bool ignoreCase; bool tellName; bool tellLine;
+	fileutils_dgrep(pipelineRedir redir, char *str, char *str2, bool ignoreCase, bool tellName, bool tellLine) : base(redir, FILEUTILS_DGREP, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), str2(str2), ignoreCase(ignoreCase), tellName(tellName), tellLine(tellLine) { sentinelClientSend(&base.base, sizeof(fileutils_dgrep), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[3] = {
+		{ &str, -1 },
+		{ &str2, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dls {
-	static __forceinline__ char *Prepare(fileutils_dls *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; int Flags; bool EndSlash;
-	fileutils_dls(char *str, int flags, bool endSlash) : Base(true, FILEUTILS_DLS, 1024, SENTINELPREPARE(Prepare)), Str(str), Flags(flags), EndSlash(endSlash) { sentinelClientSend(&Base, sizeof(fileutils_dls)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; int flags; bool endSlash;
+	fileutils_dls(pipelineRedir redir, char *str, int flags, bool endSlash) : base(redir, FILEUTILS_DLS, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), flags(flags), endSlash(endSlash) { sentinelClientSend(&base.base, sizeof(fileutils_dls), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dmkdir {
-	static __forceinline__ char *Prepare(fileutils_dmkdir *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; unsigned short Mode;
-	fileutils_dmkdir(char *str, unsigned short mode) : Base(true, FILEUTILS_DMKDIR, 1024, SENTINELPREPARE(Prepare)), Str(str), Mode(mode) { sentinelClientSend(&Base, sizeof(fileutils_dmkdir)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; unsigned short mode;
+	fileutils_dmkdir(pipelineRedir redir, char *str, unsigned short mode) : base(redir, FILEUTILS_DMKDIR, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), mode(mode) { sentinelClientSend(&base.base, sizeof(fileutils_dmkdir), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dmore {
-	static __forceinline__ char *Prepare(fileutils_dmore *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; int Fd;
-	fileutils_dmore(char *str, int fd) : Base(true, FILEUTILS_DMORE, 1024, SENTINELPREPARE(Prepare)), Str(str), Fd(fd) { sentinelClientSend(&Base, sizeof(fileutils_dmore)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; int fd;
+	fileutils_dmore(pipelineRedir redir, char *str, int fd) : base(redir, FILEUTILS_DMORE, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), fd(fd) { sentinelClientSend(&base.base, sizeof(fileutils_dmore), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dmv {
-	static __forceinline__ char *Prepare(fileutils_dmv *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		int str2Length = (t->Str2 ? (int)strlen(t->Str2) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *str2 = (char *)(data += strLength);
-		char *end = (char *)(data += str2Length);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		memcpy(str2, t->Str2, str2Length);
-		t->Str = str + offset;
-		t->Str2 = str2 + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str; char *Str2;
-	fileutils_dmv(char *str, char *str2) : Base(true, FILEUTILS_DMV, 1024, SENTINELPREPARE(Prepare)), Str(str), Str2(str2) { sentinelClientSend(&Base, sizeof(fileutils_dmv)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str; char *str2;
+	fileutils_dmv(pipelineRedir redir, char *str, char *str2) : base(redir, FILEUTILS_DMV, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), str2(str2) { sentinelClientSend(&base.base, sizeof(fileutils_dmv), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[3] = {
+		{ &str, -1 },
+		{ &str2, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_drm {
-	static __forceinline__ char *Prepare(fileutils_drm *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str;
-	fileutils_drm(char *str) : Base(true, FILEUTILS_DRM, 1024, SENTINELPREPARE(Prepare)), Str(str) { sentinelClientSend(&Base, sizeof(fileutils_drm)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str;
+	fileutils_drm(pipelineRedir redir, char *str) : base(redir, FILEUTILS_DRM, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelClientSend(&base.base, sizeof(fileutils_drm), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_drmdir {
-	static __forceinline__ char *Prepare(fileutils_drmdir *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str;
-	fileutils_drmdir(char *str) : Base(true, FILEUTILS_DRMDIR, 1024, SENTINELPREPARE(Prepare)), Str(str) { sentinelClientSend(&Base, sizeof(fileutils_drmdir)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str;
+	fileutils_drmdir(pipelineRedir redir, char *str) : base(redir, FILEUTILS_DRMDIR, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelClientSend(&base.base, sizeof(fileutils_drmdir), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct fileutils_dpwd {
-	static __forceinline__ __device__ char *Prepare(fileutils_dpwd *t, char *data, char *dataEnd, intptr_t offset) {
-		t->Ptr = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += 1024);
+	static __forceinline__ __device__ char *prepare(fileutils_dpwd *t, char *data, char *dataEnd, intptr_t offset) {
+		t->ptr = data;
+		char *end = data += SENTINEL_CHUNK;
 		if (end > dataEnd) return nullptr;
 		return end;
 	}
-	sentinelMessage Base;
-	fileutils_dpwd() : Base(true, FILEUTILS_DPWD, 1024, SENTINELPREPARE(Prepare)) { sentinelClientSend(&Base, sizeof(fileutils_dpwd)); }
-	int RC;
-	char *Ptr;
+	sentinelClientMessage base;
+	fileutils_dpwd(pipelineRedir redir) : base(redir, FILEUTILS_DPWD, SENTINELFLOW_WAIT, SENTINEL_CHUNK, SENTINELPREPARE(prepare)) { sentinelClientSend(&base.base, sizeof(fileutils_dpwd)); }
+	int rc;
+	char *ptr;
 };
 
 struct fileutils_dcd {
-	static __forceinline__ char *Prepare(fileutils_dcd *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = (t->Str ? (int)strlen(t->Str) + 1 : 0);
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	char *Str;
-	fileutils_dcd(char *str) : Base(true, FILEUTILS_DCD, 1024, SENTINELPREPARE(Prepare)), Str(str) { sentinelClientSend(&Base, sizeof(fileutils_dcd)); }
-	int RC;
+	sentinelClientMessage base;
+	char *str;
+	fileutils_dcd(pipelineRedir redir, char *str) : base(redir, FILEUTILS_DCD, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelClientSend(&base.base, sizeof(fileutils_dcd), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 #endif  /* _SENTINEL_FILEUTILSMSG_H */

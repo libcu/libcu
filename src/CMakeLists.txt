@@ -3,19 +3,16 @@
 # http://www.ssl.berkeley.edu/~jimm/grizzly_docs/SSL/opt/intel/cc/9.0/lib/locale/en_US/mcpcom.msg
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 project(libcu LANGUAGES CXX CUDA)
-set(COMPILE_FLAGS "-Xcudafe \"--diag_suppress=set_but_not_used --diag_suppress=branch_past_initialization\"")
-set(COMPILE_FLAGSO2 "-Xcicc -O0 -Xcudafe \"--diag_suppress=set_but_not_used --diag_suppress=branch_past_initialization\"")
-set(arch 60)
+set(COMPILE_FLAGSO2 "-Xcicc -O0 -Xcudafe \"--diag_suppress=divide_by_zero\"")
 include(CTest)
 enable_testing()
 
-include_directories(include)
+include_directories(include ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
 # CORE
 add_library(libcu.${arch} STATIC
   libcu/sentinel-msg.cpp
   libcu/sentinel.cpp
-  libcu/sentinel-host.cpp
   libcu/cuda_runtime.cpp
   libcu/stringcu.cu
   libcu/libcu.cu
@@ -36,6 +33,7 @@ add_library(libcu.${arch} STATIC
   #libcu/sys/timecu.cu
   #libcu/ext/hash.cu
   #libcu/ext/memfile.cu
+  #libcu/ext/mutex.cu
   #libcu/grpcu.cu
   #libcu/pwdcu.cu
   #libcu/fsystem.cu
@@ -171,6 +169,7 @@ if (BUILD_TESTING)
   #libcu.tests/fcntlTest.cu
   #libcu.tests/fsystemTest.cu
   #libcu.tests/grpTest.cu
+  #libcu.tests/hostTest.cu
   #libcu.tests/pwdTest.cu
   #libcu.tests/regexTest.cu
   #libcu.tests/sentinelTest.cu
@@ -194,26 +193,28 @@ if (BUILD_TESTING)
   add_test(NAME ctype_test1 COMMAND libcu_tests 2)
   add_test(NAME dirent_test1 COMMAND libcu_tests 3)
   add_test(NAME errno_test1 COMMAND libcu_tests 4)
-  add_test(NAME fcntl_test1 COMMAND libcu_tests 9)
-  add_test(NAME grp_test1 COMMAND libcu_tests 10)
-  add_test(NAME pwd_test1 COMMAND libcu_tests 11)
-  add_test(NAME regex_test1 COMMAND libcu_tests 12)
-  add_test(NAME sentinel_test1 COMMAND libcu_tests 13)
-  add_test(NAME setjmp_test1 COMMAND libcu_tests 14)
-  add_test(NAME stddef_test1 COMMAND libcu_tests 17)
-  add_test(NAME stdio_test1 COMMAND libcu_tests 18)
-  add_test(NAME stdio_64bit COMMAND libcu_tests 19)
-  add_test(NAME stdio_ganging COMMAND libcu_tests 20)
-  add_test(NAME stdio_scanf COMMAND libcu_tests 21)
-  add_test(NAME stdlib_test1 COMMAND libcu_tests 22)
-  add_test(NAME stdlib_strtol COMMAND libcu_tests 23)
-  add_test(NAME stdlib_strtoq COMMAND libcu_tests 24)
-  add_test(NAME string_test1 COMMAND libcu_tests 25)
-  add_test(NAME time_test1 COMMAND libcu_tests 26)
-  add_test(NAME unistd_test1 COMMAND libcu_tests 27)
+  add_test(NAME fcntl_test1 COMMAND libcu_tests 5)
+  add_test(NAME fsystem_test1 COMMAND libcu_tests 6)
+  add_test(NAME grp_test1 COMMAND libcu_tests 7)
+  add_test(NAME host_test1 COMMAND libcu_tests 8)
+  add_test(NAME pwd_test1 COMMAND libcu_tests 9)
+  add_test(NAME regex_test1 COMMAND libcu_tests 10)
+  add_test(NAME sentinel_test1 COMMAND libcu_tests 11)
+  add_test(NAME setjmp_test1 COMMAND libcu_tests 12)
+  add_test(NAME stddef_test1 COMMAND libcu_tests 13)
+  add_test(NAME stdio_test1 COMMAND libcu_tests 14)
+  add_test(NAME stdio_64bit COMMAND libcu_tests 15)
+  add_test(NAME stdio_ganging COMMAND libcu_tests 16)
+  add_test(NAME stdio_scanf COMMAND libcu_tests 17)
+  add_test(NAME stdlib_test1 COMMAND libcu_tests 18)
+  add_test(NAME stdlib_strtol COMMAND libcu_tests 19)
+  add_test(NAME stdlib_strtoq COMMAND libcu_tests 20)
+  add_test(NAME string_test1 COMMAND libcu_tests 21)
+  add_test(NAME time_test1 COMMAND libcu_tests 22)
+  add_test(NAME unistd_test1 COMMAND libcu_tests 23)
 
   if (APPLE)
     # We need to add the default path to the driver (libcuda.dylib) as an rpath, so that the static cuda runtime can find it at runtime.
-    set_property(TARGET libcu_test PROPERTY BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
+    set_property(TARGET libcu_tests PROPERTY BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
   endif()
 endif()

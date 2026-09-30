@@ -7,11 +7,11 @@
 
 __BEGIN_DECLS;
 
-#ifdef __CUDA_ARCH__
-__device__ int fcntl_(int fd, int cmd, ...) { va_list va; va_start(va, cmd); int r = vfcntl_(fd, cmd, va); va_end(va); return r; }
-#endif
 __device__ int vfcntl_(int fd, int cmd, va_list va) {
-	if (ISHOSTHANDLE(fd)) { fcntl_fcntl msg(fd, cmd, va_arg(va, int), false); return msg.RC; }
+	if (ISHOSTHANDLE(fd)) { fcntl_fcntl msg(fd, cmd, va_arg(va, int), false); return msg.rc; }
+#ifdef LIBCU_LEAN_FSYSTEM
+	return panic_no_fsystem();
+#else
 	panic("Not Implemented");
 	// (int fd, unsigned int cmd, unsigned long arg, struct file *filp)
 	//	long err = -EINVAL;
@@ -28,40 +28,52 @@ __device__ int vfcntl_(int fd, int cmd, va_list va) {
 	//	}
 	//	return err;
 	return 0;
-}
-#ifdef __USE_LARGEFILE64
-#ifdef __CUDA_ARCH__
-__device__ int fcntl64_(int fd, int cmd, ...) { va_list va; va_start(va, cmd); int r = vfcntl64_(fd, cmd, va); va_end(va); return r; }
 #endif
+}
+__device__ int fcntl_(int fd, int cmd, ...) { va_list va; va_start(va, cmd); int r = vfcntl_(fd, cmd, va); va_end(va); return r; }
+#ifdef __USE_LARGEFILE64
 __device__ int vfcntl64_(int fd, int cmd, va_list va) {
-	if (ISHOSTHANDLE(fd)) { fcntl_fcntl msg(fd, cmd, va_arg(va, int), true); return msg.RC; }
+	if (ISHOSTHANDLE(fd)) { fcntl_fcntl msg(fd, cmd, va_arg(va, int), true); return msg.rc; }
+#ifdef LIBCU_LEAN_FSYSTEM
+	return panic_no_fsystem();
+#else
 	panic("Not Implemented");
 	return 0;
+#endif
 }
+__device__ int fcntl64_(int fd, int cmd, ...) { va_list va; va_start(va, cmd); int r = vfcntl64_(fd, cmd, va); va_end(va); return r; }
 #endif
 
-#ifdef __CUDA_ARCH__
-__device__ int open_(const char *file, int oflag, ...) { va_list va; va_start(va, oflag); int r = vopen_(file, oflag, va); va_end(va); return r; }
-#endif
 __device__ int vopen_(const char *file, int oflag, va_list va) {
-	if (ISHOSTPATH(file)) { fcntl_open msg(file, oflag, va_arg(va, int), false); return msg.RC; }
+	if (ISHOSTPATH(file)) { fcntl_open msg(file, oflag, va_arg(va, int), false); return msg.rc; }
+#ifdef LIBCU_LEAN_FSYSTEM
+	return panic_no_fsystem();
+#else
 	int fd; fsystemOpen(file, oflag, &fd); return fd;
-}
-#ifdef __USE_LARGEFILE64
-#ifdef __CUDA_ARCH__
-__device__ int open64_(const char *file, int oflag, ...) { va_list va; va_start(va, oflag); int r = vopen64_(file, oflag, va); va_end(va); return r; }
 #endif
-__device__ int vopen64_(const char *file, int oflag, va_list va) {
-	if (ISHOSTPATH(file)) { fcntl_open msg(file, oflag, va_arg(va, int), true); return msg.RC; }
-	int fd; fsystemOpen(file, oflag, &fd); return fd;
 }
+__device__ int open_(const char *file, int oflag, ...) { va_list va; va_start(va, oflag); int r = vopen_(file, oflag, va); va_end(va); return r; }
+#ifdef __USE_LARGEFILE64
+__device__ int vopen64_(const char *file, int oflag, va_list va) {
+	if (ISHOSTPATH(file)) { fcntl_open msg(file, oflag, va_arg(va, int), true); return msg.rc; }
+#ifdef LIBCU_LEAN_FSYSTEM
+	return panic_no_fsystem();
+#else
+	int fd; fsystemOpen(file, oflag, &fd); return fd;
+#endif
+}
+__device__ int open64_(const char *file, int oflag, ...) { va_list va; va_start(va, oflag); int r = vopen64_(file, oflag, va); va_end(va); return r; }
 #endif
 
 /* Close the file descriptor FD.  */
 __device__ int close_(int fd) {
-	if (ISHOSTHANDLE(fd)) { unistd_close msg(fd); return msg.RC; }
+	if (ISHOSTHANDLE(fd)) { unistd_close msg(fd); return msg.rc; }
+#ifdef LIBCU_LEAN_FSYSTEM
+	return panic_no_fsystem();
+#else
 	fsystemClose(fd);
 	return 0;
+#endif
 }
 
 __END_DECLS;

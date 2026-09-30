@@ -12,8 +12,7 @@
 #include "utf8.h"
 
 // Returns the common initial length of the two strings.
-static __device__ int JimStringCommonLength(const char *str1, int charlen1, const char *str2, int charlen2)
-{
+static __device__ int JimStringCommonLength(const char *str1, int charlen1, const char *str2, int charlen2) {
 	int maxlen = 0;
 	while (charlen1-- && charlen2--) {
 		int c1;
@@ -30,8 +29,7 @@ static __device__ int JimStringCommonLength(const char *str1, int charlen1, cons
 // [tcl::prefix]
 __constant__ static const char *const _prefix_options[] = { "match", "all", "longest", NULL };
 __constant__ static const char *const _prefix_matchoptions[] = { "-error", "-exact", "-message", NULL };
-static __device__ int Jim_TclPrefixCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_TclPrefixCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	enum { OPT_MATCH, OPT_ALL, OPT_LONGEST };
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "subcommand ?arg ...?");
@@ -43,7 +41,7 @@ static __device__ int Jim_TclPrefixCoreCommand(ClientData dummy, Jim_Interp *int
 	Jim_Obj *objPtr;
 	Jim_Obj *stringObj;
 	switch (option) {
-	case OPT_MATCH:{
+	case OPT_MATCH: {
 		enum { OPT_MATCH_ERROR, OPT_MATCH_EXACT, OPT_MATCH_MESSAGE };
 		if (argc < 4) {
 			Jim_WrongNumArgs(interp, 2, argv, "?options? table string");
@@ -160,8 +158,7 @@ static __device__ int Jim_TclPrefixCoreCommand(ClientData dummy, Jim_Interp *int
 	return JIM_ERROR;
 }
 
-__device__ int Jim_tclprefixInit(Jim_Interp *interp)
-{
+__device__ int Jim_tclprefixInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "tclprefix", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 	Jim_CreateCommand(interp, "tcl::prefix", Jim_TclPrefixCoreCommand, NULL, NULL);

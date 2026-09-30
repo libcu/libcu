@@ -21,8 +21,7 @@
 #include <sys/time.h>
 #endif
 
-static __device__ int clock_cmd_format(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int clock_cmd_format(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	// How big is big enough?
 	if (argc == 2 || (argc == 3 && !Jim_CompareStringImmediate(interp, argv[1], "-format")))
 		return -1;
@@ -41,8 +40,7 @@ static __device__ int clock_cmd_format(Jim_Interp *interp, int argc, Jim_Obj *co
 }
 
 #ifdef HAVE_STRPTIME
-static __device__ int clock_cmd_scan(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int clock_cmd_scan(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (!Jim_CompareStringImmediate(interp, argv[1], "-format"))
 		return -1;
 	// Initialise with the current date/time
@@ -60,22 +58,19 @@ static __device__ int clock_cmd_scan(ClientData dummy, Jim_Interp *interp, int a
 }
 #endif
 
-static __device__ int clock_cmd_seconds(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int clock_cmd_seconds(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_SetResultInt(interp, time(NULL));
 	return JIM_OK;
 }
 
-static __device__ int clock_cmd_micros(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int clock_cmd_micros(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	Jim_SetResultInt(interp, (jim_wide)tv.tv_sec * 1000000 + tv.tv_usec);
 	return JIM_OK;
 }
 
-static __device__ int clock_cmd_millis(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int clock_cmd_millis(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	Jim_SetResultInt(interp, (jim_wide)tv.tv_sec * 1000 + tv.tv_usec / 1000);
@@ -94,8 +89,7 @@ __constant__ static const jim_subcmd_type clock_command_table[] = {
 	{ NULL }
 };
 
-__device__ int Jim_clockInit(Jim_Interp *interp)
-{
+__device__ int Jim_clockInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "clock", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 	Jim_CreateCommand(interp, "clock", Jim_SubCmdProc, (void *)clock_command_table, NULL);

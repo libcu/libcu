@@ -7,8 +7,7 @@
 #include "tclMod.h"
 #include <stringcu.h>
 
-__device__ int tcl_split_one_arg(Tcl_Interp *interp, int *argc, const char **args[])
-{
+__device__ int tcl_split_one_arg(Tcl_Interp *interp, int *argc, const char **args[]) {
 	if (*argc == 1 && strchr(*args[0], ' ')) {
 		if (Tcl_SplitList(interp, (char *)*args[0], argc, args) == TCL_OK) {
 			return 1;
@@ -20,8 +19,7 @@ __device__ int tcl_split_one_arg(Tcl_Interp *interp, int *argc, const char **arg
 /*
 * Implements the common 'commands' subcommand
 */
-static __device__ int tclmod_cmd_commands(Tcl_Interp *interp, int argc, const char *args[])
-{
+static __device__ int tclmod_cmd_commands(Tcl_Interp *interp, int argc, const char *args[]) {
 	return TCL_OK; // Nothing to do, since the result has already been created
 }
 
@@ -43,15 +41,14 @@ __constant__ static const tclmod_command_type tclmod_command_entry = {
 * Returns 1 if match and args OK.
 * Returns -1 if match but args not OK (leaves error in interp->result)
 */
-static __device__ int check_match_command(Tcl_Interp *interp, const tclmod_command_type *ct, int argc, const char *args[])
-{
+static __device__ int check_match_command(Tcl_Interp *interp, const tclmod_command_type *ct, int argc, const char *args[]) {
 	if (!strcmp(ct->cmd, args[1])) {
 		if (argc == 3 && !strcmp(args[2], "?")) {
-			Tcl_AppendResult (interp, "Usage: ", args[0], " ", ct->cmd, " ", ct->args, "\n\n", ct->description, (char *)NULL);
+			Tcl_AppendResult(interp, "Usage: ", args[0], " ", ct->cmd, " ", ct->args, "\n\n", ct->description, (char *)NULL);
 			return -1;
 		}
 		if (argc < ct->minargs + 2 || (ct->maxargs >= 0 && argc > ct->maxargs + 2)) {
-			Tcl_AppendResult (interp, "wrong # args: should be \"", args[0], " ", ct->cmd, " ", ct->args, "\"", (char *)NULL);
+			Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " ", ct->cmd, " ", ct->args, "\"", (char *)NULL);
 			return -1;
 		}
 		return 1;
@@ -59,8 +56,7 @@ static __device__ int check_match_command(Tcl_Interp *interp, const tclmod_comma
 	return 0;
 }
 
-__device__ const tclmod_command_type *tclmod_parse_cmd(Tcl_Interp *interp, const tclmod_command_type *command_table, int argc, const char *args[])
-{
+__device__ const tclmod_command_type *tclmod_parse_cmd(Tcl_Interp *interp, const tclmod_command_type *command_table, int argc, const char *args[]) {
 	if (argc < 2) {
 		Tcl_AppendResult(interp, "wrong # args: should be \"", args[0], " command ...\"\n", (char *)NULL);
 		Tcl_AppendResult(interp, "Use \"", args[0], " ?\" or \"", args[0], " command ?\" for help", (char *)NULL);

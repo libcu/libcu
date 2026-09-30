@@ -37,8 +37,7 @@ char *dlerror() {
 
 //#include <sys/timeb.h>
 ///* POSIX gettimeofday() compatibility for WIN32 */
-//int gettimeofday(struct timeval *tv, void *unused)
-//{
+//int gettimeofday(struct timeval *tv, void *unused) //{
 //	struct _timeb tb;
 //
 //	_ftime(&tb);

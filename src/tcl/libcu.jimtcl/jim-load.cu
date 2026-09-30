@@ -24,8 +24,7 @@ static void JimFreeLoadHandles(Jim_Interp *interp, void *data);
 
 // Note that Jim_LoadLibrary() requires a path to an existing file.
 // If it is necessary to search JIM_LIBPATH, use Jim_PackageRequire() instead.
-int Jim_LoadLibrary(Jim_Interp *interp, const char *pathName)
-{
+int Jim_LoadLibrary(Jim_Interp *interp, const char *pathName) {
 	void *handle = dlopen(pathName, RTLD_NOW | RTLD_LOCAL);
 	if (handle == NULL)
 		Jim_SetResultFormatted(interp, "error loading extension \"%s\": %s", pathName, dlerror());
@@ -60,13 +59,11 @@ int Jim_LoadLibrary(Jim_Interp *interp, const char *pathName)
 	return JIM_ERROR;
 }
 
-static void JimFreeOneLoadHandle(void *handle)
-{
+static void JimFreeOneLoadHandle(void *handle) {
 	dlclose(handle);
 }
 
-static void JimFreeLoadHandles(Jim_Interp *interp, void *data)
-{
+static void JimFreeLoadHandles(Jim_Interp *interp, void *data) {
 	Jim_Stack *handles = (Jim_Stack *)data;
 	if (handles) {
 		Jim_FreeStackElements(handles, JimFreeOneLoadHandle);
@@ -76,23 +73,19 @@ static void JimFreeLoadHandles(Jim_Interp *interp, void *data)
 }
 
 #else
-__device__ int Jim_LoadLibrary(Jim_Interp *interp, const char *pathName)
-{
+__device__ int Jim_LoadLibrary(Jim_Interp *interp, const char *pathName) {
 	JIM_NOTUSED(interp);
 	JIM_NOTUSED(pathName);
-
 	Jim_SetResultString(interp, "the Jim binary has no support for [load]", -1);
 	return JIM_ERROR;
 }
 
-__device__ void Jim_FreeLoadHandles(Jim_Interp *interp)
-{
+__device__ void Jim_FreeLoadHandles(Jim_Interp *interp) {
 }
 #endif
 
 // [load]
-static __device__ int Jim_LoadCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_LoadCoreCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc < 2) {
 		Jim_WrongNumArgs(interp, 1, argv, "libraryFile");
 		return JIM_ERROR;
@@ -100,8 +93,7 @@ static __device__ int Jim_LoadCoreCommand(ClientData dummy, Jim_Interp *interp, 
 	return Jim_LoadLibrary(interp, Jim_String(argv[1]));
 }
 
-__device__ int Jim_loadInit(Jim_Interp *interp)
-{
+__device__ int Jim_loadInit(Jim_Interp *interp) {
 	Jim_CreateCommand(interp, "load", Jim_LoadCoreCommand, NULL, NULL);
 	return JIM_OK;
 }

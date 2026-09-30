@@ -221,9 +221,9 @@ __device__ void *memcpy_(void *__restrict dest, const void *__restrict src, size
 		: "="__R(r) : __R(dest), __R(src), __R(n));
 	return r;
 #else
-	if (!n || dest == src) goto _ret;
 	register unsigned char *a = (unsigned char *)dest;
 	register unsigned char *b = (unsigned char *)src;
+	if (!n || dest == src) goto _ret;
 	size_t t;
 	// Do an ascending copy
 	if (a < b) { // Check for destructive overlap
@@ -297,8 +297,8 @@ _ret:
 __device__ void *memset_(void *s, int c, size_t n) {
 	//#ifndef OMIT_PTX
 	//#else
-	if (!n) goto _ret;
 	register unsigned char *a = (unsigned char *)s;
+	if (!n) goto _ret;
 	register size_t t;
 	// tiny optimize
 	if (n < 3 * wsize) {
@@ -319,7 +319,7 @@ __device__ void *memset_(void *s, int c, size_t n) {
 #endif
 	}
 	// align to word
-	if ((t = (int)a & wmask)) {
+	if ((t = (size_t)a & wmask)) {
 		t = wsize - t;
 		n -= t;
 		do { *a++ = c; } while (--t);
@@ -1536,7 +1536,7 @@ __host_device__ void strbldAppendFormatv(strbld_t *b, const char *fmt, va_list v
 			char q = type == TYPE_SQLESCAPE3 ? '"' : '\''; // Quote character
 			char *escarg = noArgs ? va_arg(va, char*) : __extsystem.getStringArg(args);
 			bool isnull = !escarg;
-			if (isnull) escarg = type == TYPE_SQLESCAPE2 ? "NULL" : "(NULL)";
+			if (isnull) escarg = (char *)(type == TYPE_SQLESCAPE2 ? "NULL" : "(NULL)");
 			int k = precision;
 			int i, j, n; char ch; for (i = n = 0; k != 0 && (ch = escarg[i]) != 0; i++, k--)
 				if (ch == q) n++;
@@ -1596,19 +1596,19 @@ __host_device__ void strbldAppendFormatv(strbld_t *b, const char *fmt, va_list v
 ** Return the number of bytes of text that StrAccum is able to accept after the attempted enlargement.  The value returned might be zero.
 */
 static __host_device__ int strbldEnlarge(strbld_t *b, int n) {
-	assert(b->index + (int64_t)n >= b->size); // Only called if really needed
+	assert(b->index + (size_t)n >= b->size); // Only called if really needed
 	if (b->error) {
 		TESTCASE_(b->error == STRACCUM_TOOBIG);
 		TESTCASE_(b->error == STRACCUM_NOMEM);
 		return 0;
 	}
 	if (!b->maxSize) {
-		n = b->size - b->index - 1;
+		n = (int)(b->size - b->index - 1);
 		strbldSetError(b, STRACCUM_TOOBIG);
 		return n;
 	}
 	char *oldText = PRINTF_ISMALLOCED(b) ? b->text : nullptr;
-	int64_t sizeNew = b->index;
+	size_t sizeNew = b->index;
 	assert((!b->text || b->text == b->base) == !PRINTF_ISMALLOCED(b));
 	sizeNew += n + 1;
 	if (sizeNew + b->index <= b->maxSize)
@@ -1637,8 +1637,8 @@ static __host_device__ int strbldEnlarge(strbld_t *b, int n) {
 
 /* Append N copies of character c to the given string buffer. */
 __host_device__ void strbldAppendChar(strbld_t *b, int n, int c) {
-	TESTCASE_(b->size + (int64_t)n > 0x7fffffff);
-	if (b->index + (int64_t)n >= b->size && (n = strbldEnlarge(b, n)) <= 0)
+	TESTCASE_(b->size + (size_t)n > 0x7fffffff);
+	if (b->index + (size_t)n >= b->size && (n = strbldEnlarge(b, n)) <= 0)
 		return;
 	assert((b->text == b->base) == !PRINTF_ISMALLOCED(b));
 	while (n-- > 0) b->text[b->index++] = c;

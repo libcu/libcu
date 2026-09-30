@@ -10,6 +10,7 @@ cudaError_t errno_test1();
 cudaError_t fcntl_test1();
 cudaError_t fsystem_test1();
 cudaError_t grp_test1();
+cudaError_t host_test1();
 cudaError_t pwd_test1();
 cudaError_t regex_test1();
 cudaError_t sentinel_test1();
@@ -33,7 +34,7 @@ cudaError_t unistd_test1();
 #endif
 
 int main(int argc, char **argv) {
-	int testId = argv[1] ? atoi(argv[1]) : 16;
+	int testId = argv[1] ? atoi(argv[1]) : 11; // 23;
 
 	// Choose which GPU to run on, change this on a multi-GPU system.
 	cudaError_t cudaStatus = cudaSetDevice(gpuGetMaxGflopsDevice());
@@ -53,22 +54,24 @@ int main(int argc, char **argv) {
 	case 3: cudaStatus = dirent_test1(); break;
 	case 4: cudaStatus = errno_test1(); break;
 	case 5: cudaStatus = fcntl_test1(); break;
-	case 6: cudaStatus = grp_test1(); break;
-	case 7: cudaStatus = pwd_test1(); break;
-	case 8: cudaStatus = regex_test1(); break;
-	case 9: cudaStatus = sentinel_test1(); break;
-	case 10: cudaStatus = setjmp_test1(); break;
-	case 11: cudaStatus = stddef_test1(); break;
-	case 12: cudaStatus = stdio_test1(); break; // assert
-	case 13: cudaStatus = stdio_64bit(); break;
-	case 14: cudaStatus = stdio_ganging(); break;
-	case 15: cudaStatus = stdio_scanf(); break;
-	case 16: cudaStatus = stdlib_test1(); break; // assert
-	case 17: cudaStatus = stdlib_strtol(); break;
-	case 18: cudaStatus = stdlib_strtoq(); break;
-	case 19: cudaStatus = string_test1(); break;
-	case 20: cudaStatus = time_test1(); break;
-	case 21: cudaStatus = unistd_test1(); break; // missing device, throws on fast run
+	case 6: cudaStatus = fsystem_test1(); break;
+	case 7: cudaStatus = grp_test1(); break;
+	case 8: cudaStatus = host_test1(); break;
+	case 9: cudaStatus = pwd_test1(); break;
+	case 10: cudaStatus = regex_test1(); break;
+	case 11: cudaStatus = sentinel_test1(); break;
+	case 12: cudaStatus = setjmp_test1(); break;
+	case 13: cudaStatus = stddef_test1(); break;
+	case 14: cudaStatus = stdio_test1(); break; // assert
+	case 15: cudaStatus = stdio_64bit(); break;
+	case 16: cudaStatus = stdio_ganging(); break;
+	case 17: cudaStatus = stdio_scanf(); break;
+	case 18: cudaStatus = stdlib_test1(); break;
+	case 19: cudaStatus = stdlib_strtol(); break;
+	case 20: cudaStatus = stdlib_strtoq(); break;
+	case 21: cudaStatus = string_test1(); break;
+	case 22: cudaStatus = time_test1(); break;
+	case 23: cudaStatus = unistd_test1(); break; //failed --missing device, throws on fast run
 		// default
 	default: cudaStatus = crtdefs_test1(); break;
 	}

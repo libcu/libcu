@@ -25,6 +25,8 @@ THE SOFTWARE.
 
 #ifndef _STDARGCU_H
 #define _STDARGCU_H
+#include <crtdefscu.h>
+
 #include <stdarg.h>
 
 #endif  /* _STDARGCU_H */

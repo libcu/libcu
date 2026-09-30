@@ -1,8 +1,14 @@
+#include <regexcu.h>
+#ifdef LIBCU_LEAN_AND_MEAN
+extern __device__ int regcomp_(regex_t *preg, const char *regex, int cflags) { return 0; }
+extern __device__ int regexec_(regex_t *preg, const char *string, size_t nmatch, regmatch_t pmatch[], int eflags) { return 0; }
+extern __device__ size_t regerror_(int errcode, const regex_t *preg, char *errbuf, size_t errbuf_size) { return 0; }
+extern __device__ void regfree_(regex_t *preg) { }
+#else
 #include <stdiocu.h>
 #include <stdlibcu.h>
 #include <stringcu.h>
 #include <ctypecu.h>
-#include <regexcu.h>
 
 // No utf-8 support. 1 byte = 1 char
 #define utf8_strlen(S, B) ((B) < 0 ? strlen(S) : (B))
@@ -1246,3 +1252,4 @@ __device__ void regfree_(regex_t *preg) {
 #undef OP
 #undef NEXT
 #undef OPERAND
+#endif

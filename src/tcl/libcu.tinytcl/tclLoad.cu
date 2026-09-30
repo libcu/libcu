@@ -23,10 +23,9 @@
 *
 *----------------------------------------------------------------------
 */
-__device__ int Tcl_LoadCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[])
-{
+__device__ int Tcl_LoadCmd(ClientData dummy, Tcl_Interp *interp, int argc, const char *args[]) {
 	if (argc < 2 || argc > 3) {
-		Tcl_AppendResult (interp, "bad # args: ", args[0], 0);
+		Tcl_AppendResult(interp, "bad # args: ", args[0], 0);
 		return TCL_ERROR;
 	}
 	char *modname = (char *)args[1];
@@ -49,12 +48,14 @@ __device__ int Tcl_LoadCmd(ClientData dummy, Tcl_Interp *interp, int argc, const
 		initname = (char *)_allocFast(strlen(pkgname) + 6);
 		strcpy(initname, pkgname);
 		strcat(initname, "_Init");
-	} else { // We determine the init function from the module name
-		// Remove any path
+	}
+	else { // We determine the init function from the module name
+	 // Remove any path
 		pkgname = strrchr(modname, '/');
 		if (pkgname) {
 			pkgname++;
-		} else {
+		}
+		else {
 			pkgname = modname;
 		}
 		// Remove any lib prefix

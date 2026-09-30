@@ -95,7 +95,7 @@ static int MainInit(int argc, char *const argv[]) {
 	memset(&h_dataP, 0, sizeof(h_dataP));
 	//cudaErrorCheck(cudaSetDeviceFlags(cudaDeviceMapHost | cudaDeviceLmemResizeToMax));
 	cudaErrorCheck(cudaSetDevice(gpuGetMaxGflopsDevice()));
-	cudaErrorCheck(cudaDeviceSetLimit(cudaLimitStackSize, 1024*5));
+	cudaErrorCheck(cudaDeviceSetLimit(cudaLimitStackSize, 1024 * 5));
 	sentinelServerInitialize();
 	//
 	char **d_argv = cudaDeviceTransferStringArray(argc, argv);
@@ -181,8 +181,7 @@ static int MainShutdown(int retcode) {
 
 #pragma endregion
 
-int main(int argc, char *const argv[])
-{
+int main(int argc, char *const argv[]) {
 	if (argc > 1 && !strcmp(argv[1], "--version")) {
 		printf("%d.%d\n", JIM_VERSION / 100, JIM_VERSION % 100);
 		return 0;

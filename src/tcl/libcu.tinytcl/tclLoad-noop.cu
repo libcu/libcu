@@ -17,20 +17,19 @@
 *	Dynamically loads a binary code file into memory and returns a handle to the new code.
 *
 * Results:
-*	A standard Tcl completion code.  If an error occurs, an error message is left in the interp's result. 
+*	A standard Tcl completion code.  If an error occurs, an error message is left in the interp's result.
 *
 * Side effects:
 *	New code suddenly appears in memory.
 *
 *---------------------------------------------------------------------------
 */
-__device__ int TclpDlopen(Tcl_Interp *interp, char *pathPtr, Tcl_LoadHandle *loadHandle, Tcl_FSUnloadFileProc **unloadProcPtr)
-{
+__device__ int TclpDlopen(Tcl_Interp *interp, char *pathPtr, Tcl_LoadHandle *loadHandle, Tcl_FSUnloadFileProc **unloadProcPtr) {
 	*unloadProcPtr = NULL;
 	*loadHandle = NULL;
 	return TCL_OK;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -42,11 +41,10 @@ __device__ int TclpDlopen(Tcl_Interp *interp, char *pathPtr, Tcl_LoadHandle *loa
 *
 *----------------------------------------------------------------------
 */
-__device__ Tcl_PackageInitProc *TclpFindSymbol(Tcl_Interp *interp, Tcl_LoadHandle loadHandle, const char *symbol)
-{
+__device__ Tcl_PackageInitProc *TclpFindSymbol(Tcl_Interp *interp, Tcl_LoadHandle loadHandle, const char *symbol) {
 	return NULL;
 }
-
+
 /*
 *----------------------------------------------------------------------
 *
@@ -61,6 +59,5 @@ __device__ Tcl_PackageInitProc *TclpFindSymbol(Tcl_Interp *interp, Tcl_LoadHandl
 *
 *----------------------------------------------------------------------
 */
-__device__ void TclpUnloadFile(Tcl_LoadHandle loadHandle)
-{
+__device__ void TclpUnloadFile(Tcl_LoadHandle loadHandle) {
 }

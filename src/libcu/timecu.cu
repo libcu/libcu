@@ -1,4 +1,11 @@
 #include <timecu.h>
+#ifdef LIBCU_LEAN_AND_MEAN
+__device__ time_t time_(time_t *timer) { return (time_t)0; }
+//__device__ double difftime_(time_t time1, time_t time0) { return 0.; }
+__device__ size_t strftime_(char *__restrict s, size_t maxsize, const char *__restrict format, const struct tm *__restrict tp) { return 0; }
+__device__ struct tm *gmtime_(const time_t *timer) { return nullptr; }
+//__device__ char *asctime_(const struct tm *tp) { return nullptr; }
+#else
 #include <sentinel-timemsg.h>
 #include <stdiocu.h>
 
@@ -12,7 +19,7 @@ static __device__ struct tm __time_tm;
 
 /* Return the current time and put it in *TIMER if TIMER is not NULL.  */
 __device__ time_t time_(time_t *timer) {
-	time_time msg; time_t time = msg.RC;
+	time_time msg; time_t time = msg.rc;
 	if (timer) *timer = time;
 	return time;
 }
@@ -24,12 +31,12 @@ __device__ double difftime_(time_t time1, time_t time0) {
 
 /* Return the `time_t' representation of TP and normalize TP.  */
 __device__ time_t mktime_(struct tm *tp) {
-	time_mktime msg(tp); return msg.RC;
+	time_mktime msg(tp); return msg.rc;
 }
 
 /* Format TP into S according to FORMAT. no more than MAXSIZE characters and return the number of characters written, or 0 if it would exceed MAXSIZE.  */
 __device__ size_t strftime_(char *__restrict s, size_t maxsize, const char *__restrict format, const struct tm *__restrict tp) {
-	time_strftime msg(s, maxsize, format, tp); return msg.RC;
+	time_strftime msg(s, maxsize, format, tp); return msg.rc;
 }
 
 /* Return the `struct tm' representation of *TIMER in Universal Coordinated Time (aka Greenwich Mean Time).  */
@@ -130,3 +137,4 @@ static __device__ tm *_t2tm(const time_t *__restrict timer, int offset, struct t
 #pragma endregion
 
 __END_DECLS;
+#endif

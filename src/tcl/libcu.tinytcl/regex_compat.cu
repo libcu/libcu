@@ -15,14 +15,12 @@
 #define REGEX_COMPAT_IMPL
 #include "regex_compat.h"
 
-int compat_regcomp(regex_t *preg, const char *regex, int cflags)
-{
+int compat_regcomp(regex_t *preg, const char *regex, int cflags) {
 	preg->preg = regcomp((char *)regex);
-	return(preg->preg == 0);
+	return preg->preg == 0;
 }
 
-int compat_regexec(const  regex_t  *preg,  const  char *string, size_t nmatch, regmatch_t pmatch[], int eflags)
-{
+int compat_regexec(const  regex_t  *preg, const  char *string, size_t nmatch, regmatch_t pmatch[], int eflags) {
 	if (regexec(preg->preg, (char *)string) == 1) {
 		int i;
 		for (i = 0; i < NSUBEXP && i < nmatch; i++) {
@@ -39,18 +37,15 @@ int compat_regexec(const  regex_t  *preg,  const  char *string, size_t nmatch, r
 				pmatch[i].rm_eo = -1;
 			}
 		}
-		return(0);
+		return 0;
 	}
 	/* No match */
-	return(1);
+	return 1;
 }
 
-size_t compat_regerror(int errcode, const regex_t *preg, char *errbuf,  size_t errbuf_size)
-{
+size_t compat_regerror(int errcode, const regex_t *preg, char *errbuf, size_t errbuf_size) {
 	return snprintf(errbuf, errbuf_size, "regex_compat() error %d", errcode);
 }
 
-void compat_regfree(regex_t *preg)
-{
-}
+void compat_regfree(regex_t *preg) { }
 #endif

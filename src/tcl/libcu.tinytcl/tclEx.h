@@ -35,7 +35,7 @@ extern __device__ char *tclAppLongname;     // Long, natural language applicatio
 extern __device__ char *tclAppVersion;      // Version number of the application
 
 // If set to be a pointer to the procedure Tcl_RecordAndEval, will link in history.  Should be set by main.
-extern int (*tclShellCmdEvalProc)();
+extern int(*tclShellCmdEvalProc)();
 
 // If non-zero, a signal was received.  Normally signals are handled in Tcl_Eval, but if an application does not return to eval for some period
 // of time, then this should be checked and Tcl_CheckForSignal called if this is set.
@@ -43,7 +43,7 @@ extern int tclReceivedSignal;
 
 // Exported Extended Tcl functions.
 extern __device__ int Tcl_CheckForSignal(Tcl_Interp *interp, int cmdResultCode);
-extern __device__ void Tcl_CommandLoop(Tcl_Interp *interp, FILE *inFile, FILE *outFile, int (*evalProc)(), unsigned options);
+extern __device__ void Tcl_CommandLoop(Tcl_Interp *interp, FILE *inFile, FILE *outFile, int(*evalProc)(), unsigned options);
 extern __device__ Tcl_Interp *Tcl_CreateExtendedInterp();
 extern __device__ char *Tcl_DeleteKeyedListField(Tcl_Interp *interp, const char *fieldName, const char *keyedList);
 extern __device__ char *Tcl_DownShift(char *targetStr, const char *sourceStr);

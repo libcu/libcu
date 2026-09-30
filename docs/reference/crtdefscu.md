@@ -18,3 +18,4 @@ Prototype | Description | Tags
 ```#define _LENGTHOF(symbol)``` | Returns the length of an array at compile time (via math)
 ```#define UNUSED_SYMBOL(x)``` | Removes compiler warning for unused parameter(s)
 ```#define UNUSED_SYMBOL2(x,y)``` | Removes compiler warning for unused parameter(s)
+```__device__ void libcuReset();``` | Resets/shutdown libcu environment

@@ -5,6 +5,7 @@
 #include "fcntlTest.cu"
 #include "fsystemTest.cu"
 #include "grpTest.cu"
+#include "hostTest.cu"
 #include "pwdTest.cu"
 #include "regexTest.cu"
 #include "sentinelTest.cu"

@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _STDIOCU_H
 #define _STDIOCU_H
 #include <crtdefscu.h>
@@ -31,10 +30,16 @@ THE SOFTWARE.
 #include <stdio.h>
 typedef struct {
 	char *_base;
-	int   _flag;
-	int   _file;
+	int _flag;
+	int _file;
+	int off;
+	int state;
 } cuFILE;
-#if defined(__CUDA_ARCH__)
+#ifdef __APPLE__
+#define __off_t off_t
+// #define __off64_t off64_t
+#endif
+#ifdef __CUDA_ARCH__
 #include <stdarg.h>
 
 __BEGIN_DECLS;
@@ -287,8 +292,10 @@ extern __device__ int ferror_(FILE *stream);
 __END_NAMESPACE_STD;
 
 __BEGIN_NAMESPACE_STD;
-/* Print a message describing the meaning of the value of errno.  */
-//__forceinline__ __device__ void perror_(const char *s) { printf(s); }
+/* Print a message describing the meaning of the value of errno. */
+extern __device__ void fperror_(FILE *stream, const char *s); //: ext
+#define fperror fperror_
+/* Print a message describing the meaning of the value of errno. */
 extern __device__ void perror_(const char *s);
 #define perror perror_
 __END_NAMESPACE_STD;
@@ -313,6 +320,7 @@ several optimizing inline functions and macros.  */
 __END_DECLS;
 
 #else
+#define fperror(s, e) 0
 #define ISHOSTFILE(stream) false
 #if __OS_WIN
 #define snprintf _snprintf

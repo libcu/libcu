@@ -12,8 +12,7 @@
 #endif
 
 // Returns an allocated line, or NULL if EOF.
-char *Jim_HistoryGetline(const char *prompt)
-{
+char *Jim_HistoryGetline(const char *prompt) {
 #ifdef USE_LINENOISE
 	return linenoise(prompt);
 #else
@@ -31,29 +30,25 @@ char *Jim_HistoryGetline(const char *prompt)
 #endif
 }
 
-void Jim_HistoryLoad(const char *filename)
-{
+void Jim_HistoryLoad(const char *filename) {
 #ifdef USE_LINENOISE
 	linenoiseHistoryLoad(filename);
 #endif
 }
 
-void Jim_HistoryAdd(const char *line)
-{
+void Jim_HistoryAdd(const char *line) {
 #ifdef USE_LINENOISE
 	linenoiseHistoryAdd(line);
 #endif
 }
 
-void Jim_HistorySave(const char *filename)
-{
+void Jim_HistorySave(const char *filename) {
 #ifdef USE_LINENOISE
 	linenoiseHistorySave(filename);
 #endif
 }
 
-void Jim_HistoryShow()
-{
+void Jim_HistoryShow() {
 #ifdef USE_LINENOISE
 	// built-in history command
 	int len;
@@ -66,8 +61,7 @@ void Jim_HistoryShow()
 #pragma region Jim_InteractivePrompt
 #if __CUDACC__
 
-struct InteractiveData
-{
+struct InteractiveData {
 	Jim_Interp *interp;
 	int retcode;
 	char *history_file;
@@ -81,13 +75,11 @@ __device__ struct InteractiveData d_dataI;
 void D_DATAI() { cudaErrorCheck(cudaMemcpyToSymbol(d_dataI, &h_dataI, sizeof(h_dataI))); }
 void H_DATAI() { cudaErrorCheck(cudaMemcpyFromSymbol(&h_dataI, d_dataI, sizeof(h_dataI))); }
 
-__global__ void g_InteractivePromptBegin()
-{
+__global__ void g_InteractivePromptBegin() {
 	printf("Welcome to Jim version %d.%d\n", JIM_VERSION / 100, JIM_VERSION % 100);
 	Jim_SetVariableStrWithStr(d_dataI.interp, JIM_INTERACTIVE, "1");
 }
-void Jim_InteractivePromptBegin(Jim_Interp *interp)
-{ 
+void Jim_InteractivePromptBegin(Jim_Interp *interp) {
 	memset(&h_dataI, 0, sizeof(h_dataI));
 	h_dataI.interp = interp;
 	h_dataI.retcode = JIM_OK;
@@ -101,11 +93,10 @@ void Jim_InteractivePromptBegin(Jim_Interp *interp)
 		Jim_HistoryLoad(history_file);
 	}
 #endif
-	D_DATAI(); g_InteractivePromptBegin<<<1,1>>>(); cudaErrorCheck(cudaDeviceSynchronize()); H_DATAI();
+	D_DATAI(); g_InteractivePromptBegin << <1, 1 >> > (); cudaErrorCheck(cudaDeviceSynchronize()); H_DATAI();
 }
 
-__global__ void g_InteractivePromptBodyBegin()
-{
+__global__ void g_InteractivePromptBodyBegin() {
 	Jim_Interp *interp = d_dataI.interp;
 	char *prompt = d_dataI.prompt;
 	int retcode = d_dataI.retcode;
@@ -122,13 +113,11 @@ __global__ void g_InteractivePromptBodyBegin()
 	Jim_Obj *scriptObjPtr = d_dataI.scriptObjPtr = Jim_NewStringObj(interp, "", 0);
 	Jim_IncrRefCount(scriptObjPtr);
 }
-void Jim_InteractivePromptBodyBegin()
-{
-	D_DATAI(); g_InteractivePromptBodyBegin<<<1,1>>>(); cudaErrorCheck(cudaDeviceSynchronize()); H_DATAI();
+void Jim_InteractivePromptBodyBegin() {
+	D_DATAI(); g_InteractivePromptBodyBegin << <1, 1 >> > (); cudaErrorCheck(cudaDeviceSynchronize()); H_DATAI();
 }
 
-__global__ void g_InteractivePromptBodyMiddle(char *line)
-{
+__global__ void g_InteractivePromptBodyMiddle(char *line) {
 	Jim_Interp *interp = d_dataI.interp;
 	Jim_Obj *scriptObjPtr = d_dataI.scriptObjPtr;
 	if (line == NULL) {
@@ -155,19 +144,17 @@ __global__ void g_InteractivePromptBodyMiddle(char *line)
 	snprintf(prompt, sizeof(d_dataI.prompt), "%c> ", state);
 	d_dataI.OP = 0; //: continue;
 }
-int Jim_InteractivePromptBodyMiddle(char *line)
-{
+int Jim_InteractivePromptBodyMiddle(char *line) {
 	char *d_line;
 	int lineLength = (int)strlen(line) + 1;
 	cudaMalloc((void**)&d_line, lineLength);
 	cudaMemcpy(d_line, line, lineLength, cudaMemcpyHostToDevice);
-	D_DATAI(); g_InteractivePromptBodyMiddle<<<1,1>>>(d_line); cudaErrorCheck(cudaDeviceSynchronize()); H_DATAI();
+	D_DATAI(); g_InteractivePromptBodyMiddle << <1, 1 >> > (d_line); cudaErrorCheck(cudaDeviceSynchronize()); H_DATAI();
 	cudaFree(d_line);
 	return h_dataI.OP;
 }
 
-__global__ void g_InteractivePromptBodyEnd()
-{
+__global__ void g_InteractivePromptBodyEnd() {
 	Jim_Interp *interp = d_dataI.interp;
 	Jim_Obj *scriptObjPtr = d_dataI.scriptObjPtr;
 	int retcode = d_dataI.retcode = Jim_EvalObj(interp, scriptObjPtr);
@@ -184,8 +171,7 @@ __global__ void g_InteractivePromptBodyEnd()
 		printf("%s\n", result);
 	d_dataI.OP = 0; //: continue;
 }
-int Jim_InteractivePromptBodyEnd()
-{
+int Jim_InteractivePromptBodyEnd() {
 #ifdef USE_LINENOISE
 	if (!strcmp(str, "h")) {
 		// built-in history command
@@ -195,20 +181,18 @@ int Jim_InteractivePromptBodyEnd()
 	}
 	Jim_HistoryAdd(Jim_String(scriptObjPtr));
 	if (history_file)
-		Jim_HistorySave(history_file);	
+		Jim_HistorySave(history_file);
 #endif
-	D_DATAI(); g_InteractivePromptBodyEnd<<<1,1>>>(); cudaErrorCheck(cudaDeviceSynchronize()); H_DATAI();
+	D_DATAI(); g_InteractivePromptBodyEnd << <1, 1 >> > (); cudaErrorCheck(cudaDeviceSynchronize()); H_DATAI();
 	return h_dataI.OP;
 }
 
-int Jim_InteractivePromptEnd()
-{
+int Jim_InteractivePromptEnd() {
 	free(h_dataI.history_file);
 	return h_dataI.retcode;
 }
 
-int Jim_InteractivePrompt(Jim_Interp *interp)
-{
+int Jim_InteractivePrompt(Jim_Interp *interp) {
 	Jim_InteractivePromptBegin(interp);
 	while (1) {
 		Jim_InteractivePromptBodyBegin();
@@ -235,8 +219,7 @@ out:
 
 #else
 
-int Jim_InteractivePrompt(Jim_Interp *interp)
-{
+int Jim_InteractivePrompt(Jim_Interp *interp) {
 	int retcode = JIM_OK;
 	char *history_file = NULL;
 #ifdef USE_LINENOISE
@@ -316,4 +299,3 @@ out:
 
 #endif
 #pragma endregion
-

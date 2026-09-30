@@ -23,8 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#pragma once
-
 #ifndef _LIBCU_FPMAX_H
 #define _LIBCU_FPMAX_H
 #include <float.h>

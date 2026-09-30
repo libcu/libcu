@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#pragma once
 #ifndef _SENTINEL_STDLIBMSG_H
 #define _SENTINEL_STDLIBMSG_H
 
@@ -36,83 +35,98 @@ enum {
 	STDLIB_GETENV,
 	STDLIB_SETENV,
 	STDLIB_UNSETENV,
+	STDLIB_MKTEMP,
+	STDLIB_MKSTEMP,
 };
 
 struct stdlib_exit {
-	sentinelMessage Base;
-	bool Std;
-	int Status;
-	__device__ stdlib_exit(bool std, int status) : Base(true, STDLIB_EXIT), Std(std), Status(status) { sentinelDeviceSend(&Base, sizeof(stdlib_exit)); }
+	sentinelMessage base;
+	bool std; int status;
+	__device__ stdlib_exit(bool std, int status) : base(STDLIB_EXIT, SENTINELFLOW_WAIT), std(std), status(status) { sentinelDeviceSend(&base, sizeof(stdlib_exit)); }
 };
 
 struct stdlib_system {
-	static __forceinline__ __device__ char *Prepare(stdlib_system *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = t->Str ? (int)strlen(t->Str) + 1 : 0;
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	const char *Str;
-	__device__ stdlib_system(const char *str) : Base(true, STDLIB_SYSTEM, 1024, SENTINELPREPARE(Prepare)), Str(str) { sentinelDeviceSend(&Base, sizeof(stdlib_system)); }
-	int RC;
+	sentinelMessage base;
+	const char *str;
+	__device__ stdlib_system(const char *str) : base(STDLIB_SYSTEM, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelDeviceSend(&base, sizeof(stdlib_system), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct stdlib_getenv {
-	static __forceinline__ __device__ char *Prepare(stdlib_getenv *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = t->Str ? (int)strlen(t->Str) + 1 : 0;
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
+	static __forceinline__ __host__ char *hostPrepare(stdlib_getenv *t, char *data, char *dataEnd, intptr_t offset) {
+		if (!t->rc) return data;
+		int ptrLength = t->rc ? (int)strlen(t->rc) + 1 : 0;
+		if (ptrLength > SENTINEL_CHUNK) { ptrLength = SENTINEL_CHUNK; t->rc[ptrLength] = 0; }
+		char *ptr = (char *)(data += ROUND8_(sizeof(*t)));
+		char *end = (char *)(data += ptrLength);
 		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
+		memcpy(ptr, t->rc, ptrLength);
+		t->rc = (char *)(ptr - offset);
 		return end;
 	}
-	sentinelMessage Base;
-	const char *Str;
-	__device__ stdlib_getenv(const char *str) : Base(true, STDLIB_GETENV, 1024, SENTINELPREPARE(Prepare)), Str(str) { sentinelDeviceSend(&Base, sizeof(stdlib_getenv)); }
-	char *RC;
+	sentinelMessage base;
+	const char *str;
+	__device__ stdlib_getenv(const char *str) : base(STDLIB_GETENV, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelDeviceSend(&base, sizeof(stdlib_getenv), ptrsIn); }
+	char *rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 struct stdlib_setenv {
-	static __forceinline__ __device__ char *Prepare(stdlib_setenv *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = t->Str ? (int)strlen(t->Str) + 1 : 0;
-		int str2Length = t->Str2 ? (int)strlen(t->Str2) + 1 : 0;
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *str2 = (char *)(data += strLength);
-		char *end = (char *)(data += str2Length);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		memcpy(str2, t->Str2, str2Length);
-		t->Str = str + offset;
-		t->Str2 = str2 + offset;
-		return end;
-	}
-	sentinelMessage Base;
-	const char *Str;
-	const char *Str2;
-	int Replace;
-	__device__ stdlib_setenv(const char *str, const char *str2, int replace) : Base(true, STDLIB_SYSTEM, 1024, SENTINELPREPARE(Prepare)), Str(str), Str2(str2), Replace(replace) { sentinelDeviceSend(&Base, sizeof(stdlib_setenv)); }
-	int RC;
+	sentinelMessage base;
+	const char *str; const char *str2; int replace;
+	__device__ stdlib_setenv(const char *str, const char *str2, int replace) : base(STDLIB_SETENV, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str), str2(str2), replace(replace) { sentinelDeviceSend(&base, sizeof(stdlib_setenv), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[3] = {
+		{ &str, -1 },
+		{ &str2, -1 },
+		{ nullptr }
+	};
 };
 
 struct stdlib_unsetenv {
-	static __forceinline__ __device__ char *Prepare(stdlib_unsetenv *t, char *data, char *dataEnd, intptr_t offset) {
-		int strLength = t->Str ? (int)strlen(t->Str) + 1 : 0;
-		char *str = (char *)(data += ROUND8_(sizeof(*t)));
-		char *end = (char *)(data += strLength);
-		if (end > dataEnd) return nullptr;
-		memcpy(str, t->Str, strLength);
-		t->Str = str + offset;
-		return end;
+	sentinelMessage base;
+	const char *str;
+	__device__ stdlib_unsetenv(const char *str) : base(STDLIB_UNSETENV, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelDeviceSend(&base, sizeof(stdlib_unsetenv), ptrsIn); }
+	int rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
+};
+
+struct stdlib_mktemp {
+	sentinelMessage base;
+	char *str;
+	__device__ stdlib_mktemp(char *str) : base(STDLIB_MKTEMP, SENTINELFLOW_WAIT, SENTINEL_CHUNK), str(str) { sentinelDeviceSend(&base, sizeof(stdlib_mktemp), ptrsIn); }
+	char *rc;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
+};
+
+struct stdlib_mkstemp {
+	static __forceinline__ __device__ bool postfix(stdlib_mkstemp *t, intptr_t offset) {
+		char *ptr = (char *)t->ptr - offset;
+		if (t->str) strcpy(t->str, ptr);
+		return true;
 	}
-	sentinelMessage Base;
-	const char *Str;
-	__device__ stdlib_unsetenv(const char *str) : Base(true, STDLIB_SYSTEM, 1024, SENTINELPREPARE(Prepare)), Str(str) { sentinelDeviceSend(&Base, sizeof(stdlib_unsetenv)); }
-	int RC;
+	sentinelMessage base;
+	char *str;
+	__device__ stdlib_mkstemp(char *str) : base(STDLIB_MKSTEMP, SENTINELFLOW_WAIT, SENTINEL_CHUNK, nullptr, SENTINELPOSTFIX(postfix)), str(str) { sentinelDeviceSend(&base, sizeof(stdlib_mkstemp), ptrsIn); }
+	int rc;
+	void *ptr;
+	sentinelInPtr ptrsIn[2] = {
+		{ &str, -1 },
+		{ nullptr }
+	};
 };
 
 #endif  /* _SENTINEL_STDLIBMSG_H */

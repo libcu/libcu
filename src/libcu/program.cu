@@ -1,8 +1,16 @@
 #include <cuda_runtimecu.h>
+#include <sentinel.h>
+#include <stdlibcu.h>
 #include <stdiocu.h>
 #include <stringcu.h>
 #include <assert.h>
+//
+#include <unistdcu.h>
+#include <ext/pipeline.h>
+#define HostDir "C:\\T_\\"
+#define DeviceDir ":\\"
 
+static __global__ void g_testbed();
 static __global__ void g_memmove_speed();
 static __global__ void g_strlen_speed();
 static __global__ void g_strnlen_speed();
@@ -20,6 +28,19 @@ int main() {
 		fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?\n");
 		goto Error;
 	}
+
+	cudaErrorCheck(cudaDeviceSetLimit(cudaLimitStackSize, 1024 * 5));
+	sentinelServerInitialize();
+	//sentinelRegisterFileUtils();
+
+	//PIDTYPE *pids;
+	//FDTYPE inPipe, outPipe, errFile;
+	//char *pipeArgs = { "C:\\Windows\\System32\\more.com" };
+	//int pipeRet = CreatePipeline(1, &pipeArgs, &pids, &inPipe, &outPipe, &errFile);
+	//free(pids);
+	//goto Error;
+
+	g_testbed<<<1, 1>>>();
 
 	// Launch test
 	cudaEventRecord(start);
@@ -45,6 +66,8 @@ int main() {
 	printf("Effective: %fn", milliseconds / 1e6);
 
 Error:
+	sentinelServerShutdown();
+
 	// cudaDeviceReset must be called before exiting in order for profiling and
 	// tracing tools such as Nsight and Visual Profiler to show complete traces.
 	cudaStatus = cudaDeviceReset();
@@ -55,7 +78,7 @@ Error:
 
 	// finish
 	printf("\nPress any key to continue.\n");
-	scanf("%c");
+	char c; scanf("%c", &c);
 
 	return 0;
 }
@@ -74,8 +97,18 @@ static __constant__ const char *_quickbrownfox =
 "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog."
 "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.";
 
-static __device__ char _buf0[] = "The quick brown fox jumped over the lazy dog.";
+//static __device__ char _buf0[] = "The quick brown fox jumped over the lazy dog.";
 static __device__ char _buf1[50];
+
+static __global__ void g_testbed() {
+	FILE *k3a = fopen(DeviceDir"test.txt", "w");
+	int k3b = fprintf(k3a, "%03000d", 1234);
+	FILE *k3c = freopen(DeviceDir"test.txt", "w", k3a);
+	int k3d = fprintf(k3c, "%03000d", 1234);
+	int k3e = fflush(k3c);
+	int k3f = fclose(k3c);
+	assert(k3a && k3b == 3000 && k3c && k3d == 3000 && !k3e && !k3f);
+}
 
 static __global__ void g_memmove_speed() {
 	for (int i = 0; i < 1000; i++) {

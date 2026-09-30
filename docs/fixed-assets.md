@@ -18,13 +18,6 @@ The following files define some of these behaviors.
 
 This header includes most of the libcu base definitions, of which are also the primary fixed-asset definitions.
 
-`LIBCU_MAXENVIRON` defines the maximum number of environment variables as hard-assets
-```
-#ifndef LIBCU_MAXENVIRON
-#define LIBCU_MAXENVIRON 5
-#endif
-```
-
 `LIBCU_MAXFILESTREAM` defines the maximum number of files and streams as hard-assets
 ```
 #ifndef LIBCU_MAXFILESTREAM

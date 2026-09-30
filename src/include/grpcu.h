@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _GRPCU_H
 #define _GRPCU_H
 #include <crtdefscu.h>
@@ -33,13 +32,13 @@ THE SOFTWARE.
 struct group {
 	char *gr_name;		// the name of the group
 	gid_t gr_gid;		// numerical group ID
-	char  **gr_mem;		// pointer to a null-terminated array of character pointers to member names
+	char **gr_mem;		// pointer to a null-terminated array of character pointers to member names
 };
 #elif __OS_UNIX
 #include <grp.h>
 #endif
 
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 /* get group database entry for a group ID */

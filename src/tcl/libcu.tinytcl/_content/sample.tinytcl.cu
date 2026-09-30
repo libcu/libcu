@@ -64,7 +64,7 @@ int main(int argc, const char *args[]) {
 	FILE *out;
 	if (argc > 1 && strcmp(args[1], "-"))
 	{
-		char *filename = (char *)args[1]+1;
+		char *filename = (char *)args[1];
 
 		// Before we eval the file, create an args global containing the remaining arguments
 		char *args2 = Tcl_Merge(argc - 2, args + 2);

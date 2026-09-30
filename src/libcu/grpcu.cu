@@ -1,10 +1,11 @@
+#ifndef LIBCU_LEAN_AND_MEAN
 #include <stringcu.h>
 #include <grpcu.h>
 
 __BEGIN_DECLS;
 
 #if __OS_WIN
-static __device__ group __grps[] = { { "std", 1, nullptr }, { nullptr } };
+static __device__ group __grps[] = { { (char *)"std", 1, nullptr }, { nullptr } };
 static __device__ group *__grpIdx = nullptr;
 #endif
 
@@ -52,3 +53,4 @@ __device__ void endgrent_() {
 }
 
 __END_DECLS;
+#endif

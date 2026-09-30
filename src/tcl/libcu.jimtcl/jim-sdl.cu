@@ -45,18 +45,15 @@
 
 #define AIO_CMD_LEN 128
 
-typedef struct JimSdlSurface
-{
+typedef struct JimSdlSurface {
 	SDL_Surface *screen;
 } JimSdlSurface;
 
-static void JimSdlSetError(Jim_Interp *interp)
-{
+static void JimSdlSetError(Jim_Interp *interp) {
 	Jim_SetResultString(interp, SDL_GetError(), -1);
 }
 
-static void JimSdlDelProc(Jim_Interp *interp, void *privData)
-{
+static void JimSdlDelProc(Jim_Interp *interp, void *privData) {
 	JimSdlSurface *jss = privData;
 
 	JIM_NOTUSED(interp);
@@ -67,17 +64,16 @@ static void JimSdlDelProc(Jim_Interp *interp, void *privData)
 
 /* Calls to commands created via [sdl.surface] are implemented by this
 * C command. */
-static int JimSdlHandlerCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int JimSdlHandlerCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	JimSdlSurface *jss = Jim_CmdPrivData(interp);
 	int option;
 	static const char * const options[] = {
 		"free", "flip", "pixel", "rectangle", "box", "line", "aaline",
 		"circle", "aacircle", "fcircle", NULL
 	};
-	enum
-	{ OPT_FREE, OPT_FLIP, OPT_PIXEL, OPT_RECTANGLE, OPT_BOX, OPT_LINE,
-	OPT_AALINE, OPT_CIRCLE, OPT_AACIRCLE, OPT_FCIRCLE
+	enum {
+		OPT_FREE, OPT_FLIP, OPT_PIXEL, OPT_RECTANGLE, OPT_BOX, OPT_LINE,
+		OPT_AALINE, OPT_CIRCLE, OPT_AACIRCLE, OPT_FCIRCLE
 	};
 
 	if (argc < 2) {
@@ -99,7 +95,7 @@ static int JimSdlHandlerCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 			Jim_GetLong(interp, argv[4], &red) != JIM_OK ||
 			Jim_GetLong(interp, argv[5], &green) != JIM_OK ||
 			Jim_GetLong(interp, argv[6], &blue) != JIM_OK) {
-				return JIM_ERROR;
+			return JIM_ERROR;
 		}
 		if (argc == 8 && Jim_GetLong(interp, argv[7], &alpha) != JIM_OK)
 			return JIM_ERROR;
@@ -108,39 +104,39 @@ static int JimSdlHandlerCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 	}
 	else if (option == OPT_RECTANGLE || option == OPT_BOX ||
 		option == OPT_LINE || option == OPT_AALINE) {
-			/* RECTANGLE, BOX, LINE, AALINE */
-			long x1, y1, x2, y2, red, green, blue, alpha = 255;
+		/* RECTANGLE, BOX, LINE, AALINE */
+		long x1, y1, x2, y2, red, green, blue, alpha = 255;
 
-			if (argc != 9 && argc != 10) {
-				Jim_WrongNumArgs(interp, 2, argv, "x y red green blue ?alpha?");
-				return JIM_ERROR;
-			}
-			if (Jim_GetLong(interp, argv[2], &x1) != JIM_OK ||
-				Jim_GetLong(interp, argv[3], &y1) != JIM_OK ||
-				Jim_GetLong(interp, argv[4], &x2) != JIM_OK ||
-				Jim_GetLong(interp, argv[5], &y2) != JIM_OK ||
-				Jim_GetLong(interp, argv[6], &red) != JIM_OK ||
-				Jim_GetLong(interp, argv[7], &green) != JIM_OK ||
-				Jim_GetLong(interp, argv[8], &blue) != JIM_OK) {
-					return JIM_ERROR;
-			}
-			if (argc == 10 && Jim_GetLong(interp, argv[9], &alpha) != JIM_OK)
-				return JIM_ERROR;
-			switch (option) {
-			case OPT_RECTANGLE:
-				rectangleRGBA(jss->screen, x1, y1, x2, y2, red, green, blue, alpha);
-				break;
-			case OPT_BOX:
-				boxRGBA(jss->screen, x1, y1, x2, y2, red, green, blue, alpha);
-				break;
-			case OPT_LINE:
-				lineRGBA(jss->screen, x1, y1, x2, y2, red, green, blue, alpha);
-				break;
-			case OPT_AALINE:
-				aalineRGBA(jss->screen, x1, y1, x2, y2, red, green, blue, alpha);
-				break;
-			}
-			return JIM_OK;
+		if (argc != 9 && argc != 10) {
+			Jim_WrongNumArgs(interp, 2, argv, "x y red green blue ?alpha?");
+			return JIM_ERROR;
+		}
+		if (Jim_GetLong(interp, argv[2], &x1) != JIM_OK ||
+			Jim_GetLong(interp, argv[3], &y1) != JIM_OK ||
+			Jim_GetLong(interp, argv[4], &x2) != JIM_OK ||
+			Jim_GetLong(interp, argv[5], &y2) != JIM_OK ||
+			Jim_GetLong(interp, argv[6], &red) != JIM_OK ||
+			Jim_GetLong(interp, argv[7], &green) != JIM_OK ||
+			Jim_GetLong(interp, argv[8], &blue) != JIM_OK) {
+			return JIM_ERROR;
+		}
+		if (argc == 10 && Jim_GetLong(interp, argv[9], &alpha) != JIM_OK)
+			return JIM_ERROR;
+		switch (option) {
+		case OPT_RECTANGLE:
+			rectangleRGBA(jss->screen, x1, y1, x2, y2, red, green, blue, alpha);
+			break;
+		case OPT_BOX:
+			boxRGBA(jss->screen, x1, y1, x2, y2, red, green, blue, alpha);
+			break;
+		case OPT_LINE:
+			lineRGBA(jss->screen, x1, y1, x2, y2, red, green, blue, alpha);
+			break;
+		case OPT_AALINE:
+			aalineRGBA(jss->screen, x1, y1, x2, y2, red, green, blue, alpha);
+			break;
+		}
+		return JIM_OK;
 	}
 	else if (option == OPT_CIRCLE || option == OPT_AACIRCLE || option == OPT_FCIRCLE) {
 		/* CIRCLE, AACIRCLE, FCIRCLE */
@@ -156,7 +152,7 @@ static int JimSdlHandlerCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 			Jim_GetLong(interp, argv[5], &red) != JIM_OK ||
 			Jim_GetLong(interp, argv[6], &green) != JIM_OK ||
 			Jim_GetLong(interp, argv[7], &blue) != JIM_OK) {
-				return JIM_ERROR;
+			return JIM_ERROR;
 		}
 		if (argc == 9 && Jim_GetLong(interp, argv[8], &alpha) != JIM_OK)
 			return JIM_ERROR;
@@ -194,8 +190,7 @@ static int JimSdlHandlerCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 	return JIM_OK;
 }
 
-static int JimSdlSurfaceCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int JimSdlSurfaceCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	JimSdlSurface *jss;
 	char buf[AIO_CMD_LEN];
 	Jim_Obj *objPtr;
@@ -234,8 +229,7 @@ static int JimSdlSurfaceCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 	return JIM_OK;
 }
 
-int Jim_sdlInit(Jim_Interp *interp)
-{
+int Jim_sdlInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "sdl", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 

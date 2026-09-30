@@ -49,18 +49,14 @@
 #include <sys/sysinfo.h>
 #endif
 
-static void Jim_PosixSetError(Jim_Interp *interp)
-{
+static void Jim_PosixSetError(Jim_Interp *interp) {
 	Jim_SetResultString(interp, strerror(errno), -1);
 }
 
 #if defined(HAVE_FORK)
-static int Jim_PosixForkCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_PosixForkCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	pid_t pid;
-
 	JIM_NOTUSED(argv);
-
 	if (argc != 1) {
 		Jim_WrongNumArgs(interp, 1, argv, "");
 		return JIM_ERROR;
@@ -69,7 +65,7 @@ static int Jim_PosixForkCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 		Jim_PosixSetError(interp);
 		return JIM_ERROR;
 	}
-	Jim_SetResultInt(interp, (jim_wide) pid);
+	Jim_SetResultInt(interp, (jim_wide)pid);
 	return JIM_OK;
 }
 #endif
@@ -101,8 +97,7 @@ static int Jim_PosixForkCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 *
 *   {<pid> other 0}
 */
-static int Jim_PosixWaitCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_PosixWaitCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int nohang = 0;
 	long pid;
 	int status;
@@ -156,10 +151,8 @@ static int Jim_PosixWaitCommand(ClientData dummy, Jim_Interp *interp, int argc, 
 	return JIM_OK;
 }
 
-static int Jim_PosixGetidsCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_PosixGetidsCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *objv[8];
-
 	if (argc != 1) {
 		Jim_WrongNumArgs(interp, 1, argv, "");
 		return JIM_ERROR;
@@ -177,11 +170,9 @@ static int Jim_PosixGetidsCommand(ClientData dummy, Jim_Interp *interp, int argc
 }
 
 #define JIM_HOST_NAME_MAX 1024
-static int Jim_PosixGethostnameCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_PosixGethostnameCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	char *buf;
 	int rc = JIM_OK;
-
 	if (argc != 1) {
 		Jim_WrongNumArgs(interp, 1, argv, "");
 		return JIM_ERROR;
@@ -198,21 +189,17 @@ static int Jim_PosixGethostnameCommand(ClientData dummy, Jim_Interp *interp, int
 	return rc;
 }
 
-static int Jim_PosixUptimeCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_PosixUptimeCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 #ifdef HAVE_STRUCT_SYSINFO_UPTIME
 	struct sysinfo info;
-
 	if (argc != 1) {
 		Jim_WrongNumArgs(interp, 1, argv, "");
 		return JIM_ERROR;
 	}
-
 	if (sysinfo(&info) == -1) {
 		Jim_PosixSetError(interp);
 		return JIM_ERROR;
 	}
-
 	Jim_SetResultInt(interp, info.uptime);
 #else
 	Jim_SetResultInt(interp, (long)time(NULL));
@@ -220,22 +207,18 @@ static int Jim_PosixUptimeCommand(ClientData dummy, Jim_Interp *interp, int argc
 	return JIM_OK;
 }
 
-static int Jim_PosixPidCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static int Jim_PosixPidCommand(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	if (argc != 1) {
 		Jim_WrongNumArgs(interp, 1, argv, "");
 		return JIM_ERROR;
 	}
-
 	Jim_SetResultInt(interp, getpid());
 	return JIM_OK;
 }
 
-int Jim_posixInit(Jim_Interp *interp)
-{
+int Jim_posixInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "posix", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
-
 #ifdef HAVE_FORK
 	Jim_CreateCommand(interp, "os.fork", Jim_PosixForkCommand, NULL, NULL);
 #endif

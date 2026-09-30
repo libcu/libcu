@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-//#pragma once
 #ifndef _CTYPECU_H
 #define _CTYPECU_H
 #include <crtdefscu.h>
@@ -35,7 +34,7 @@ THE SOFTWARE.
 #define _HEX            0x08    /* hexadecimal digit */
 #endif
 
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 __BEGIN_DECLS;
 
 extern __constant__ const unsigned char __curtUpperToLower[256];
@@ -75,7 +74,10 @@ extern __forceinline__ __device__ int tolower_(int c) { return __curtUpperToLowe
 extern __forceinline__ __device__ int toupper_(int c) { return c & ~(__curtCtypeMap[(unsigned char)c] & 0x20); }
 #define toupper toupper_
 
-#if __OS_UNIX
+#ifdef __APPLE__
+#define __tolower tolower_
+#define __toupper toupper_
+#elif __OS_UNIX && !defined(_tolower)
 #define _tolower(c) (char)((c)-'A'+'a')
 #define _toupper(c) (char)((c)-'a'+'A')
 #endif

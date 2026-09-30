@@ -68,14 +68,13 @@
 //      "" "abc::def"    => abc::def
 //      "abc" "def"      => abc::def
 //      "abc" "::def"    => def
-__device__ Jim_Obj *JimCanonicalNamespace(Jim_Interp *interp, Jim_Obj *nsObj, Jim_Obj *nameObj)
-{
+__device__ Jim_Obj *JimCanonicalNamespace(Jim_Interp *interp, Jim_Obj *nsObj, Jim_Obj *nameObj) {
 	assert(nameObj->refCount != 0);
 	assert(nsObj->refCount != 0);
 	const char *name = Jim_String(nameObj);
 	if (name[0] == ':' && name[1] == ':') {
 		// Absolute namespace
-		while (*++name == ':') { }
+		while (*++name == ':') {}
 		return Jim_NewStringObj(interp, name, -1);
 	}
 	// Relative to the global namespace
@@ -88,8 +87,7 @@ __device__ Jim_Obj *JimCanonicalNamespace(Jim_Interp *interp, Jim_Obj *nsObj, Ji
 	return objPtr;
 }
 
-__device__ int Jim_CreateNamespaceVariable(Jim_Interp *interp, Jim_Obj *varNameObj, Jim_Obj *targetNameObj)
-{
+__device__ int Jim_CreateNamespaceVariable(Jim_Interp *interp, Jim_Obj *varNameObj, Jim_Obj *targetNameObj) {
 	Jim_IncrRefCount(varNameObj);
 	Jim_IncrRefCount(targetNameObj);
 	// push non-namespace vars if in namespace eval?
@@ -109,29 +107,25 @@ __device__ int Jim_CreateNamespaceVariable(Jim_Interp *interp, Jim_Obj *varNameO
 // bob        => ""
 // ::         => ""
 // ""         => ""
-__device__ Jim_Obj *Jim_NamespaceQualifiers(Jim_Interp *interp, Jim_Obj *ns)
-{
+__device__ Jim_Obj *Jim_NamespaceQualifiers(Jim_Interp *interp, Jim_Obj *ns) {
 	const char *name = Jim_String(ns);
 	const char *pt = strrchr((char *)name, ':');
 	return (pt && pt != name && pt[-1] == ':' ? Jim_NewStringObj(interp, name, (int)(pt - name - 1)) : interp->emptyObj);
 }
 
-__device__ Jim_Obj *Jim_NamespaceTail(Jim_Interp *interp, Jim_Obj *ns)
-{
+__device__ Jim_Obj *Jim_NamespaceTail(Jim_Interp *interp, Jim_Obj *ns) {
 	const char *name = Jim_String(ns);
 	const char *pt = strrchr((char *)name, ':');
 	return (pt && pt != name && pt[-1] == ':' ? Jim_NewStringObj(interp, pt + 1, -1) : ns);
 }
 
-static __device__ Jim_Obj *JimNamespaceCurrent(Jim_Interp *interp)
-{
+static __device__ Jim_Obj *JimNamespaceCurrent(Jim_Interp *interp) {
 	Jim_Obj *objPtr = Jim_NewStringObj(interp, "::", 2);
 	Jim_AppendObj(interp, objPtr, interp->framePtr->nsObj);
 	return objPtr;
 }
 
-static __device__ int JimVariableCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
+static __device__ int JimVariableCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 	int retcode = JIM_OK;
 	if (argc > 3) {
 		Jim_WrongNumArgs(interp, 1, argv, "name ?value?");
@@ -152,8 +146,7 @@ static __device__ int JimVariableCmd(ClientData dummy, Jim_Interp *interp, int a
 }
 
 // Used to invoke script-based helpers. It would be ideal if ensembles were supported in the core
-static __device__ int Jim_EvalEnsemble2(Jim_Interp *interp, const char *basecmd, const char *subcmd, int argc, Jim_Obj *const *argv)
-{
+static __device__ int Jim_EvalEnsemble2(Jim_Interp *interp, const char *basecmd, const char *subcmd, int argc, Jim_Obj *const *argv) {
 	Jim_Obj *prefixObj = Jim_NewStringObj(interp, basecmd, -1);
 	Jim_AppendString(interp, prefixObj, " ", 1);
 	Jim_AppendString(interp, prefixObj, subcmd, -1);
@@ -166,10 +159,8 @@ static __device__ const char *const _namespace_options[] = {
 	"which", "upvar", NULL
 };
 
-static __device__ int JimNamespaceCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv)
-{
-	enum
-	{
+static __device__ int JimNamespaceCmd(ClientData dummy, Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+	enum {
 		OPT_EVAL, OPT_CURRENT, OPT_CANONICAL, OPT_QUALIFIERS, OPT_PARENT, OPT_TAIL, OPT_DELETE,
 		OPT_ORIGIN, OPT_CODE, OPT_INSCOPE, OPT_IMPORT, OPT_EXPORT,
 		OPT_WHICH, OPT_UPVAR,
@@ -254,8 +245,7 @@ static __device__ int JimNamespaceCmd(ClientData dummy, Jim_Interp *interp, int 
 	return Jim_EvalEnsemble2(interp, "namespace", _namespace_options[option], argc - 2, argv + 2);
 }
 
-__device__ int Jim_namespaceInit(Jim_Interp *interp)
-{
+__device__ int Jim_namespaceInit(Jim_Interp *interp) {
 	if (Jim_PackageProvide(interp, "namespace", "1.0", JIM_ERRMSG))
 		return JIM_ERROR;
 	Jim_CreateCommand(interp, "namespace", JimNamespaceCmd, NULL, NULL);

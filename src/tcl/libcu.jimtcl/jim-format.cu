@@ -52,8 +52,7 @@
 // Returns a new object with zero reference count if OK, or NULL on error.
 __constant__ static const char *const _mixedXPG = "cannot mix \"%\" and \"%n$\" conversion specifiers";
 __constant__ static const char *const _badIndex[2] = { "not enough arguments for all format specifiers", "\"%n$\" argument index out of range" };
-__device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int objc, Jim_Obj *const *objv)
-{
+__device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int objc, Jim_Obj *const *objv) {
 	const char *span, *format, *formatEnd, *msg;
 	int numBytes = 0, objIndex = 0, gotXpg = 0, gotSequential = 0;
 	int formatLen;
@@ -77,7 +76,7 @@ __device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int
 		int step;
 		int doubleType;
 		char pad = ' ';
-		char spec[2*JIM_INTEGER_SPACE + 12];
+		char spec[2 * JIM_INTEGER_SPACE + 12];
 		char *p;
 
 		int formatted_chars;
@@ -122,7 +121,8 @@ __device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int
 				goto errorMsg;
 			}
 			gotXpg = 1;
-		} else {
+		}
+		else {
 			if (gotXpg) {
 				msg = _mixedXPG;
 				goto errorMsg;
@@ -167,7 +167,8 @@ __device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int
 			width = strtoul(format, &end, 10);
 			format = end;
 			step = utf8_tounicode(format, &ch);
-		} else if (ch == '*') {
+		}
+		else if (ch == '*') {
 			if (objIndex >= objc - 1) {
 				msg = _badIndex[gotXpg];
 				goto errorMsg;
@@ -197,7 +198,8 @@ __device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int
 			precision = strtoul(format, &end, 10);
 			format = end;
 			step = utf8_tounicode(format, &ch);
-		} else if (ch == '*') {
+		}
+		else if (ch == '*') {
 			if (objIndex >= objc - 1) {
 				msg = _badIndex[gotXpg];
 				goto errorMsg;
@@ -219,7 +221,8 @@ __device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int
 			useShort = 1;
 			format += step;
 			step = utf8_tounicode(format, &ch);
-		} else if (ch == 'l') {
+		}
+		else if (ch == 'l') {
 			// Just for compatibility. All non-short integers are wide.
 			format += step;
 			step = utf8_tounicode(format, &ch);
@@ -335,7 +338,7 @@ __device__ Jim_Obj *Jim_FormatString(Jim_Interp *interp, Jim_Obj *fmtObjPtr, int
 #endif
 			}
 
-			*p++ = (char) ch;
+			*p++ = (char)ch;
 			*p = '\0';
 
 			// Adjust length for width and precision
